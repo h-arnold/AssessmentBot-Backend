@@ -151,13 +151,14 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 - [X] Run `npm run lint` - should pass without errors
 - [X] Run `npm run lint:fix` - should auto-fix any formatting issues
 - [X] Run `npm run format` - should format code consistently
-- [ ] Commit changes and verify pre-commit hooks work correctly
+- [X] Commit changes and verify pre-commit hooks work correctly
 
 ### 8.2 Development Server Verification
 - [ ] Run `npm run start:dev` - server should start successfully
 - [ ] Access `http://localhost:3000/health` - should return health status JSON
 - [ ] Verify hot reload works by making a simple change
 - [ ] Check that TypeScript compilation works without errors
+> **Blocker:** `npm run start:dev` is currently failing with module resolution errors. This needs further investigation.
 
 ### 8.3 Build Verification
 - [ ] Run `npm run build` - should create `dist/` folder successfully
