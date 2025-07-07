@@ -123,14 +123,14 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 ### 6. Environment Configuration Preparation
 
 #### 6.1 Create Environment Files
-- [ ] `.env.example` - Template with all required environment variables
-- [ ] `.env` - Local development environment (add to .gitignore)
+- [X] `.env.example` - Template with all required environment variables
+- [X] `.env` - Local development environment (add to .gitignore)
 
 #### 6.2 Update .gitignore
-- [ ] Add `.env` (but not `.env.example`)
-- [ ] Add `node_modules/`
-- [ ] Add `dist/` and other build artifacts
-- [ ] Add IDE-specific files
+- [X] Add `.env` (but not `.env.example`)
+- [X] Add `node_modules/`
+- [X] Add `dist/` and other build artifacts
+- [X] Add IDE-specific files
 
 ### 7. Documentation Updates
 
