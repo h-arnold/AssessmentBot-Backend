@@ -63,11 +63,20 @@ QA is a multi-layered approach that builds confidence in the application's stabi
 
 ## Expected Data Flow
 
-1. Request comes in via the REST API. Contains Auth Token (API Key in the header) and a JSON body with reference task, template task and student response.
+1. Request comes in via the REST API. Contains Auth Token (API Key in the header) and a JSON body with reference task, template task and student response. A typical request payload looks like this:
+
+``` json
+{
+    "reference:": "A string or blob containing the reference task",
+    "template:": "A string or blob containing the template task",
+    "studentResponse:" : "A string or blob containing the student's response"
+}
+```
+
 2. Request is validated using Zod schemas.
 3. If the request is valid, it is authenticated using Passport.js.
 4. The request is handled by a NestJS `Controller`, which delegates the core logic to an appropriate `AssessorService` (e.g., for text, tables, or images).
-5. A prompt object is generated using the reference, template and student reponse.
+5. A prompt object is generated using the reference, template and student response.
 6. The prompt is sent to an LLMService superclass, which handles the interaction with the the chosen LLM. Each LLM (e.g. OpenAI, Anthropic) will have its own subclass that implements the specific API calls.
 7. The LLM processes the prompt and returns a raw string response.
 8. The raw response is passed through a resilient parsing mechanism. First, it attempts a standard `JSON.parse()`. If that fails, it uses `json-repair` to fix common syntax errors before attempting to parse again.

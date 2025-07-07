@@ -28,7 +28,8 @@
         "ms-vscode.vscode-typescript-next",
         "nestjs.nestjs-files",
         "Orta.vscode-jest",
-        "streetsidesoftware.code-spell-checker"
+        "streetsidesoftware.code-spell-checker",
+        "mermaidchart.vscode-mermaid-chart"
       ]
     }
   },
