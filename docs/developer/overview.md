@@ -1,0 +1,143 @@
+# Assessment Bot - Backend
+
+This repository contains the backend code for the Assessment Bot, which is responsible for managing assessments, grading, and providing feedback. It is written in TypeScript and uses Node.js as the runtime environment.
+
+There is no front end, and is accessible via a REST API only. Configuration values are stored in environment variables, and prompt templates are stored as markdown files. It is designed to be stateless, meaning that it does not store any user data or session information on the server.
+
+It will start initially as a monolithic application that will be run in a minimal Docker container, ensuring cloud agnosticism. If the project expands, the goal should be a collection of microservices that can initially be coordinated via a single Docker Compose file, and later orchestrated with Kubernetes.
+
+## Guiding Principles
+
+1. **Security**: Always prioritise security in your code. Validate inputs, sanitise outputs, and handle sensitive data with care. This includes using environment variables for configuration and secrets, and ensuring that any user-generated content is properly escaped to prevent XSS attacks.
+   - Use structured logging for all authentication attempts and errors, leveraging NestJS's built-in Logger or a compatible logging library. Ensure logs include enough detail (e.g., IP address, timestamp, reason for failure) to support external tools like fail2ban for automated blocking of malicious IPs.
+2. **Emphemerality**: Design the system to be stateless. Assessment Bot pritorises privacy above all else. No student PII is should even be sent to the backend. Maintaining statelessness ensures that any inadvertant data leaks persist only as long as the request is being processed.
+3. **Performance**: Write efficient code that minimises resource usage. Use asynchronous programming patterns to handle I/O operations without blocking the event loop.
+4. **Use well-maintained libraries**: Avoid reinventing the wheel. Use well-maintained libraries and frameworks that are widely adopted in the Node.js ecosystem. This includes libraries for routing, database access, and validation.
+5. **Modularity**: Structure the code in a modular way to promote reusability and maintainability. Use TypeScript interfaces and types to define clear contracts for modules.
+6. **TDD**: Write tests for your code. Use a test framework like Jest or Mocha to ensure that your code is reliable and maintainable. Write unit tests for individual functions and integration tests for the overall system.
+   - Leverage NestJS’s built-in testing utilities (TestingModule) and e2e support with Jest and Supertest; use the Nest CLI to scaffold and run both unit and e2e tests out of the box.
+7. **Strong Object-Oriented Design**: Use object-oriented design principles to create a clean and maintainable codebase. This includes using classes, interfaces, and inheritance where appropriate.
+    a. **Refactor to avoid God Objects**: Avoid creating "God Objects" that have too many responsibilities. Instead, break down complex objects into smaller, more manageable components.
+    b. **SOLID**: Follow the SOLID principles.
+8. **Documentation**: Write clear and concise documentation for your code. Use JSDoc comments to document functions, classes, and modules. Provide examples of how to use the code and explain any complex logic.
+
+## Stack
+
+- **Docker**: Use base image `node:20-alpine` for a minimal and efficient container.
+- **Node.js**: The runtime environment for the backend code.
+- **TypeScript**: The programming language used for the backend code, providing static typing and modern JavaScript features.
+- **Passport.js**: For handling authentication strategies (e.g., API Keys via `passport-http-bearer`).
+- **NestJS**: The core web framework. It is a progressive Node.js framework for building efficient, reliable and scalable server-side applications. It strongly aligns with the OOP and SOLID principles outlined above.
+- **Zod**: A TypeScript-first schema declaration and validation library. It's essential for fulfilling the security principle of validating all inputs.
+- **Jest**: The testing framework. An all-in-one framework that simplifies the TDD process mentioned in the guiding principles.
+- **json-repair**: A library to fix malformed JSON strings, making LLM responses more robust.
+
+## Development & QA Strategy
+
+To uphold the guiding principles and ensure a high-quality, secure, and maintainable codebase, the project will adopt a comprehensive linting and Quality Assurance (QA) strategy.
+
+### Automated Linting & Formatting
+
+A consistent code style is enforced automatically to allow developers to focus on business logic.
+
+- **ESLint**: Used to identify and report on problematic patterns in the TypeScript code. The configuration includes plugins for security (`eslint-plugin-security`), Jest best practices, and import ordering to support the **Security** and **Modularity** principles.
+- **Prettier**: An opinionated code formatter integrated with ESLint to ensure a uniform code style across the entire project.
+- **Husky & lint-staged**: Git hooks are used to automatically run the linter on staged files before they can be committed, catching issues early.
+
+### Quality Assurance
+
+QA is a multi-layered approach that builds confidence in the application's stability and security.
+
+1. **Testing Pyramid**: The TDD principle is expanded with a structured testing approach:
+    - **Unit Tests (Jest)**: The foundation. Individual classes and functions are tested in isolation, with external dependencies mocked.
+    - **Integration Tests (NestJS `TestingModule`)**: The middle layer. Tests the interaction *between* internal modules (e.g., Controller -> Service) to ensure they are wired correctly, without making external network calls.
+    - **E2E Tests (Jest & Supertest)**: The top of the pyramid. The entire application is spun up to test the full request-response cycle via real HTTP requests, validating everything from authentication to the final response shape.
+
+2. **Code Coverage Enforcement**: Jest's `--coverage` flag will be used within a CI/CD pipeline to enforce a minimum test coverage threshold. This ensures the TDD principle is consistently applied.
+
+3. **Automated Security Scanning**:
+    - **Dependency Scanning**: Tools like `npm audit` and GitHub's Dependabot will be used to automatically scan for vulnerabilities in third-party packages and facilitate updates.
+    - **Static Application Security Testing (SAST)**: The `eslint-plugin-security` provides a baseline. Further analysis can be performed by tools like SonarQube/SonarCloud to detect more complex security vulnerabilities and track code quality over time.
+
+4. **API Schema & Documentation**: To support the **Documentation** principle and provide clarity for API consumers, the project will use `@nestjs/swagger`. This package automatically generates an interactive OpenAPI (Swagger) specification directly from the code (Controllers and DTOs), ensuring the documentation is always in sync with the implementation.
+
+## Expected Data Flow
+
+1. Request comes in via the REST API. Contains Auth Token (API Key in the header) and a JSON body with reference task, template task and student response.
+2. Request is validated using Zod schemas.
+3. If the request is valid, it is authenticated using Passport.js.
+4. The request is handled by a NestJS `Controller`, which delegates the core logic to an appropriate `AssessorService` (e.g., for text, tables, or images).
+5. A prompt object is generated using the reference, template and student reponse.
+6. The prompt is sent to an LLMService superclass, which handles the interaction with the the chosen LLM. Each LLM (e.g. OpenAI, Anthropic) will have its own subclass that implements the specific API calls.
+7. The LLM processes the prompt and returns a raw string response.
+8. The raw response is passed through a resilient parsing mechanism. First, it attempts a standard `JSON.parse()`. If that fails, it uses `json-repair` to fix common syntax errors before attempting to parse again.
+9. The repaired and parsed JSON object is validated against a Zod schema to ensure it conforms to the expected structure.
+10. The validated response is processed by the `AssessorService`, which cleans the data and formats it for the client.
+11. The final response is returned to the client via the REST API.
+
+## Initial Class Structure
+
+To support the guiding principles and the expected data flow, the initial backend structure will be organized into modules, each with a distinct responsibility. This modular approach, central to the NestJS framework, enhances maintainability, testability, and separation of concerns.
+
+### Directory Layout
+
+The proposed structure within the `src/` directory is as follows:
+
+```
+src
+├── app.module.ts
+├── main.ts
+│
+├── v1
+│   └── response
+│       ├── dto
+│       │   └── create-response.dto.ts
+│       ├── response.controller.ts
+│       ├── response.module.ts
+│       └── response.service.ts
+│
+├── auth
+│   ├── guards
+│   │   └── api-key.guard.ts
+│   ├── strategies
+│   │   └── api-key.strategy.ts
+│   └── auth.module.ts
+│
+├── common
+│   ├── filters
+│   │   └── http-exception.filter.ts
+│   ├── logger
+│   │   └── logger.module.ts
+│   ├── pipes
+│   │   └── zod-validation.pipe.ts
+│   └── utils
+│       └── json-parser.util.ts
+│
+├── config
+│   └── config.module.ts
+│
+├── docs
+│   └── swagger.module.ts
+│
+├── llm
+│   ├── implementations
+│   │   └── gemini.service.ts
+│   ├── llm.module.ts
+│   └── llm.service.ts
+│
+└── throttler
+    └── throttler.module.ts
+```
+
+### Component Breakdown
+
+- `v1/response`: The versioned core feature module. The `ResponseController` serves as the entry point for API requests, the `ResponseService` orchestrates the business logic (calling the LLM, parsing the response), and the `dto` subdirectory defines the shape of the data using Zod schemas. Versioning allows for future API evolution without breaking existing clients.
+- `common/filters`: Contains global error handling logic, such as `HttpExceptionFilter`, to standardize and centralize error responses and logging.
+- `common/logger`: Provides a centralized, structured logging solution using Pino and integrates with NestJS for consistent, high-performance logs across the application.
+- `throttler`: Provides rate limiting and abuse prevention for API endpoints, typically using `@nestjs/throttler`.
+- `docs`: Contains Swagger/OpenAPI documentation setup, such as `swagger.module.ts`, to provide interactive and always up-to-date API docs for consumers.
+- `auth`: This module handles all authentication concerns. It contains the Passport.js `ApiKeyStrategy` for validating API keys and the `ApiKeyGuard` to protect endpoints, keeping security logic isolated.
+- `llm`: This module abstracts the interaction with Large Language Models. It features an abstract `LlmService` class, allowing the application to easily swap out different LLM providers (like OpenAI, Anthropic, etc.) by creating new concrete implementations. This is a direct application of the Open/Closed Principle from SOLID.
+- `config`: Manages environment variables using `@nestjs/config`. This ensures that all configuration is validated and centrally accessible in a type-safe manner.
+- `common`: A module for shared, reusable components that don't belong to a specific feature. This includes custom `pipes` (for Zod validation) and `utils` (like the resilient JSON parser).
+
