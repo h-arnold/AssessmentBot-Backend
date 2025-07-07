@@ -53,33 +53,35 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 - [X] Create `.eslintrc.js` with TypeScript, security, and import plugins enabled
 - [X] Configure rules that align with the guiding principles (security, modularity)
 - [X] Include Jest plugin configuration for future test setup
-> **Note:** `.eslintrc.js` already existed with a suitable configuration.
+> **Note:** `.eslintrc.js` was migrated to `eslint.config.js` and updated to the new flat config format.
 
 #### 2.4 Create Prettier Configuration
 - [X] Create `.prettierrc` with consistent formatting rules
 - [X] Create `.prettierignore` to exclude build artifacts
 
 #### 2.5 Add NPM Scripts
-- [ ] Update `package.json` with essential scripts:
-  - [ ] `start:dev` - Development server with hot reload
-  - [ ] `build` - Production build
-  - [ ] `lint` - Run ESLint
-  - [ ] `lint:fix` - Run ESLint with auto-fix
-  - [ ] `format` - Run Prettier
+- [X] Update `package.json` with essential scripts:
+  - [X] `start:dev` - Development server with hot reload
+  - [X] `build` - Production build
+  - [X] `lint` - Run ESLint
+  - [X] `lint:fix` - Run ESLint with auto-fix
+  - [X] `format` - Run Prettier
 
 ### 3. Git Hooks and Pre-commit Setup
 
 #### 3.1 Install Husky and lint-staged
-- [ ] `npm install --save-dev husky lint-staged`
+- [X] `npm install --save-dev husky lint-staged`
+> **Note:** Dependencies were already listed in `package.json`.
 
 #### 3.2 Configure Husky
-- [ ] Initialize Husky: `npx husky install`
-- [ ] Add pre-commit hook: `npx husky add .husky/pre-commit "npx lint-staged"`
-- [ ] Update `package.json` with prepare script for Husky
+- [X] Initialize Husky: `npx husky install`
+- [X] Add pre-commit hook: `npx husky add .husky/pre-commit "npx lint-staged"`
+- [X] Update `package.json` with prepare script for Husky
+> **Note:** `husky install` and `husky add` commands are deprecated. The `.husky/pre-commit` file was created manually and made executable.
 
 #### 3.3 Configure lint-staged
-- [ ] Add lint-staged configuration to `package.json`
-- [ ] Configure to run ESLint and Prettier on staged TypeScript files
+- [X] Add lint-staged configuration to `package.json`
+- [X] Configure to run ESLint and Prettier on staged TypeScript files
 
 ### 4. Basic Application Structure
 

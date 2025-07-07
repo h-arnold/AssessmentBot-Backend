@@ -1,15 +1,15 @@
 
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
-import jest from 'eslint-plugin-jest';
-import security from 'eslint-plugin-security';
 import stylistic from '@stylistic/eslint-plugin';
 import prettier from 'eslint-config-prettier';
 import importPlugin from 'eslint-plugin-import';
+import jest from 'eslint-plugin-jest';
+import security from 'eslint-plugin-security';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'node_modules', '.eslintrc.js', 'eslint.config.js'],
+    ignores: ['dist', 'node_modules'],
   },
   {
     plugins: {
