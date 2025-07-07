@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as packageJson from '../package.json';
+import * as os from 'os';
 
 @Injectable()
 export class AppService {
@@ -12,7 +13,16 @@ export class AppService {
       status: 'ok',
       version: packageJson.version,
       timestamp: new Date().toISOString(),
-      // You can add more system info here if needed
+      systemInfo: {
+        platform: os.platform(),
+        arch: os.arch(),
+        release: os.release(),
+        uptime: os.uptime(),
+        hostname: os.hostname(),
+        totalMemory: os.totalmem(),
+        freeMemory: os.freemem(),
+        cpus: os.cpus().length,
+      },
     };
   }
 }
