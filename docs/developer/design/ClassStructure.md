@@ -9,6 +9,9 @@ classDiagram
     class ConfigModule
     class SwaggerModule
     class LoggerModule
+    class ThrottlerModule
+    class CommonModule
+    class LLMModule
 
     %% Assessor Components
     class AssessorController
@@ -32,8 +35,7 @@ classDiagram
 
     %% LLM Service Hierarchy
     class LLMService
-    class OpenAIService
-    class AnthropicService
+    class GeminiService
 
     %% Module Relationships
     AppModule <|-- AssessorModule
@@ -41,6 +43,9 @@ classDiagram
     AppModule <|-- ConfigModule
     AppModule <|-- SwaggerModule
     AppModule <|-- LoggerModule
+    AppModule <|-- ThrottlerModule
+    AppModule <|-- CommonModule
+    AppModule <|-- LLMModule
 
     %% Assessor Relationships
     AssessorModule --> AssessorController
@@ -52,10 +57,13 @@ classDiagram
     AuthModule --> ApiKeyStrategy
     AuthModule --> ApiKeyGuard
 
-    %% Common Utility Usage
-    LoggerModule --> HttpExceptionFilter
-    LoggerModule --> ZodValidationPipe
-    LoggerModule --> JsonParserUtil
+    %% Common Module Relationships
+    CommonModule --> HttpExceptionFilter
+    CommonModule --> ZodValidationPipe
+    CommonModule --> JsonParserUtil
+
+    %% LLM Module Relationships
+    LLMModule --> LLMService
 
     %% Prompt Inheritance
     Prompt <|-- TextPrompt
@@ -64,8 +72,13 @@ classDiagram
 
     %% LLM Service Inheritance
     LLMService <|-- OpenAIService
-    LLMService <|-- AnthropicService
 
     %% Service Integration
     AssessorService --> LLMService
+    AssessorService --> JsonParserUtil
+
+    %% Usage Relationships
+    AssessorController --> ZodValidationPipe
+    AssessorController --> ApiKeyGuard
+    AssessorService --> Prompt
 ```
