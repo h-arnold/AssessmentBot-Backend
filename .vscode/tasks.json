@@ -1,0 +1,36 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Dev Server",
+      "type": "npm",
+      "script": "start:dev",
+      "isBackground": true,
+      "problemMatcher": "$tsc-watch",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "detail": "Runs 'npm run start:dev' in a background terminal."
+    },
+    {
+      "label": "Run All Tests",
+      "type": "npm",
+      "script": "test",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "detail": "Runs 'npm test' to execute all unit and integration tests."
+    },
+    {
+      "label": "Run Linter",
+      "type": "npm",
+      "script": "lint",
+      "problemMatcher": ["$eslint-stylish"],
+      "detail": "Runs 'npm run lint' to find and fix linting issues."
+    }
+  ]
+}
