@@ -142,7 +142,7 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 
 #### 7.2 Create Additional Documentation
 - [X] `CONTRIBUTING.md` - Development guidelines
-- [ ] Basic API documentation structure
+- [X] Basic API documentation structure
 > **Note:** `README.md` updated with setup instructions and `CONTRIBUTING.md` created.
 
 ## Verification Steps
@@ -174,8 +174,8 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 
 ### 8.5 Git and Code Quality Verification
 - [X] Make a test commit with intentionally poorly formatted code (commit: fba098b)
-- [X] Verify pre-commit hooks prevent commit until code is properly formatted (commit: bb006b8)
-- [X] Verify ESLint catches security issues (test with a simple security violation) (commit: c49403d)
+- [X] Verify pre-commit hooks prevent commit until code is properly formatted (commit: c166268)
+- [X] Verify ESLint catches security issues (test with a simple security violation) (commit: c166268)
 - [X] Confirm all configuration files are properly version controlled (commit: 77b0646)
 
 ### 8.6 Health Check Endpoint Verification
