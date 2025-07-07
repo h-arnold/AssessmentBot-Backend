@@ -170,7 +170,7 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 - [X] Run container: `docker run -p 3000:3000 assessment-bot-backend`
 - [X] Access health check endpoint via Docker container
 - [X] Verify Docker health check passes
-- [X] Test with docker-compose: `docker-compose up`
+- [X] Test with docker-compose: `docker-compose up` (commit: 13ca036)
 
 ### 8.5 Git and Code Quality Verification
 - [ ] Make a test commit with intentionally poorly formatted code
