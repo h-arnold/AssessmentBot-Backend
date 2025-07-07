@@ -20,38 +20,44 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 - [ ] Confirm `package.json` exists and review current dependencies
 
 #### 1.3 Initialize NestJS Application Structure
-- [ ] Install NestJS dependencies manually
-- [ ] Create the basic NestJS file structure following the directory layout from README
-- [ ] Set up `src/main.ts` as the application entry point
-- [ ] Create `src/app.module.ts` as the root module
+- [X] Install NestJS dependencies manually
+- [X] Create the basic NestJS file structure following the directory layout from README
+- [X] Set up `src/main.ts` as the application entry point
+- [X] Create `src/app.module.ts` as the root module
+> **Note:** Basic `src` directory structure created with `main.ts` and `app.module.ts`.
 
 #### 1.4 Install Core NestJS Dependencies
-- [ ] `npm install @nestjs/common @nestjs/core @nestjs/platform-express`
-- [ ] `npm install --save-dev @nestjs/cli @nestjs/schematics @nestjs/testing`
+- [X] `npm install @nestjs/common @nestjs/core @nestjs/platform-express`
+- [X] `npm install --save-dev @nestjs/cli @nestjs/schematics @nestjs/testing`
+> **Note:** Dependencies were already listed in `package.json`.
 
 #### 1.5 Install TypeScript and Build Dependencies
-- [ ] `npm install --save-dev typescript @types/node ts-node tsconfig-paths`
+- [X] `npm install --save-dev typescript @types/node ts-node tsconfig-paths`
+> **Note:** Dependencies were already listed in `package.json`.
 
 #### 1.6 Create TypeScript Configuration
-- [ ] Create `tsconfig.json` with NestJS-optimized settings
-- [ ] Create `tsconfig.build.json` for production builds
+- [X] Create `tsconfig.json` with NestJS-optimized settings
+- [X] Create `tsconfig.build.json` for production builds
 
 ### 2. Code Quality and Linting Setup
 
 #### 2.1 Install ESLint and Prettier Dependencies
-- [ ] `npm install --save-dev eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-config-prettier eslint-plugin-prettier prettier`
+- [X] `npm install --save-dev eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-config-prettier eslint-plugin-prettier prettier`
+> **Note:** Dependencies were already listed in `package.json`.
 
 #### 2.2 Install Security and Best Practice Plugins
-- [ ] `npm install --save-dev eslint-plugin-security eslint-plugin-jest eslint-plugin-import`
+- [X] `npm install --save-dev eslint-plugin-security eslint-plugin-jest eslint-plugin-import`
+> **Note:** Dependencies were already listed in `package.json`.
 
 #### 2.3 Create ESLint Configuration
-- [ ] Create `.eslintrc.js` with TypeScript, security, and import plugins enabled
-- [ ] Configure rules that align with the guiding principles (security, modularity)
-- [ ] Include Jest plugin configuration for future test setup
+- [X] Create `.eslintrc.js` with TypeScript, security, and import plugins enabled
+- [X] Configure rules that align with the guiding principles (security, modularity)
+- [X] Include Jest plugin configuration for future test setup
+> **Note:** `.eslintrc.js` already existed with a suitable configuration.
 
 #### 2.4 Create Prettier Configuration
-- [ ] Create `.prettierrc` with consistent formatting rules
-- [ ] Create `.prettierignore` to exclude build artifacts
+- [X] Create `.prettierrc` with consistent formatting rules
+- [X] Create `.prettierignore` to exclude build artifacts
 
 #### 2.5 Add NPM Scripts
 - [ ] Update `package.json` with essential scripts:
