@@ -148,9 +148,9 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 ## Verification Steps
 
 ### 8.1 Linting Verification
-- [ ] Run `npm run lint` - should pass without errors
-- [ ] Run `npm run lint:fix` - should auto-fix any formatting issues
-- [ ] Run `npm run format` - should format code consistently
+- [X] Run `npm run lint` - should pass without errors
+- [X] Run `npm run lint:fix` - should auto-fix any formatting issues
+- [X] Run `npm run format` - should format code consistently
 - [ ] Commit changes and verify pre-commit hooks work correctly
 
 ### 8.2 Development Server Verification
