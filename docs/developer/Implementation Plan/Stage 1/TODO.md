@@ -86,17 +86,17 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 ### 4. Basic Application Structure
 
 #### 4.1 Create Main Application Files
-- [ ] `src/main.ts` - Application bootstrap with basic configuration
-- [ ] `src/app.module.ts` - Root module
-- [ ] `src/app.controller.ts` - Basic controller with health check endpoint
-- [ ] `src/app.service.ts` - Basic service
+- [X] `src/main.ts` - Application bootstrap with basic configuration
+- [X] `src/app.module.ts` - Root module
+- [X] `src/app.controller.ts` - Basic controller with health check endpoint
+- [X] `src/app.service.ts` - Basic service
 
 #### 4.2 Implement Health Check Endpoint
-- [ ] Create `/health` endpoint that returns:
-  - [ ] Application status
-  - [ ] Application version (from package.json)
-  - [ ] Timestamp
-  - [ ] Basic system info
+- [X] Create `/health` endpoint that returns:
+  - [X] Application status
+  - [X] Application version (from package.json)
+  - [X] Timestamp
+  - [X] Basic system info
 
 ### 5. Docker Configuration
 
