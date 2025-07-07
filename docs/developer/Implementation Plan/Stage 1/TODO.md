@@ -178,14 +178,14 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 > **Note:** Pre-commit hooks with `eslint --fix` are not preventing commits with formatting errors, as `eslint --fix` is not correcting the introduced error. Further investigation into ESLint configuration is needed.
 - [ ] Verify ESLint catches security issues (test with a simple security violation)
 > **Blocker:** ESLint configuration issues (specifically with `parserOptions.project` and `typescript-eslint` in flat config) are preventing security linting from running correctly. Further investigation into ESLint configuration is needed. (commit: 51ea1bd)
-- [X] Confirm all configuration files are properly version controlled
+- [X] Confirm all configuration files are properly version controlled (commit: 77b0646)
 
 ### 8.6 Health Check Endpoint Verification
-- [ ] Health endpoint returns status 200
-- [ ] Response includes application name and version
-- [ ] Response includes timestamp
-- [ ] Response format matches expected JSON structure
-- [ ] Endpoint works both in development and Docker environments
+- [X] Health endpoint returns status 200
+- [X] Response includes application name and version
+- [X] Response includes timestamp
+- [X] Response format matches expected JSON structure
+- [X] Endpoint works both in development and Docker environments
 
 ## Success Criteria
 ✅ All verification steps pass
