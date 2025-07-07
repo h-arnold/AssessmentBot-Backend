@@ -163,14 +163,14 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 ### 8.3 Build Verification
 - [X] Run `npm run build` - should create `dist/` folder successfully
 - [X] Verify all TypeScript files compile without errors
-- [X] Check that build artifacts are properly structured
+- [X] Check that build artifacts are properly structured (commit: 78693e7)
 
 ### 8.4 Docker Verification
-- [ ] Build Docker image: `docker build -t assessment-bot-backend .`
-- [ ] Run container: `docker run -p 3000:3000 assessment-bot-backend`
-- [ ] Access health check endpoint via Docker container
-- [ ] Verify Docker health check passes
-- [ ] Test with docker-compose: `docker-compose up`
+- [X] Build Docker image: `docker build -t assessment-bot-backend .`
+- [X] Run container: `docker run -p 3000:3000 assessment-bot-backend`
+- [X] Access health check endpoint via Docker container
+- [X] Verify Docker health check passes
+- [X] Test with docker-compose: `docker-compose up`
 
 ### 8.5 Git and Code Quality Verification
 - [ ] Make a test commit with intentionally poorly formatted code
