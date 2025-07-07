@@ -30,6 +30,7 @@
         "Orta.vscode-jest",
         "streetsidesoftware.code-spell-checker",
         "mermaidchart.vscode-mermaid-chart"
+        ,"GitHub.vscode-pull-request-github"
       ]
     }
   },
