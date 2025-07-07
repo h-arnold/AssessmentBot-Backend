@@ -135,14 +135,15 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 ### 7. Documentation Updates
 
 #### 7.1 Update README.md
-- [ ] Add setup instructions
-- [ ] Add development workflow
-- [ ] Add Docker usage instructions
-- [ ] Document available NPM scripts
+- [X] Add setup instructions
+- [X] Add development workflow
+- [X] Add Docker usage instructions
+- [X] Document available NPM scripts
 
 #### 7.2 Create Additional Documentation
-- [ ] `CONTRIBUTING.md` - Development guidelines
+- [X] `CONTRIBUTING.md` - Development guidelines
 - [ ] Basic API documentation structure
+> **Note:** `README.md` updated with setup instructions and `CONTRIBUTING.md` created.
 
 ## Verification Steps
 

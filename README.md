@@ -21,6 +21,40 @@ It will start initially as a monolithic application that will be run in a minima
     b. **SOLID**: Follow the SOLID principles.
 8. **Documentation**: Write clear and concise documentation for your code. Use JSDoc comments to document functions, classes, and modules. Provide examples of how to use the code and explain any complex logic.
 
+## Getting Started
+
+To get the Assessment Bot backend up and running, follow these steps:
+
+### Prerequisites
+
+- **Node.js**: Version 20.x or later. You can download it from [nodejs.org](https://nodejs.org/).
+- **Docker**: Docker Desktop (or Docker Engine and Docker Compose) installed and running. Follow the instructions for your operating system on the [Docker website](https://www.docker.com/get-started).
+- **Git**: Git installed and configured. You can download it from [git-scm.com](https://git-scm.com/downloads).
+
+### Initial Setup
+
+1.  **Clone the repository**:
+
+    ```bash
+    git clone https://github.com/h-arnold/AssessmentBot-Backend.git
+    cd AssessmentBot-Backend
+    ```
+
+2.  **Install dependencies**:
+
+    ```bash
+    npm install
+    ```
+
+3.  **Set up environment variables**:
+
+    Copy the example environment file and populate it with your settings:
+
+    ```bash
+    cp .env.example .env
+    # Open .env in your editor and configure as needed
+    ```
+
 ## Stack
 
 - **Docker**: Use base image `node:20-alpine` for a minimal and efficient container.
