@@ -142,7 +142,7 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 
 #### 7.2 Create Additional Documentation
 - [X] `CONTRIBUTING.md` - Development guidelines
-- [X] Basic API documentation structure
+- [X] Basic API documentation structure (commit: 88015e8)
 > **Note:** `README.md` updated with setup instructions and `CONTRIBUTING.md` created.
 
 ## Verification Steps
