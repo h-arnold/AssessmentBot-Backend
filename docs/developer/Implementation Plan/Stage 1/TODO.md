@@ -158,7 +158,7 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 - [ ] Access `http://localhost:3000/health` - should return health status JSON
 - [ ] Verify hot reload works by making a simple change
 - [ ] Check that TypeScript compilation works without errors
-> **Blocker:** `npm run start:dev` is currently failing with module resolution errors. This needs further investigation.
+> **Blocker:** `npm run start:dev` is currently failing with module resolution errors. This needs further investigation. (commit: 48a5282)
 
 ### 8.3 Build Verification
 - [ ] Run `npm run build` - should create `dist/` folder successfully
