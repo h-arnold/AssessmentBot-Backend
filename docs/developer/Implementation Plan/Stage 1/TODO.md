@@ -154,11 +154,11 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 - [X] Commit changes and verify pre-commit hooks work correctly
 
 ### 8.2 Development Server Verification
-- [ ] Run `npm run start:dev` - server should start successfully
-- [ ] Access `http://localhost:3000/health` - should return health status JSON
+- [X] Run `npm run start:dev` - server should start successfully
+- [X] Access `http://localhost:3000/health` - should return health status JSON
 - [ ] Verify hot reload works by making a simple change
-- [ ] Check that TypeScript compilation works without errors
-> **Blocker:** `npm run start:dev` is currently failing with module resolution errors. This needs further investigation. (commit: 48a5282)
+- [X] Check that TypeScript compilation works without errors
+> **Note:** Module resolution errors resolved by changing `tsconfig.json` to `commonjs` and adding `postbuild` script to create `dist/package.json` with `"type": "commonjs"`. (commit: <short_commit_id>)
 
 ### 8.3 Build Verification
 - [ ] Run `npm run build` - should create `dist/` folder successfully
