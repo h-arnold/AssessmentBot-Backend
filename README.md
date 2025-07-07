@@ -79,24 +79,21 @@ QA is a multi-layered approach that builds confidence in the application's stabi
 
 To support the guiding principles and the expected data flow, the initial backend structure will be organized into modules, each with a distinct responsibility. This modular approach, central to the NestJS framework, enhances maintainability, testability, and separation of concerns.
 
-
-
 ### Directory Layout
 
 The proposed structure within the `src/` directory is as follows:
 
-```
 src
 ├── app.module.ts
 ├── main.ts
 │
 ├── v1
-│   └── response
+│   └── assessor
 │       ├── dto
-│       │   └── create-response.dto.ts
-│       ├── response.controller.ts
-│       ├── response.module.ts
-│       └── response.service.ts
+│       │   └── create-assessor.dto.ts
+│       ├── assessor.controller.ts
+│       ├── assessor.module.ts
+│       └── assessor.service.ts
 │
 ├── auth
 │   ├── guards
@@ -121,24 +118,22 @@ src
 ├── docs
 │   └── swagger.module.ts
 │
-├── llm
-│   ├── implementations
-│   │   └── gemini.service.ts
-│   ├── llm.module.ts
-│   └── llm.service.ts
+├── prompt
+│   ├── prompt.superclass.ts
+│   ├── text-prompt.subclass.ts
+│   ├── table-prompt.subclass.ts
+│   └── image-prompt.subclass.ts
 │
-└── throttler
-    └── throttler.module.ts
-```
 
 ### Component Breakdown
 
-- `v1/response`: The versioned core feature module. The `ResponseController` serves as the entry point for API requests, the `ResponseService` orchestrates the business logic (calling the LLM, parsing the response), and the `dto` subdirectory defines the shape of the data using Zod schemas. Versioning allows for future API evolution without breaking existing clients.
-- `common/filters`: Contains global error handling logic, such as `HttpExceptionFilter`, to standardize and centralize error responses and logging.
+- `v1/assessor`: The versioned core feature module. The `AssessorController` serves as the entry point for API requests, the `AssessorService` orchestrates the business logic (calling the LLM, parsing the response), and the `dto` subdirectory defines the shape of the data using Zod schemas. Versioning allows for future API evolution without breaking existing clients.
+- `common/filters`: Contains global error handling logic, such as `HttpExceptionFilter`, to standardise and centralize error responses and logging.
 - `common/logger`: Provides a centralized, structured logging solution using Pino and integrates with NestJS for consistent, high-performance logs across the application.
 - `throttler`: Provides rate limiting and abuse prevention for API endpoints, typically using `@nestjs/throttler`.
 - `docs`: Contains Swagger/OpenAPI documentation setup, such as `swagger.module.ts`, to provide interactive and always up-to-date API docs for consumers.
 - `auth`: This module handles all authentication concerns. It contains the Passport.js `ApiKeyStrategy` for validating API keys and the `ApiKeyGuard` to protect endpoints, keeping security logic isolated.
+- `prompt`: Provides a flexible, object-oriented abstraction for generating prompts tailored to different assessment types. Sub-classes are created for specific prompt types.
 - `llm`: This module abstracts the interaction with Large Language Models. It features an abstract `LlmService` class, allowing the application to easily swap out different LLM providers (like OpenAI, Anthropic, etc.) by creating new concrete implementations. This is a direct application of the Open/Closed Principle from SOLID.
 - `config`: Manages environment variables using `@nestjs/config`. This ensures that all configuration is validated and centrally accessible in a type-safe manner.
 - `common`: A module for shared, reusable components that don't belong to a specific feature. This includes custom `pipes` (for Zod validation) and `utils` (like the resilient JSON parser).
@@ -151,18 +146,21 @@ In line with the **TDD** and **QA Strategy** principles, the project will mainta
 
 Tests are co-located with the source code for unit and integration tests, while end-to-end tests reside in a dedicated `test/` directory at the project root.
 
+src
+test/
+
 ```
 src
 └── ...
 └── v1
-    └── response
-        ├── response.controller.spec.ts  # Unit/Integration test for the controller
-        ├── response.controller.ts
-        ├── response.service.spec.ts     # Unit test for the service
-        └── response.service.ts
+    └── assessor
+        ├── assessor.controller.spec.ts  # Unit/Integration test for the controller
+        ├── assessor.controller.ts
+        ├── assessor.service.spec.ts     # Unit test for the service
+        └── assessor.service.ts
 
-test/
-├── response.e2e-spec.ts                 # E2E test for the response endpoint
+
+├── assessor.e2e-spec.ts                 # E2E test for the assessor endpoint
 ├── jest-e2e.json                        # Jest config for E2E tests
 └── setup.ts                             # Optional global setup for tests
 ```
@@ -171,17 +169,14 @@ test/
 
 The testing strategy follows the classic testing pyramid model:
 
-- **Unit Tests (`*.spec.ts`)**:
-  - **Location**: Co-located with the source file (e.g., `response.service.spec.ts` is next to `response.service.ts`).
-  - **Purpose**: To test a single class or function in complete isolation. All external dependencies (like other services, repositories, or external APIs) are mocked using Jest's mocking capabilities (`jest.fn()`, `jest.spyOn()`).
-  - **Scope**: Forms the largest part of the test suite, ensuring individual components behave as expected.
+- **Location**: Co-located with the source file (e.g., `assessor.service.spec.ts` is next to `assessor.service.ts`).
+- **Purpose**: To test a single class or function in complete isolation. All external dependencies (like other services, repositories, or external APIs) are mocked using Jest's mocking capabilities (`jest.fn()`, `jest.spyOn()`).
+- **Scope**: Forms the largest part of the test suite, ensuring individual components behave as expected.
 
-- **Integration Tests (`*.spec.ts`)**:
-  - **Location**: Also co-located with the source files, often testing the module's primary entry point, like a controller.
-  - **Purpose**: To test the interaction *between* multiple, co-dependent classes within the application's dependency injection container. NestJS's `Test.createTestingModule()` is used to build a testing module that mirrors the actual application module, but with external infrastructure (like LLM clients or databases) mocked.
-  - **Scope**: Verifies that modules are wired correctly and that components like controllers, services, and guards work together as intended.
+- **Location**: Also co-located with the source files, often testing the module's primary entry point, like a controller.
+- **Purpose**: To test the interaction *between* multiple, co-dependent classes within the application's dependency injection container. NestJS's `Test.createTestingModule()` is used to build a testing module that mirrors the actual application module, but with external infrastructure (like LLM clients or databases) mocked.
+- **Scope**: Verifies that modules are wired correctly and that components like controllers, services, and guards work together as intended.
 
-- **End-to-End (E2E) Tests (`*.e2e-spec.ts`)**:
-  - **Location**: In the root `test/` directory.
-  - **Purpose**: To test the entire application from the outside in. It starts the full NestJS application and sends real HTTP requests to its endpoints using a library like `supertest`.
-  - **Scope**: Validates the full request/response lifecycle, including authentication, request validation (DTOs/Pipes), controller logic, service execution, and the final HTTP response format and status code. These tests are the most comprehensive but also the slowest to run.
+- **Location**: In the root `test/` directory.
+- **Purpose**: To test the entire application from the outside in. It starts the full NestJS application and sends real HTTP requests to its endpoints using a library like `supertest`.
+- **Scope**: Validates the full request/response lifecycle, including authentication, request validation (DTOs/Pipes), controller logic, service execution, and the final HTTP response format and status code. These tests are the most comprehensive but also the slowest to run.
