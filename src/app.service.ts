@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import * as os from 'os';
+=======
+import { Injectable } from '@nestjs/common';
+>>>>>>> c166268 (Fix: Resolve ESLint security and pre-commit hook blockers)
 
 import { Injectable } from '@nestjs/common';
 
@@ -27,6 +31,7 @@ export class AppService {
   getHello(): string {
     return 'Hello World!';
   }
+<<<<<<< HEAD
 
   getHealth(): HealthCheckResponse {
     return {
@@ -45,4 +50,6 @@ export class AppService {
       },
     };
   }
+=======
+>>>>>>> c166268 (Fix: Resolve ESLint security and pre-commit hook blockers)
 }
