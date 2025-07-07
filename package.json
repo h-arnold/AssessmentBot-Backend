@@ -1,0 +1,22 @@
+{
+  "name": "assessmentbot-backend",
+  "version": "0.0.1",
+  "description": "The backend for Assessment Bot, which provides LLM services.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/h-arnold/AssessmentBot-Backend.git"
+  },
+  "author": "Hamish Arnold",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/h-arnold/AssessmentBot-Backend/issues"
+  },
+  "homepage": "https://github.com/h-arnold/AssessmentBot-Backend#readme"
+}
