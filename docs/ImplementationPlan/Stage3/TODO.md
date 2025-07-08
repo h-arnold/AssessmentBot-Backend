@@ -3,16 +3,16 @@
 ## Red Phase: Test-Driven Steps (Write failing tests and stubs)
 
 1. CommonModule Unit Tests
-   - [ ] Create `common.module.spec.ts` and add tests:
-     - [ ] `CommonModule should be defined and importable`
-     - [ ] `CommonModule should export shared providers (HttpExceptionFilter, ZodValidationPipe, JsonParserUtil)`
+   - [x] Create `common.module.spec.ts` and add tests:
+     - [x] `CommonModule should be defined and importable`
+     - [x] `CommonModule should export shared providers (HttpExceptionFilter, ZodValidationPipe, JsonParserUtil)`
 
 2. HttpExceptionFilter Tests
-   - [ ] Create `http-exception.filter.spec.ts` and add tests:
-     - [ ] `HttpExceptionFilter should format custom error response with timestamp and path`
-     - [ ] `HttpExceptionFilter should sanitize sensitive messages in production`
-     - [ ] `HttpExceptionFilter should include request context (method, path, IP, headers) in logs`
-     - [ ] `HttpExceptionFilter should use warn level for 4xx errors and error level for 5xx errors`
+   - [x] Create `http-exception.filter.spec.ts` and add tests:
+     - [x] `HttpExceptionFilter should format custom error response with timestamp and path`
+     - [x] `HttpExceptionFilter should sanitize sensitive messages in production`
+     - [x] `HttpExceptionFilter should include request context (method, path, IP, headers) in logs`
+     - [x] `HttpExceptionFilter should use warn level for 4xx errors and error level for 5xx errors`
 
 3. ZodValidationPipe Tests
    - [ ] Create `zod-validation.pipe.spec.ts` and add tests:

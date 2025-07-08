@@ -17,11 +17,11 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 1.1 Module Creation and Registration
 
-- [ ] **Test**: `CommonModule should be defined and importable`
+- [x] **Test**: `CommonModule should be defined and importable`
   - Verify the module class exists and can be imported
   - Ensure the module is decorated with `@Module()`
 
-- [ ] **Test**: `CommonModule should export shared providers`
+- [x] **Test**: `CommonModule should export shared providers`
   - Verify `HttpExceptionFilter`, `ZodValidationPipe`, and `JsonParserUtil` are provided and exportable
   - Ensure other modules can inject these services
 
@@ -29,11 +29,11 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 2.1 Core Filter Behavior
 
-- [ ] **Test**: `HttpExceptionFilter should format custom error response with timestamp, path, and sanitized message`
+- [x] **Test**: `HttpExceptionFilter should format custom error response with timestamp, path, and sanitized message`
   - Simulate throwing `new HttpException('Error occurred', 400)` in a controller
   - Expect JSON response with properties: `statusCode`, `message`, `timestamp`, `path`
 
-- [ ] **Test**: `HttpExceptionFilter should preserve request context in structured logs and use correct log level (warn for 4xx, error for 5xx)`
+- [x] **Test**: `HttpExceptionFilter should preserve request context in structured logs and use correct log level (warn for 4xx, error for 5xx)`
   - Mock request with headers, IP address, user agent, and other context
   - Verify logged errors include request method, path, IP, headers, and user agent
   - Test that sensitive headers (Authorization, API keys) are masked in logs
@@ -44,7 +44,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
   - Mock NestJS Logger and verify error logging occurs
   - Expect log entries to include: timestamp, level, message, stack trace, request context
 
-- [ ] **Test**: `HttpExceptionFilter should log different levels based on error type`
+- [x] **Test**: `HttpExceptionFilter should log different levels based on error type`
   - 4xx errors should log at 'warn' level
   - 5xx errors should log at 'error' level
   - Verify appropriate log level is used for each exception type
