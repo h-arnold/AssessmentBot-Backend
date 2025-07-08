@@ -29,7 +29,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 2.1 Core Filter Behavior
 
-- [x] **Test**: `HttpExceptionFilter should format custom error response with timestamp, path, and sanitized message`
+- [x] **Test**: `HttpExceptionFilter should format custom error response with timestamp, path, and sanitised message`
   - Simulate throwing `new HttpException('Error occurred', 400)` in a controller
   - Expect JSON response with properties: `statusCode`, `message`, `timestamp`, `path`
 
@@ -86,7 +86,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
   - Test with multiple validation failures
   - Verify error response matches NestJS standard format with detailed field-level errors
 
-- [x] **Test**: `ZodValidationPipe should sanitize validation error messages`
+- [x] **Test**: `ZodValidationPipe should sanitise validation error messages`
   - Include potentially sensitive data in validation schema
   - Verify error messages don't expose internal schema details
 
@@ -146,7 +146,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 - [x] **Test**: `Error responses should not expose sensitive information`
   - Test with various error scenarios including database errors, file system errors
-  - Verify error messages are sanitized for production use
+  - Verify error messages are sanitised for production use
 
 - [ ] **Test**: `Large payload validation should not cause memory issues` (Not Implemented)
   - Send very large JSON payloads to validation pipe

@@ -19,7 +19,7 @@ ENV NODE_ENV=${NODE_ENV}
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --omit=dev --no-optional
+RUN npm install --omit=dev --no-optional --ignore-scripts
 
 COPY --from=build /app/dist ./dist
 

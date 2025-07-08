@@ -168,7 +168,7 @@ describe('ZodValidationPipe', () => {
     expect(response.errors[1]).toHaveProperty('path', ['password']);
   });
 
-  it('should sanitize validation error messages in production', () => {
+  it('should sanitise validation error messages in production', () => {
     const sensitiveSchema = z.object({
       apiKey: z.string().refine((val) => val.startsWith('sk-'), {
         message: 'Invalid API Key format',
@@ -192,7 +192,7 @@ describe('ZodValidationPipe', () => {
     expect(response).toHaveProperty('message', 'Validation failed');
     expect(response).toHaveProperty('errors');
     expect(Array.isArray(response.errors)).toBe(true);
-    // In production, specific error messages should be generic or sanitized
+    // In production, specific error messages should be generic or sanitised
     expect(response.errors[0].message).not.toContain('Invalid API Key format');
     expect(response.errors[0].message).toEqual('Invalid input'); // Zod's default for refined errors
     process.env.NODE_ENV = originalNodeEnv;

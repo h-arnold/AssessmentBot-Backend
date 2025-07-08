@@ -18,11 +18,11 @@ This document outlines identified code smells and issues based on the project's 
 
 - [x] **Missing `json-repair` Functionality**: The `jsonrepair` library has been successfully installed. The `JsonParserUtil` now needs to be updated to utilise this library for robust malformed JSON handling, which is critical for "LLM Integration" and "JSON Repair and Parsing" objectives (Stage 7). (Refer to `Stage3/TODO.md` - Green Phase, Note)
 - [x] **`JsonParserUtil` Scope Change**: We removed the tests for this part because jsonrepair was so good at handling malformed JSON. Other validation checks will be needed later on to ensure that the output from the LLM is valid anyway.
-- [ ] **Module Resolution Workaround**: The change to `tsconfig.json` to `commonjs` and the addition of a `postbuild` script to create `dist/package.json` with `"type": "commonjs"` might be a workaround for module resolution issues. Investigate if there's a more idiomatic NestJS/TypeScript solution or if this is a standard pattern. (Refer to `Stage1/TODO.md` - Section 8.2, Note)
+- [x] **Module Resolution Workaround**: The change to `tsconfig.json` to `commonjs` and the addition of a `postbuild` script to create `dist/package.json` with `"type": "commonjs"` might be a workaround for module resolution issues. Investigate if there's a more idiomatic NestJS/TypeScript solution or if this is a standard pattern. (Refer to `Stage1/TODO.md` - Section 8.2, Note)
 
 ## 4. Documentation & Naming Conventions
 
-- [ ] **Inconsistent British English Spelling**: The project mandates British English, but inconsistencies exist:
-  - `sanitise` (British) vs `sanitize` (American) used in `ImplementationOverview.md` and `Stage3/TestCases.md` respectively.
-  - `optimisation` (British) vs `optimization` (American) used in `ImplementationOverview.md`.
+- [x] **Inconsistent British English Spelling**: The project mandates British English, but inconsistencies exist:
+  - `sanitise` (British) vs `sanitise` (American) used in `ImplementationOverview.md` and `Stage3/TestCases.md` respectively.
+  - `optimisation` (British) vs `optimisation` (American) used in `ImplementationOverview.md`.
     All code, comments, and documentation should consistently use British English spellings.

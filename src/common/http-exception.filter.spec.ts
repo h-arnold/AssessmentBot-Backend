@@ -109,7 +109,7 @@ describe('HttpExceptionFilter', () => {
     });
   });
 
-  it('should sanitize sensitive messages in production', () => {
+  it('should sanitise sensitive messages in production', () => {
     const exception = new HttpException(
       'Internal database error',
       HttpStatus.INTERNAL_SERVER_ERROR,

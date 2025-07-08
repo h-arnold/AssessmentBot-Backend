@@ -41,7 +41,7 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
       message = 'Internal server error';
     }
 
-    // Sanitize sensitive messages in production
+    // Sanitise sensitive messages in production
     if (process.env.NODE_ENV === 'production' && status >= 500) {
       message = 'Internal server error';
     }
@@ -57,7 +57,7 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
       method: request.method,
       path: request.url,
       ip: request.ip,
-      headers: this.sanitizeHeaders(request.headers),
+      headers: this.sanitiseHeaders(request.headers),
       userAgent: request.headers['user-agent'],
     };
 
@@ -74,7 +74,7 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
     response.status(status).json(errorResponse);
   }
 
-  private sanitizeHeaders(
+  private sanitiseHeaders(
     headers: Record<string, string | string[]>,
   ): Record<string, string | string[]> {
     const result = { ...headers };
