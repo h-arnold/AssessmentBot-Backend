@@ -73,5 +73,21 @@ describe('ConfigService', () => {
         delete process.env.PORT;
         expect(() => new ConfigService()).toThrow();
     });
+
+    it('should pass with valid NODE_ENV values', () => {
+        const validEnvs = ['development', 'production', 'test'];
+        validEnvs.forEach(env => {
+            process.env.NODE_ENV = env;
+            expect(() => new ConfigService()).not.toThrow();
+        });
+    });
+
+    it('should fail with invalid NODE_ENV values', () => {
+        const invalidEnvs = ['invalid', '', null, undefined];
+        invalidEnvs.forEach(env => {
+            process.env.NODE_ENV = env;
+            expect(() => new ConfigService()).toThrow();
+        });
+    });
   });
 });

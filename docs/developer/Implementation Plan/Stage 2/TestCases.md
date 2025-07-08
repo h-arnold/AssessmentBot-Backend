@@ -47,11 +47,11 @@ Stage 2 implements the `ConfigModule` with Zod-based validation for environment 
   - Remove PORT from environment
   - Expect ZodError to be thrown during module initialization
 
-- [ ] **Test**: `Validation should pass with valid NODE_ENV values`
+- [X] **Test**: `Validation should pass with valid NODE_ENV values`
   - Test with 'development', 'production', 'test'
   - Verify each value is accepted
 
-- [ ] **Test**: `Validation should fail with invalid NODE_ENV values`
+- [X] **Test**: `Validation should fail with invalid NODE_ENV values`
   - Test with 'invalid', '', null, undefined
   - Expect ZodError for each invalid value
 

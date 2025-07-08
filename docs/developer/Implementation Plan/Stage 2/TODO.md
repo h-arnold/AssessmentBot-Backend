@@ -14,8 +14,8 @@
 - [X] Write Zod schema validation tests:
   - [X] `Validation should fail when NODE_ENV is missing`
   - [X] `Validation should fail when PORT is missing`
-  - [ ] `Validation should pass with valid NODE_ENV values`
-  - [ ] `Validation should fail with invalid NODE_ENV values`
+  - [X] `Validation should pass with valid NODE_ENV values`
+  - [X] `Validation should fail with invalid NODE_ENV values`
   - [ ] `PORT should be validated as a number`
   - [ ] `PORT should be within valid range`
 
