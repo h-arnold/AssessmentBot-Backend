@@ -45,6 +45,7 @@ API_KEY=your_api_key_here
     const requiredKeys = ['NODE_ENV', 'PORT', 'APP_NAME', 'APP_VERSION'];
     requiredKeys.forEach(key => {
       expect(exampleConfig).toHaveProperty(key);
+      // eslint-disable-next-line security/detect-object-injection
       expect(exampleConfig[key]).not.toBe('');
     });
   });
