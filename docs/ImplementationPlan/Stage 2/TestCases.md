@@ -68,17 +68,17 @@ Stage 2 implements the `ConfigModule` with Zod-based validation for environment 
 
 #### 2.3 Schema Defaults and Optional Values
 
-- [ ] **Test**: `APP_NAME should return default value when not set`
+- [X] **Test**: `APP_NAME should return default value when not set`
   - Unset `APP_NAME` in the environment
   - Verify `ConfigService` returns the default value 'AssessmentBot-Backend'
 
-- [ ] **Test**: `APP_VERSION should be optional`
+- [X] **Test**: `APP_VERSION should be optional`
   - Unset `APP_VERSION` in the environment
   - Verify that validation passes and the value is `undefined`
 
 ### 3. ConfigService Unit Tests
 
-- [ ] **Test**: `ConfigService should return validated values with correct types`
+- [X] **Test**: `ConfigService should return validated values with correct types`
   - Set `PORT` to a string value like `'3000'`
   - Verify that `ConfigService.get('PORT')` returns a `number`
 
@@ -86,28 +86,28 @@ Stage 2 implements the `ConfigModule` with Zod-based validation for environment 
 
 #### 6.1 .env.example File
 
-- [ ] **Test**: `.env.example should contain all required variables`
+- [X] **Test**: `.env.example should contain all required variables`
   - Parse .env.example file
   - Compare with Zod schema required fields
   - Verify all required variables are documented
 
-- [ ] **Test**: `.env.example should use placeholder values`
+- [X] **Test**: `.env.example should use placeholder values`
   - Verify no real secrets or production values
   - Check that example values follow expected format
   - Ensure comments explain purpose of each variable
 
 #### 6.2 Environment Loading Priority
 
-- [ ] **Test**: `Process environment should override .env file`
+- [X] **Test**: `Process environment should override .env file`
   - Create .env with test values
   - Set different values in process.env
   - Verify process.env values are used
 
-- [ ] **Test**: `Missing .env file should not cause an error`
+- [X] **Test**: `Missing .env file should not cause an error`
   - Ensure no `.env` file is present
   - Verify that the `ConfigModule` initializes without throwing an error
 
-- [ ] **Test**: `Missing .env file should not cause errors`
+- [X] **Test**: `Missing .env file should not cause errors`
   - Remove .env file
   - Set required variables in process.env
   - Verify application starts successfully
