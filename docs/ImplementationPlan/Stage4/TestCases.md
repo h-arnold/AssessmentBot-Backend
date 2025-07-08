@@ -16,50 +16,50 @@ Stage 4 implements the `AuthModule` to secure endpoints using API keys via Passp
 
 #### 1.1 Module Creation and Registration
 
-- [ ] **Test**: `AuthModule` should be defined and importable
+- [x] **Test**: `AuthModule` should be defined and importable
   - Verify the module class exists and is decorated with `@Module()`
   - Ensure `ApiKeyStrategy` and `ApiKeyGuard` are listed in providers and exports
 
-- [ ] **Test**: `AuthModule` should register `ApiKeyStrategy` and `ApiKeyGuard` in its providers and exports
+- [x] **Test**: `AuthModule` should register `ApiKeyStrategy` and `ApiKeyGuard` in its providers and exports
 
 #### 1.2 ApiKeyService Tests
 
-- [ ] **Test**: `ApiKeyService.validate` should accept a valid API key and return user context
+- [x] **Test**: `ApiKeyService.validate` should accept a valid API key and return user context
   - Mock `ConfigService` and verify service returns expected payload for valid key
 
-- [ ] **Test**: `ApiKeyService.validate` should reject an invalid API key
+- [x] **Test**: `ApiKeyService.validate` should reject an invalid API key
   - Verify service throws `UnauthorizedException` or similar on bad key
 
-- [ ] **Test**: `ApiKeyService.validate` should handle missing API key gracefully
+- [x] **Test**: `ApiKeyService.validate` should handle missing API key gracefully
   - Verify service rejects undefined or empty tokens
 
-- [ ] **Test**: `ApiKeyService.validate` should support multiple configured API keys
+- [x] **Test**: `ApiKeyService.validate` should support multiple configured API keys
   - Test acceptance of all valid keys from comma-delimited config
 
-- [ ] **Test**: `ApiKeyService.validate` should enforce API key format (length, character set)
+- [x] **Test**: `ApiKeyService.validate` should enforce API key format (length, character set)
   - Verify malformed keys are rejected pre-lookup
 
-- [ ] **Test**: `ApiKeyService.validate` should load API keys from `ConfigService`
+- [x] **Test**: `ApiKeyService.validate` should load API keys from `ConfigService`
   - Mock environment loading and verify keys array is read correctly
 
-- [ ] **Test**: `ApiKeyService.validate` should log structured authentication attempts without exposing raw API key
+- [x] **Test**: `ApiKeyService.validate` should log structured authentication attempts without exposing raw API key
   - Inspect calls to injected `Logger` for correct structure
 
 #### 1.3 ApiKeyStrategy Tests (delegation)
 
-- [ ] **Test**: `ApiKeyStrategy` should be defined and inject `ApiKeyService`
+- [x] **Test**: `ApiKeyStrategy` should be defined and inject `ApiKeyService`
 
-- [ ] **Test**: `ApiKeyStrategy.validate` should call `ApiKeyService.validate` and return user context
+- [x] **Test**: `ApiKeyStrategy.validate` should call `ApiKeyService.validate` and return user context
 
-- [ ] **Test**: `ApiKeyStrategy.validate` should throw `UnauthorizedException` when service rejects
+- [x] **Test**: `ApiKeyStrategy.validate` should throw `UnauthorizedException` when service rejects
 
-- [ ] **Test**: `ApiKeyStrategy` should log delegation events appropriately
+- [x] **Test**: `ApiKeyStrategy` should log delegation events appropriately
 
 - [ ] Note: key-format and lookup logic is tested in `ApiKeyService` tests
 
 #### 1.4 ApiKeyGuard Tests
 
-- [ ] **Test**: `ApiKeyGuard` should be properly configured with ApiKeyStrategy
+- [x] **Test**: `ApiKeyGuard` should be properly configured with ApiKeyStrategy
   - Verify the guard is correctly set up to use the 'bearer' strategy
   - Test that the guard class extends the appropriate NestJS AuthGuard
 

@@ -32,39 +32,39 @@ Below is a guided, step-by-step process for implementing and testing API key aut
 
 ### 1. AuthModule Unit Tests
 
-- [ ] Create `auth.module.spec.ts` and add tests:
-  - [ ] `AuthModule should be defined and importable`
-  - [ ] `AuthModule should export ApiKeyStrategy and ApiKeyGuard providers`
-  - [ ] `AuthModule should integrate PassportModule correctly`
-  - [ ] `AuthModule should register ApiKeyStrategy and ApiKeyGuard in providers and exports`
+- [x] Create `auth.module.spec.ts` and add tests:
+  - [x] `AuthModule should be defined and importable`
+  - [x] `AuthModule should export ApiKeyStrategy and ApiKeyGuard providers`
+  - [x] `AuthModule should integrate PassportModule correctly`
+  - [x] `AuthModule should register ApiKeyStrategy and ApiKeyGuard in providers and exports`
 
 ### 2. ApiKeyService Tests
 
-- [ ] Create `api-key.service.spec.ts` and add tests:
-  - [ ] `ApiKeyService.validate should accept a valid API key and return user context`
-  - [ ] `ApiKeyService.validate should reject an invalid API key`
-  - [ ] `ApiKeyService.validate should handle missing API key gracefully`
-  - [ ] `ApiKeyService.validate should support multiple configured API keys`
-  - [ ] `ApiKeyService.validate should enforce API key format (length, character set)`
-  - [ ] `ApiKeyService.validate should load API keys from ConfigService`
-  - [ ] `ApiKeyService.validate should log structured authentication attempts without exposing raw API key`
+- [x] Create `api-key.service.spec.ts` and add tests:
+  - [x] `ApiKeyService.validate should accept a valid API key and return user context`
+  - [x] `ApiKeyService.validate should reject an invalid API key`
+  - [x] `ApiKeyService.validate should handle missing API key gracefully`
+  - [x] `ApiKeyService.validate should support multiple configured API keys`
+  - [x] `ApiKeyService.validate should enforce API key format (length, character set)`
+  - [x] `ApiKeyService.validate should load API keys from ConfigService`
+  - [x] `ApiKeyService.validate should log structured authentication attempts without exposing raw API key`
 
 ### 3. ApiKeyStrategy Tests (delegation)
 
-- [ ] Create `api-key.strategy.spec.ts` and add tests:
-  - [ ] `ApiKeyStrategy should be defined and inject ApiKeyService`
-  - [ ] `ApiKeyStrategy.validate should call ApiKeyService.validate and return the user context`
-  - [ ] `ApiKeyStrategy.validate should throw UnauthorizedException when service rejects`
-  - [ ] `ApiKeyStrategy should log delegation events appropriately`
-  - [ ] No direct key-format or lookup logic here (covered in service tests)
+- [x] Create `api-key.strategy.spec.ts` and add tests:
+  - [x] `ApiKeyStrategy should be defined and inject ApiKeyService`
+  - [x] `ApiKeyStrategy.validate should call ApiKeyService.validate and return the user context`
+  - [x] `ApiKeyStrategy.validate should throw UnauthorizedException when service rejects`
+  - [x] `ApiKeyStrategy should log delegation events appropriately`
+  - [x] No direct key-format or lookup logic here (covered in service tests)
 
 ### 4. ApiKeyGuard Tests
 
-- [ ] Create `api-key.guard.spec.ts` and add tests:
-  - [ ] `ApiKeyGuard should be properly configured with ApiKeyStrategy`
-  - [ ] `ApiKeyGuard should extend AuthGuard with 'bearer' strategy`
-  - [ ] `ApiKeyGuard should handle execution context correctly`
-  - [ ] `ApiKeyGuard should preserve request context in authentication failures`
+- [x] Create `api-key.guard.spec.ts` and add tests:
+  - [x] `ApiKeyGuard should be properly configured with ApiKeyStrategy`
+  - [x] `ApiKeyGuard should extend AuthGuard with 'bearer' strategy`
+  - [x] `ApiKeyGuard should handle execution context correctly`
+  - [x] `ApiKeyGuard should preserve request context in authentication failures`
 
 ### 5. Configuration Integration Tests
 
