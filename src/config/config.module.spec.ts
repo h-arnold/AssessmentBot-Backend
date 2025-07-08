@@ -7,6 +7,8 @@ describe('ConfigModule', () => {
   let module: TestingModule;
 
   beforeEach(async () => {
+    process.env.NODE_ENV = 'test';
+    process.env.PORT = '3000';
     module = await Test.createTestingModule({
       imports: [ConfigModule],
     }).compile();

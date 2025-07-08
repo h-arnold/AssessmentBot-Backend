@@ -19,6 +19,8 @@ export class ConfigService {
 
     // Define your schema here
     const configSchema = z.object({
+        NODE_ENV: z.enum(['development', 'production', 'test']),
+        PORT: z.coerce.number().int().min(1).max(65535),
         TEST_VAR: z.string().optional(),
         TEST_VAR_DOTENV: z.string().optional(),
         PRIORITIZED_VAR: z.string().optional(),

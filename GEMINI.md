@@ -44,7 +44,22 @@ Adhere to these principles in all contributions:
 
 To ensure a methodical and traceable development process, the agent *must* adhere to the following workflow:
 
-1.  **Regular Commits**: After completing each logical sub-step of a task (e.g., creating a file, implementing a small feature, fixing a specific bug), commit the changes. Commit messages should be clear, concise, and follow Conventional Commits guidelines.
+### 4.1. TDD Workflow: A Hybrid Approach
+
+While the project's `TODO.md` files may be structured with distinct "Red Phase" (all tests fail) and "Green Phase" (all tests pass) sections for organisational clarity, the agent will employ a hybrid TDD workflow:
+
+1.  **Micro-Cycles (Red-Green-Refactor per Task)**: For each individual task or a small, logical group of tasks on the TODO list, the agent will follow a tight Red-Green-Refactor loop. This involves:
+    *   **Red**: Writing a small number of failing tests that define the specific requirement.
+    *   **Green**: Writing the simplest possible production code to make those specific tests pass.
+    *   **Refactor**: Improving the implementation and test code while keeping the tests green.
+
+2.  **Macro-Verification (End-of-Stage Check)**: After completing all the micro-cycles for a given stage or major feature, the agent will run the *entire* test suite. This ensures that changes made in later micro-cycles have not inadvertently broken functionality that was implemented and tested in earlier cycles.
+
+This hybrid approach provides the immediate feedback and safety of small, iterative cycles while ensuring the overall integrity of the codebase at key integration points.
+
+### 4.2. Commits and Documentation
+
+1.  **Regular Commits**: After completing each logical sub-step (typically after each successful "Green" phase in a micro-cycle), commit the changes. Commit messages should be clear, concise, and follow Conventional Commits guidelines.
 2.  **TODO List Updates**: Immediately after completing a sub-step, update the relevant TODO list (e.g., `docs/developer/Implementation Plan/Stage 1/TODO.md`) to:
     *   Mark the step as complete (`[X]`).
     *   Add any relevant notes or explanations.

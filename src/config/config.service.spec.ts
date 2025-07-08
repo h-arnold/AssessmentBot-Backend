@@ -11,6 +11,8 @@ describe('ConfigService', () => {
   beforeEach(() => {
     // Reset process.env before each test
     process.env = { ...originalEnv };
+    process.env.NODE_ENV = 'test';
+    process.env.PORT = '3000';
   });
 
   afterAll(() => {
@@ -58,6 +60,18 @@ describe('ConfigService', () => {
       }).compile();
       service = module.get<ConfigService>(ConfigService);
       expect(service.get('PRIORITIZED_VAR')).toBe('process_env_value');
+    });
+  });
+
+  describe('Zod schema validation', () => {
+    it('should fail when NODE_ENV is missing', () => {
+        delete process.env.NODE_ENV;
+        expect(() => new ConfigService()).toThrow();
+    });
+
+    it('should fail when PORT is missing', () => {
+        delete process.env.PORT;
+        expect(() => new ConfigService()).toThrow();
     });
   });
 });

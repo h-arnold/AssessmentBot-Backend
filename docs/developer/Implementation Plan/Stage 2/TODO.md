@@ -11,9 +11,9 @@
   - [X] `ConfigService should load variables from .env file`
   - [X] `ConfigService should prioritize process.env over .env file`
 
-- [ ] Write Zod schema validation tests:
-  - [ ] `Validation should fail when NODE_ENV is missing`
-  - [ ] `Validation should fail when PORT is missing`
+- [X] Write Zod schema validation tests:
+  - [X] `Validation should fail when NODE_ENV is missing`
+  - [X] `Validation should fail when PORT is missing`
   - [ ] `Validation should pass with valid NODE_ENV values`
   - [ ] `Validation should fail with invalid NODE_ENV values`
   - [ ] `PORT should be validated as a number`

@@ -39,11 +39,11 @@ Stage 2 implements the `ConfigModule` with Zod-based validation for environment 
 
 #### 2.1 Required Environment Variables
 
-- [ ] **Test**: `Validation should fail when NODE_ENV is missing`
+- [X] **Test**: `Validation should fail when NODE_ENV is missing`
   - Remove NODE_ENV from environment
   - Expect ZodError to be thrown during module initialization
 
-- [ ] **Test**: `Validation should fail when PORT is missing`
+- [X] **Test**: `Validation should fail when PORT is missing`
   - Remove PORT from environment
   - Expect ZodError to be thrown during module initialization
 
