@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, HttpException } from '@nestjs/common';
 
 import { AppService, HealthCheckResponse } from './app.service';
 
