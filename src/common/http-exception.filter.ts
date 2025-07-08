@@ -15,9 +15,20 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
       ? exception.getStatus()
       : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    let message: string = exception instanceof HttpException
-      ? (exception.getResponse() as { message: string | string[] }).message || exception.getResponse() as string
-      : 'Internal server error';
+    let message: string;
+    if (exception instanceof HttpException) {
+      const response = exception.getResponse();
+      if (typeof response === 'string') {
+        message = response;
+      } else if (typeof response === 'object' && response !== null && 'message' in response) {
+        const msg = (response as { message: string | string[] }).message;
+        message = Array.isArray(msg) ? msg.join(', ') : msg;
+      } else {
+        message = 'Internal server error';
+      }
+    } else {
+      message = 'Internal server error';
+    }
 
     // Sanitize sensitive messages in production
     if (process.env.NODE_ENV === 'production' && status >= 500) {
@@ -49,13 +60,10 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
   }
 
   private sanitizeHeaders(headers: Record<string, string | string[]>): Record<string, string | string[]> {
-    const sanitizedHeaders = { ...headers };
-    const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key'];
-    sensitiveHeaders.forEach(header => {
-      if (sanitizedHeaders[header]) {
-        sanitizedHeaders[header] = '[REDACTED]';
-      }
-    });
-    return sanitizedHeaders;
+    const result = { ...headers };
+    if ('authorization' in result) result['authorization'] = '[REDACTED]';
+    if ('cookie' in result) result['cookie'] = '[REDACTED]';
+    if ('x-api-key' in result) result['x-api-key'] = '[REDACTED]';
+    return result;
   }
 }
