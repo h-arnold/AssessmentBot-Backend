@@ -22,29 +22,42 @@ Stage 4 implements the `AuthModule` to secure endpoints using API keys via Passp
 
 - [ ] **Test**: `AuthModule` should register `ApiKeyStrategy` and `ApiKeyGuard` in its providers and exports
 
-#### 1.2 ApiKeyStrategy Tests
+#### 1.2 ApiKeyService Tests
 
-- [ ] **Test**: `ApiKeyStrategy` should validate a correct API key
-  - Mock the key validation logic and verify `validate()` method returns expected user/payload for a valid key
+- [ ] **Test**: `ApiKeyService.validate` should accept a valid API key and return user context
+  - Mock `ConfigService` and verify service returns expected payload for valid key
 
-- [ ] **Test**: `ApiKeyStrategy` should reject an invalid API key
-  - Test that `validate()` method returns `false` or throws `UnauthorizedException` for invalid keys
+- [ ] **Test**: `ApiKeyService.validate` should reject an invalid API key
+  - Verify service throws `UnauthorizedException` or similar on bad key
 
-- [ ] **Test**: `ApiKeyStrategy` should handle missing API key
-  - Verify behavior when no API key is provided in the request
+- [ ] **Test**: `ApiKeyService.validate` should handle missing API key gracefully
+  - Verify service rejects undefined or empty tokens
 
-- [ ] **Test**: `ApiKeyStrategy` should validate multiple configured API keys
-  - Test that multiple valid keys from configuration are all accepted
+- [ ] **Test**: `ApiKeyService.validate` should support multiple configured API keys
+  - Test acceptance of all valid keys from comma-delimited config
 
-- [ ] **Test**: `ApiKeyStrategy` should handle API key format validation
-  - Test rejection of keys that don't meet format requirements (length, character set, etc.)
+- [ ] **Test**: `ApiKeyService.validate` should enforce API key format (length, character set)
+  - Verify malformed keys are rejected pre-lookup
 
-- [ ] **Test**: `ApiKeyStrategy` should attach correct user context to request
-  - Verify that successful authentication attaches expected user/metadata to the request object
+- [ ] **Test**: `ApiKeyService.validate` should load API keys from `ConfigService`
+  - Mock environment loading and verify keys array is read correctly
 
-- [ ] **Test**: `ApiKeyStrategy` should log structured authentication attempts without exposing the raw API key
+- [ ] **Test**: `ApiKeyService.validate` should log structured authentication attempts without exposing raw API key
+  - Inspect calls to injected `Logger` for correct structure
 
-#### 1.3 ApiKeyGuard Tests
+#### 1.3 ApiKeyStrategy Tests (delegation)
+
+- [ ] **Test**: `ApiKeyStrategy` should be defined and inject `ApiKeyService`
+
+- [ ] **Test**: `ApiKeyStrategy.validate` should call `ApiKeyService.validate` and return user context
+
+- [ ] **Test**: `ApiKeyStrategy.validate` should throw `UnauthorizedException` when service rejects
+
+- [ ] **Test**: `ApiKeyStrategy` should log delegation events appropriately
+
+- [ ] Note: key-format and lookup logic is tested in `ApiKeyService` tests
+
+#### 1.4 ApiKeyGuard Tests
 
 - [ ] **Test**: `ApiKeyGuard` should be properly configured with ApiKeyStrategy
   - Verify the guard is correctly set up to use the 'bearer' strategy

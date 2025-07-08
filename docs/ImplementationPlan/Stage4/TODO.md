@@ -1,5 +1,33 @@
 # Stage 4: TODO List - Authentication and API Key Guard
 
+**Overview & Approach**
+Below is a guided, step-by-step process for implementing and testing API key authentication. Follow each numbered phase carefully. If anything feels confusing, re-read these instructions or ask for clarification.
+
+1. ApiKeyService Design & Testing
+   - Create `ApiKeyService` to encapsulate all raw API-key logic: loading from environment, validating format, and matching keys.
+   - Write unit tests for every scenario (valid key, invalid key, missing key, multiple keys, format rules).
+   - Mock `ConfigService` and `Logger` so tests only focus on your service logic.
+
+2. ApiKeyStrategy Delegation
+   - Scaffold `ApiKeyStrategy` that injects your service and simply calls `service.validate(token)`.
+   - Unit-test that the strategy correctly delegates successes and throws `UnauthorizedException` on failures.
+   - Do not re-test key parsing or lookup here—that’s covered in the service tests.
+
+3. ApiKeyGuard Configuration
+   - Implement `ApiKeyGuard` by extending Nest’s `AuthGuard('bearer')` so it uses your strategy.
+   - Write a few shallow tests to confirm the guard class is set up correctly and passes execution context through.
+   - Avoid deep Passport internals—only assert class configuration and error propagation.
+
+4. End-to-End Integration
+   - Use SuperTest to spin up a minimal Nest application with your guard on a protected endpoint.
+   - Test real HTTP flows: missing key, bad key, good key, edge-case headers, and verify consistent error JSON from your global filter.
+   - Cover unprotected routes (like `/health`) still work without a key.
+
+5. Phased Workflow
+   - **Red Phase**: Write failing tests and stubs first (sections 1–4). Run tests and watch them fail.
+   - **Green Phase**: Implement minimal code to make each test pass.
+   - Only move to the next item once all tests in the current item pass.
+
 ## Red Phase: Test-Driven Steps (Write failing tests and stubs)
 
 ### 1. AuthModule Unit Tests
@@ -10,20 +38,27 @@
   - [ ] `AuthModule should integrate PassportModule correctly`
   - [ ] `AuthModule should register ApiKeyStrategy and ApiKeyGuard in providers and exports`
 
-### 2. ApiKeyStrategy Tests
+### 2. ApiKeyService Tests
+
+- [ ] Create `api-key.service.spec.ts` and add tests:
+  - [ ] `ApiKeyService.validate should accept a valid API key and return user context`
+  - [ ] `ApiKeyService.validate should reject an invalid API key`
+  - [ ] `ApiKeyService.validate should handle missing API key gracefully`
+  - [ ] `ApiKeyService.validate should support multiple configured API keys`
+  - [ ] `ApiKeyService.validate should enforce API key format (length, character set)`
+  - [ ] `ApiKeyService.validate should load API keys from ConfigService`
+  - [ ] `ApiKeyService.validate should log structured authentication attempts without exposing raw API key`
+
+### 3. ApiKeyStrategy Tests (delegation)
 
 - [ ] Create `api-key.strategy.spec.ts` and add tests:
-  - [ ] `ApiKeyStrategy should validate a correct API key and return user context`
-  - [ ] `ApiKeyStrategy should reject an invalid API key`
-  - [ ] `ApiKeyStrategy should handle missing API key gracefully`
-  - [ ] `ApiKeyStrategy should validate multiple configured API keys`
-  - [ ] `ApiKeyStrategy should handle API key format validation (length, character set)`
-  - [ ] `ApiKeyStrategy should attach correct user context to request`
-  - [ ] `ApiKeyStrategy should load API keys from ConfigService`
-  - [ ] `ApiKeyStrategy should log authentication attempts and failures`
-  - [ ] `ApiKeyStrategy should log structured authentication attempts and failures without exposing raw API key`
+  - [ ] `ApiKeyStrategy should be defined and inject ApiKeyService`
+  - [ ] `ApiKeyStrategy.validate should call ApiKeyService.validate and return the user context`
+  - [ ] `ApiKeyStrategy.validate should throw UnauthorizedException when service rejects`
+  - [ ] `ApiKeyStrategy should log delegation events appropriately`
+  - [ ] No direct key-format or lookup logic here (covered in service tests)
 
-### 3. ApiKeyGuard Tests
+### 4. ApiKeyGuard Tests
 
 - [ ] Create `api-key.guard.spec.ts` and add tests:
   - [ ] `ApiKeyGuard should be properly configured with ApiKeyStrategy`
@@ -31,7 +66,7 @@
   - [ ] `ApiKeyGuard should handle execution context correctly`
   - [ ] `ApiKeyGuard should preserve request context in authentication failures`
 
-### 4. Configuration Integration Tests
+### 5. Configuration Integration Tests
 
 - [ ] Update `config.service.spec.ts` to include API key validation:
   - [ ] `ConfigService should validate API_KEYS environment variable`
@@ -39,7 +74,7 @@
   - [ ] `ConfigService should support multiple comma-separated API keys`
   - [ ] `ConfigService should fail gracefully on missing API_KEYS`
 
-### 5. E2E Authentication Tests
+### 6. E2E Authentication Tests
 
 - [ ] Create `auth.e2e-spec.ts` and add tests:
   - [ ] `Protected route without API key returns 401 Unauthorized`
