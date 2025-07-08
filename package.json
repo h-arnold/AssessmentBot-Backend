@@ -88,7 +88,7 @@
   },
   "lint-staged": {
     "*.ts": "eslint",
-    "*.{js,ts,json,md}": "prettier --check"
+    "*.{js,ts,json,md}": "prettier --write"
   },
   "repository": {
     "type": "git",
