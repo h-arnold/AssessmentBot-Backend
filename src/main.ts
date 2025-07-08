@@ -7,7 +7,7 @@ import { ZodValidationPipe } from './common/zod-validation.pipe';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   app.useGlobalFilters(new HttpExceptionFilter());
-  app.useGlobalPipes(new ZodValidationPipe());
+  app.useGlobalPipes(new ZodValidationPipe(null));
   await app.listen(3000);
 }
 bootstrap();
