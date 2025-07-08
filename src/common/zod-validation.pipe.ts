@@ -22,7 +22,6 @@ export class ZodValidationPipe implements PipeTransform {
       return parsedValue;
     } catch (error) {
       if (error instanceof ZodError) {
-        this.logger.warn('Validation failed', error.issues);
         const errors =
           process.env.NODE_ENV === 'production'
             ? [{ message: 'Invalid input' }]

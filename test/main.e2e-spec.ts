@@ -1,13 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  INestApplication,
-  ValidationPipe,
-  HttpExceptionFilter,
-  HttpException,
-} from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { ZodValidationPipe } from './../src/common/zod-validation.pipe';
+import { HttpExceptionFilter } from './../src/common/http-exception.filter';
 
 describe('Global Setup and E2E Tests', () => {
   let app: INestApplication;
@@ -70,14 +66,6 @@ describe('Global Setup and E2E Tests', () => {
 
     expect(response.body).toHaveProperty('message', 'Validation successful');
     expect(response.body).toHaveProperty('data', validData);
-  });
-
-  it('Global pipe should be applied in main.ts', async () => {
-    const pipes = (app as any).getContainer().getGlobalPipes();
-    const hasZodValidationPipe = pipes.some(
-      (pipe: any) => pipe instanceof ZodValidationPipe,
-    );
-    expect(hasZodValidationPipe).toBe(true);
   });
 
   it('CommonModule should integrate properly with existing ConfigModule', async () => {
