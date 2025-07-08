@@ -6,8 +6,8 @@
   - [X] `ConfigModule should be defined and importable`
   - [X] `ConfigModule should export ConfigService`
 
-- [ ] Create `config.service.spec.ts` and add tests:
-  - [ ] `ConfigService should load environment variables from process.env`
+- [X] Create `config.service.spec.ts` and add tests:
+  - [X] `ConfigService should load environment variables from process.env`
   - [ ] `ConfigService should load variables from .env file`
   - [ ] `ConfigService should prioritize process.env over .env file`
 
