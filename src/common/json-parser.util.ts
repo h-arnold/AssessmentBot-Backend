@@ -8,6 +8,7 @@ export class JsonParserUtil {
   parse(jsonString: string): unknown {
     try {
       const repairedJsonString = jsonrepair(jsonString);
+      this.logger.log(`Repaired JSON for debug: ${repairedJsonString}`);
       return JSON.parse(repairedJsonString);
     } catch (error) {
       this.logger.warn('JSON parsing failed', error);
