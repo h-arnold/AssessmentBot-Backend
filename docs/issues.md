@@ -17,7 +17,7 @@ This document outlines identified code smells and issues based on the project's 
   - `JsonParserUtil` for irreparable JSON, logging, and error handling.
   - Global setup integration tests for pipes, filters, and logging.
   - Library integration tests for `jsonrepair` and `Zod`.
-- [ ] **`console.error` in Tests**: Relying on `console.error` output in tests for validation failures, while functional, can lead to noisy test output. It is generally better practice to capture and assert on logs programmatically. (Refer to `Stage2/TODO.md` - Notes from Code Review)
+- [x] **`console.error` in Tests**: Relying on `console.error` output in tests for validation failures, while functional, can lead to noisy test output. It is generally better practice to capture and assert on logs programmatically. (Refer to `Stage2/TODO.md` - Notes from Code Review) (commit: bcc1c10)
 
 ## 3. Design & Implementation Discrepancies
 
