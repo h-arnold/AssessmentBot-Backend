@@ -26,12 +26,12 @@ Stage 2 implements the `ConfigModule` with Zod-based validation for environment 
   - Mock process.env with test values
   - Verify variables are accessible through ConfigService
 
-- [ ] **Test**: `ConfigModule should load environment variables from .env file`
+- [X] **Test**: `ConfigModule should load environment variables from .env file`
   - Create temporary .env file with test values
   - Verify variables are loaded when process.env is empty
   - Clean up temporary files after test
 
-- [ ] **Test**: `ConfigModule should prioritize process.env over .env file`
+- [X] **Test**: `ConfigModule should prioritize process.env over .env file`
   - Set same variable in both process.env and .env file with different values
   - Verify process.env value takes precedence
 
