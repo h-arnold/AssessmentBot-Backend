@@ -115,10 +115,13 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 4.1 Integration Smoke Tests
 
-- [ ] **Test**: `JsonParserUtil should parse or repair valid and mildly malformed JSON strings using jsonrepair`
+- [x] **Test**: `JsonParserUtil should parse or repair valid and mildly malformed JSON strings using jsonrepair`
   - Mock the `jsonrepair` library import
   - Provide malformed JSON and verify the library is called correctly
   - Expect successful parsing after repair
+
+- [x] **Test**: `JsonParserUtil should handle circular reference scenarios`
+  - Note: This test was removed as the `jsonrepair` library is designed to repair syntactically incorrect JSON, not to validate semantic issues like circular references. The library correctly parses the provided string, and `JSON.stringify` itself throws an error when encountering circular references in objects.
 
 - [ ] **Test**: `JsonParserUtil should throw BadRequestException for irreparable JSON`
   - Provide a fundamentally broken JSON string
