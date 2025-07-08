@@ -1,6 +1,7 @@
-import { ZodValidationPipe } from './zod-validation.pipe';
-import * as z from 'zod';
 import { BadRequestException, Logger } from '@nestjs/common';
+import * as z from 'zod';
+
+import { ZodValidationPipe } from './zod-validation.pipe';
 
 describe('ZodValidationPipe', () => {
   const schema = z.object({
@@ -19,21 +20,21 @@ describe('ZodValidationPipe', () => {
 
   it('should throw BadRequestException on invalid data', () => {
     const invalidData = { name: 123 };
-    expect(() => pipe.transform(invalidData, {} as any)).toThrow(
+    expect(() => pipe.transform(invalidData, {} as ArgumentMetadata)).toThrow(
       BadRequestException,
     );
   });
 
   it('should return transformed data on valid payload', () => {
     const validData = { name: 'test' };
-    expect(pipe.transform(validData, {} as any)).toEqual(validData);
+    expect(pipe.transform(validData, {} as ArgumentMetadata)).toEqual(validData);
   });
 
   it('should handle edge cases for empty and null values', () => {
-    expect(() => pipe.transform(null, {} as any)).toThrow(
+    expect(() => pipe.transform(null, {} as ArgumentMetadata)).toThrow(
       BadRequestException,
     );
-    expect(() => pipe.transform(undefined, {} as any)).toThrow(
+    expect(() => pipe.transform(undefined, {} as ArgumentMetadata)).toThrow(
       BadRequestException,
     );
   });
@@ -48,12 +49,12 @@ describe('ZodValidationPipe', () => {
 
     it('should validate a valid array', () => {
       const validData = ['a', 'b', 'c'];
-      expect(arrayPipe.transform(validData, {} as any)).toEqual(validData);
+      expect(arrayPipe.transform(validData, {} as ArgumentMetadata)).toEqual(validData);
     });
 
     it('should throw BadRequestException on an invalid array', () => {
       const invalidData = ['a', 1, 'c'];
-      expect(() => arrayPipe.transform(invalidData, {} as any)).toThrow(
+      expect(() => arrayPipe.transform(invalidData, {} as ArgumentMetadata)).toThrow(
         BadRequestException,
       );
     });
@@ -62,7 +63,7 @@ describe('ZodValidationPipe', () => {
   it('should log validation failures', () => {
     const loggerSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
     const invalidData = { name: 123 };
-    expect(() => pipe.transform(invalidData, {} as any)).toThrow(
+    expect(() => pipe.transform(invalidData, {} as ArgumentMetadata)).toThrow(
       BadRequestException,
     );
     expect(loggerSpy).toHaveBeenCalled();

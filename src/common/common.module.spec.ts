@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { CommonModule } from './common.module';
 import { HttpExceptionFilter } from './http-exception.filter';
-import { ZodValidationPipe } from './zod-validation.pipe';
 import { JsonParserUtil } from './json-parser.util';
+import { ZodValidationPipe } from './zod-validation.pipe';
 
 describe('CommonModule', () => {
   let module: TestingModule;

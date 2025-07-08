@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+
 import { JsonParserUtil } from './json-parser.util';
 
 describe('JsonParserUtil', () => {

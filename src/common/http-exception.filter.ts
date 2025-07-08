@@ -6,7 +6,7 @@ import { Request } from 'express';
 export class HttpExceptionFilter extends BaseExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: unknown, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest<Request>();
@@ -15,8 +15,8 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
       ? exception.getStatus()
       : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    let message = exception instanceof HttpException
-      ? (exception.getResponse() as any).message || exception.getResponse()
+    let message: string = exception instanceof HttpException
+      ? (exception.getResponse() as { message: string | string[] }).message || exception.getResponse() as string
       : 'Internal server error';
 
     // Sanitize sensitive messages in production
@@ -48,7 +48,7 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
     response.status(status).json(errorResponse);
   }
 
-  private sanitizeHeaders(headers: Record<string, any>): Record<string, any> {
+  private sanitizeHeaders(headers: Record<string, string | string[]>): Record<string, string | string[]> {
     const sanitizedHeaders = { ...headers };
     const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key'];
     sensitiveHeaders.forEach(header => {
