@@ -1,9 +1,10 @@
 
-import { Injectable } from '@nestjs/common';
-import { z } from 'zod';
-import * as dotenv from 'dotenv';
-import * as path from 'path';
 import * as fs from 'fs';
+import * as path from 'path';
+
+import { Injectable } from '@nestjs/common';
+import * as dotenv from 'dotenv';
+import { z } from 'zod';
 
 // Define the Zod schema for environment variables
 const configSchema = z.object({

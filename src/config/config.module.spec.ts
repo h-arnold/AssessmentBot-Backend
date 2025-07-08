@@ -1,9 +1,11 @@
 
-import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from './config.module';
-import { ConfigService } from './config.service';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { Test, TestingModule } from '@nestjs/testing';
+
+import { ConfigModule } from './config.module';
+import { ConfigService } from './config.service';
 
 describe('ConfigModule', () => {
   let module: TestingModule;
@@ -42,7 +44,7 @@ describe('ConfigModule', () => {
     process.env.APP_VERSION = '1.0.0';
 
     let testModule: TestingModule;
-    let error: any;
+    let error: unknown;
     try {
       testModule = await Test.createTestingModule({
         imports: [ConfigModule],

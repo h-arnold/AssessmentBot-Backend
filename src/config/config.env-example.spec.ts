@@ -1,7 +1,8 @@
 
 import * as fs from 'fs';
-import * as dotenv from 'dotenv';
 import * as path from 'path';
+
+import * as dotenv from 'dotenv';
 import { z } from 'zod';
 
 // Mock the fs module
