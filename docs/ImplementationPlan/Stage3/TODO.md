@@ -26,9 +26,9 @@
    - [x] Create `json-parser.util.spec.ts` and add tests:
      - [x] `JsonParserUtil should successfully parse a valid JSON string`
      - [x] `JsonParserUtil should repair and parse a malformed JSON string`
-     - [x] `JsonParserUtil should handle circular reference scenarios` (Note: Test removed due to library limitations) (commit: 5fc5fb6)
+     - [x] `JsonParserUtil should handle circular reference scenarios` (Note: Test removed due to library limitations, as JSON strings cannot have circular references) (commit: 5fc5fb6)
      - [ ] `JsonParserUtil should handle various JSON edge cases (deep nesting, special characters, Unicode)`
-     - [ ] `JsonParserUtil should throw a BadRequestException for irreparable JSON`
+     - [x] `JsonParserUtil should throw a BadRequestException for irreparable JSON`
 
 5. Global Setup and E2E Tests
    - [ ] Create `main.e2e-spec.ts` to verify global setups:

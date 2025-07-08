@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { JsonParserUtil } from './json-parser.util';
 
 describe('JsonParserUtil', () => {
@@ -21,6 +22,11 @@ describe('JsonParserUtil', () => {
     const json = '{name: "test",}';
     const expected = { name: 'test' };
     expect(util.parse(json)).toEqual(expected);
+  });
+
+  it('should throw a BadRequestException for irreparable JSON', () => {
+    const irreparableJson = '{{invalid json}';
+    expect(() => util.parse(irreparableJson)).toThrow(BadRequestException);
   });
 
   });
