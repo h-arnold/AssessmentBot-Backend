@@ -122,15 +122,14 @@ describe('HttpExceptionFilter', () => {
     filter.catch(exception, mockArgumentsHost as any);
 
     expect(loggerSpy).toHaveBeenCalledWith(
-      `[HTTP Exception] GET /not-found`,
-      JSON.stringify({
-        statusCode: HttpStatus.NOT_FOUND,
-        path: '/not-found',
+      `HTTP ${HttpStatus.NOT_FOUND} - Not Found`,
+      {
         method: 'GET',
+        path: '/not-found',
         ip: '127.0.0.1',
+        headers: { 'user-agent': 'jest' },
         userAgent: 'jest',
-        stack: exception.stack,
-      }),
+      },
     );
   });
 
@@ -148,15 +147,14 @@ describe('HttpExceptionFilter', () => {
     filter.catch(exception, mockArgumentsHost);
 
     expect(loggerSpy).toHaveBeenCalledWith(
-      `[HTTP Exception] GET /not-found`,
-      JSON.stringify({
-        statusCode: HttpStatus.NOT_FOUND,
-        path: '/not-found',
+      `HTTP ${HttpStatus.NOT_FOUND} - Not Found`,
+      {
         method: 'GET',
+        path: '/not-found',
         ip: '127.0.0.1',
+        headers: { 'user-agent': 'jest' },
         userAgent: 'jest',
-        stack: exception.stack,
-      }),
+      },
     );
   });
 
@@ -174,15 +172,15 @@ describe('HttpExceptionFilter', () => {
     filter.catch(exception, mockArgumentsHost);
 
     expect(loggerSpy).toHaveBeenCalledWith(
-      `[HTTP Exception] GET /error`,
-      JSON.stringify({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        path: '/error',
+      `HTTP ${HttpStatus.INTERNAL_SERVER_ERROR} - Internal Server Error`,
+      {
         method: 'GET',
+        path: '/error',
         ip: '127.0.0.1',
+        headers: { 'user-agent': 'jest' },
         userAgent: 'jest',
-        stack: exception.stack,
-      }),
+      },
+      exception.stack,
     );
   });
 });

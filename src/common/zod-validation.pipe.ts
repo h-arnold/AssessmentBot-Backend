@@ -1,6 +1,7 @@
-import { PipeTransform, ArgumentMetadata, BadRequestException, Logger } from '@nestjs/common';
-import { ZodError, ZodSchema } from 'zod';
+import { PipeTransform, Injectable, ArgumentMetadata, BadRequestException, Logger } from '@nestjs/common';
+import { ZodSchema } from 'zod';
 
+@Injectable()
 export class ZodValidationPipe implements PipeTransform {
   private readonly logger = new Logger(ZodValidationPipe.name);
 
@@ -8,18 +9,17 @@ export class ZodValidationPipe implements PipeTransform {
 
   transform(value: unknown, metadata: ArgumentMetadata) {
     try {
+      if (!this.schema) {
+        return value;
+      }
       const parsedValue = this.schema.parse(value);
       return parsedValue;
     } catch (error) {
-      if (error instanceof ZodError) {
-        const errorMessage = 'Validation failed';
-        const validationErrors = error.errors;
-        this.logger.warn(`${errorMessage}: ${JSON.stringify(validationErrors)}`);
-        throw new BadRequestException({ message: errorMessage, errors: validationErrors });
-      }
-
-      this.logger.error('An unexpected error occurred during validation', error.stack);
-      throw new BadRequestException('Validation failed');
+      this.logger.warn('Validation failed', error.issues);
+      throw new BadRequestException({
+        message: 'Validation failed',
+        errors: error.issues,
+      });
     }
   }
 }

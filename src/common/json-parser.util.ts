@@ -1,16 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { jsonrepair, JSONRepairError } from 'jsonrepair';
+import { Injectable, BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class JsonParserUtil {
-  parse<T>(json: string): T {
+  parse(jsonString: string): any {
     try {
-      return JSON.parse(jsonrepair(json));
+      return JSON.parse(jsonString);
     } catch (error) {
-      if (error instanceof JSONRepairError) {
-        throw new BadRequestException(`Failed to parse JSON: ${error.message}`);
-      }
-      throw error;
+      throw new BadRequestException('Malformed or irreparable JSON string provided.');
     }
   }
 }

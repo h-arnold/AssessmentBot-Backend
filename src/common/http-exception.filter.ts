@@ -1,44 +1,61 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { BaseExceptionFilter } from '@nestjs/core';
+import { Request } from 'express';
 
-@Catch(HttpException)
-export class HttpExceptionFilter implements ExceptionFilter {
+@Catch()
+export class HttpExceptionFilter extends BaseExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: HttpException, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
+    const response = ctx.getResponse();
     const request = ctx.getRequest<Request>();
-    const status = exception.getStatus();
 
-    const message = process.env.NODE_ENV === 'production' && status >= 500
-        ? 'Internal server error'
-        : exception.message;
+    const status = exception instanceof HttpException
+      ? exception.getStatus()
+      : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const logContext = {
-      statusCode: status,
-      path: request.url,
-      method: request.method,
-      ip: request.ip,
-      userAgent: request.headers['user-agent'],
-      stack: exception.stack,
-    };
+    let message = exception instanceof HttpException
+      ? (exception.getResponse() as any).message || exception.getResponse()
+      : 'Internal server error';
 
-    const logMessage = `[HTTP Exception] ${request.method} ${request.url}`;
-
-    if (status >= 500) {
-      this.logger.error(logMessage, JSON.stringify(logContext));
-    } else {
-      this.logger.warn(logMessage, JSON.stringify(logContext));
+    // Sanitize sensitive messages in production
+    if (process.env.NODE_ENV === 'production' && status >= 500) {
+      message = 'Internal server error';
     }
 
-    response
-      .status(status)
-      .json({
-        statusCode: status,
-        timestamp: new Date().toISOString(),
-        path: request.url,
-        message,
-      });
+    const errorResponse = {
+      statusCode: status,
+      timestamp: new Date().toISOString(),
+      path: request.url,
+      message: message,
+    };
+
+    const logContext = {
+      method: request.method,
+      path: request.url,
+      ip: request.ip,
+      headers: this.sanitizeHeaders(request.headers),
+      userAgent: request.headers['user-agent'],
+    };
+
+    if (status >= 400 && status < 500) {
+      this.logger.warn(`HTTP ${status} - ${message}`, logContext);
+    } else if (status >= 500) {
+      this.logger.error(`HTTP ${status} - ${message}`, logContext, exception instanceof Error ? exception.stack : undefined);
+    }
+
+    response.status(status).json(errorResponse);
+  }
+
+  private sanitizeHeaders(headers: Record<string, any>): Record<string, any> {
+    const sanitizedHeaders = { ...headers };
+    const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key'];
+    sensitiveHeaders.forEach(header => {
+      if (sanitizedHeaders[header]) {
+        sanitizedHeaders[header] = '[REDACTED]';
+      }
+    });
+    return sanitizedHeaders;
   }
 }

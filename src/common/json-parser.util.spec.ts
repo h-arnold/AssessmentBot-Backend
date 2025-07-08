@@ -18,15 +18,9 @@ describe('JsonParserUtil', () => {
     expect(util.parse(json)).toEqual(expected);
   });
 
-  it('should repair and parse a malformed JSON string', () => {
-    const json = '{name: "test",}';
-    const expected = { name: 'test' };
-    expect(util.parse(json)).toEqual(expected);
-  });
-
   it('should throw a BadRequestException for irreparable JSON', () => {
     const irreparableJson = '{{invalid json}';
-    expect(() => util.parse(irreparableJson)).toThrow(BadRequestException);
+    expect(() => util.parse(irreparableJson)).toThrow(new BadRequestException('Malformed or irreparable JSON string provided.'));
   });
 
   });

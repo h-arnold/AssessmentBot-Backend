@@ -9,7 +9,11 @@ describe('CommonModule', () => {
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      providers: [HttpExceptionFilter, ZodValidationPipe, JsonParserUtil],
+      providers: [
+        HttpExceptionFilter,
+        { provide: ZodValidationPipe, useValue: new ZodValidationPipe(null) }, // Provide a mock instance
+        JsonParserUtil,
+      ],
     }).compile();
   });
 
