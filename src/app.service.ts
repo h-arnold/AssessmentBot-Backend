@@ -27,7 +27,6 @@ export class AppService {
   getHello(): string {
     return 'Hello World!';
   }
-
   getHealth(): HealthCheckResponse {
     return {
       status: 'ok',
