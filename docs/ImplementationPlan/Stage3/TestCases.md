@@ -115,7 +115,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 4.1 Integration Smoke Tests
 
-- [ ] **Test**: `JsonParserUtil should parse or repair valid and mildly malformed JSON strings using jsonrepair` (Blocked: `jsonrepair` library could not be installed)
+- [ ] **Test**: `JsonParserUtil should parse or repair valid and mildly malformed JSON strings using jsonrepair`
   - Mock the `jsonrepair` library import
   - Provide malformed JSON and verify the library is called correctly
   - Expect successful parsing after repair

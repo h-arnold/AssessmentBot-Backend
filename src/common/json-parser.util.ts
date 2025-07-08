@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { jsonrepair } from 'jsonrepair';
 
 @Injectable()
 export class JsonParserUtil {
@@ -6,7 +7,8 @@ export class JsonParserUtil {
 
   parse(jsonString: string): unknown {
     try {
-      return JSON.parse(jsonString);
+      const repairedJsonString = jsonrepair(jsonString);
+      return JSON.parse(repairedJsonString);
     } catch (error) {
       this.logger.warn('JSON parsing failed', error);
       throw new BadRequestException(
