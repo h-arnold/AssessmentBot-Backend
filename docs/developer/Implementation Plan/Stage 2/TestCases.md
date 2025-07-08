@@ -12,11 +12,11 @@ Stage 2 implements the `ConfigModule` with Zod-based validation for environment 
 
 #### 1.1 Module Creation and Registration
 
-- [ ] **Test**: `ConfigModule should be defined and importable`
+- [X] **Test**: `ConfigModule should be defined and importable`
   - Verify the module class exists and can be imported
   - Ensure the module is properly decorated with `@Module()`
 
-- [ ] **Test**: `ConfigModule should export configuration service`
+- [X] **Test**: `ConfigModule should export configuration service`
   - Verify that ConfigService is provided and exportable
   - Ensure other modules can inject the configuration service
 

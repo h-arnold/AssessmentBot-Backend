@@ -2,9 +2,9 @@
 
 #### Red Phase: Test-Driven Steps (Write failing tests and stubs)
 
-- [ ] Create `config.module.spec.ts` and add tests:
-  - [ ] `ConfigModule should be defined and importable`
-  - [ ] `ConfigModule should export ConfigService`
+- [X] Create `config.module.spec.ts` and add tests:
+  - [X] `ConfigModule should be defined and importable`
+  - [X] `ConfigModule should export ConfigService`
 
 - [ ] Create `config.service.spec.ts` and add tests:
   - [ ] `ConfigService should load environment variables from process.env`
