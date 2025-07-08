@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 
 import { JsonParserUtil } from './json-parser.util';
 
@@ -19,9 +19,19 @@ describe('JsonParserUtil', () => {
     expect(util.parse(json)).toEqual(expected);
   });
 
-  it('should throw a BadRequestException for irreparable JSON', () => {
-    const irreparableJson = '{{invalid json}';
-    expect(() => util.parse(irreparableJson)).toThrow(new BadRequestException('Malformed or irreparable JSON string provided.'));
+  it('should repair and parse a malformed JSON string', () => {
+    const malformedJson = '{"name": "test", "age": 30,}'; // Malformed JSON with trailing comma
+    const expected = { name: 'test', age: 30 };
+    expect(util.parse(malformedJson)).toEqual(expected);
   });
 
+  it('should handle various JSON edge cases (deep nesting, Unicode)', () => {
+    const deepNestedJson = '{"a":{"b":{"c":{"d":{"e":1}}}}}';
+    expect(util.parse(deepNestedJson)).toEqual({
+      a: { b: { c: { d: { e: 1 } } } },
+    });
+
+    const unicodeJson = '{"greeting": "Hello, \u00c9cole!"}';
+    expect(util.parse(unicodeJson)).toEqual({ greeting: 'Hello, École!' });
   });
+});

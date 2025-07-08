@@ -189,8 +189,13 @@ SOME_OTHER_VAR=value
     });
 
     it('.env.example should contain all required variables', () => {
-      const fileContent = (fs.readFileSync as jest.Mock)('.env.example', 'utf-8');
-      const lines = fileContent.split('\n').filter((line) => line.trim() !== '' && !line.startsWith('#'));
+      const fileContent = (fs.readFileSync as jest.Mock)(
+        '.env.example',
+        'utf-8',
+      );
+      const lines = fileContent
+        .split('\n')
+        .filter((line) => line.trim() !== '' && !line.startsWith('#'));
       const variablesInFile = lines.map((line) => line.split('=')[0]);
 
       expectedRequiredVars.forEach((variable) => {
@@ -199,7 +204,10 @@ SOME_OTHER_VAR=value
     });
 
     it('.env.example should use placeholder values', () => {
-      const fileContent = (fs.readFileSync as jest.Mock)('.env.example', 'utf-8');
+      const fileContent = (fs.readFileSync as jest.Mock)(
+        '.env.example',
+        'utf-8',
+      );
       expect(fileContent).toContain('your_database_url_here');
       expect(fileContent).toContain('your_api_key_here');
       expect(fileContent).not.toContain('production_secret_key');

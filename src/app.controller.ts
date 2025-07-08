@@ -1,10 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, HttpException } from '@nestjs/common';
 
-<<<<<<< HEAD
 import { AppService, HealthCheckResponse } from './app.service';
-=======
-import { AppService } from './app.service';
->>>>>>> c166268 (Fix: Resolve ESLint security and pre-commit hook blockers)
 
 @Controller()
 export class AppController {
@@ -16,11 +12,12 @@ export class AppController {
   }
 
   @Get('health')
-<<<<<<< HEAD
   getHealth(): HealthCheckResponse {
-=======
-  getHealth(): string {
->>>>>>> c166268 (Fix: Resolve ESLint security and pre-commit hook blockers)
     return this.appService.getHealth();
+  }
+
+  @Get('test-error')
+  testError(): void {
+    throw new HttpException('This is a test error', 400);
   }
 }

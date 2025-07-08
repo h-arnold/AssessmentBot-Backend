@@ -1,4 +1,3 @@
-
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -43,7 +42,7 @@ API_KEY=your_api_key_here
     const exampleConfig = dotenv.parse(exampleContent);
 
     const requiredKeys = ['NODE_ENV', 'PORT', 'APP_NAME', 'APP_VERSION'];
-    requiredKeys.forEach(key => {
+    requiredKeys.forEach((key) => {
       expect(exampleConfig).toHaveProperty(key);
       expect(exampleConfig[key]).not.toBe('');
     });

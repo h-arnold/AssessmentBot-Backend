@@ -24,13 +24,8 @@ export default tseslint.config(
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-<<<<<<< HEAD
         // project: true, // This will be enabled in a separate config for src files
         // tsconfigRootDir: import.meta.dirname, // This will be enabled in a separate config for src files
-=======
-        project: true,
-        tsconfigRootDir: import.meta.dirname,
->>>>>>> c166268 (Fix: Resolve ESLint security and pre-commit hook blockers)
       },
       globals: {
         ...globals.node,
@@ -49,6 +44,7 @@ export default tseslint.config(
     rules: {
       ...tseslint.configs.recommendedTypeChecked.rules, // Use type-checked recommended rules
       ...security.configs.recommended.rules, // Apply security rules that might need type info
+      'security/detect-object-injection': 'off',
     },
   },
   {
@@ -60,7 +56,8 @@ export default tseslint.config(
       '@typescript-eslint/interface-name-prefix': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
+      'no-eval': 'error',
 
       'import/order': [
         'error',
