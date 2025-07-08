@@ -5,7 +5,7 @@
 1. CommonModule Unit Tests
    - [x] Create `common.module.spec.ts` and add tests:
      - [x] `CommonModule should be defined and importable`
-     - [x] `CommonModule should export shared providers (HttpExceptionFilter, ZodValidationPipe, JsonParserUtil)`
+     - [x] `CommonModule should export shared providers (HttpExceptionFilter, ZodValidationPipe, JsonParserUtil)` (commit: e1d0591)
 
 2. HttpExceptionFilter Tests
    - [x] Create `http-exception.filter.spec.ts` and add tests:
