@@ -63,3 +63,8 @@
 - [X] Import `ConfigModule` in `AppModule`
 
 - [X] Run tests and ensure all previously failing tests now pass
+
+**Notes from Code Review:**
+- The `security/detect-object-injection` warnings in `src/config/config.env-example.spec.ts` and `src/config/config.service.ts` are considered false positives. The keys being accessed are either hardcoded or constrained by Zod schemas, meaning they are not user-controlled and do not pose a security risk.
+- The `no-explicit-any` warning in `src/config/config.module.spec.ts` was resolved by changing `any` to `unknown` for error handling.
+- `console.error` messages in test output for validation failures are expected and indicate correct test behavior.
