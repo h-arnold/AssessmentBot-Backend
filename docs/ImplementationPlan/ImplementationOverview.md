@@ -26,6 +26,8 @@ This document outlines the high-level implementation stages for the Assessment B
   - Application fails to start on missing or invalid env vars
   - Unit tests for validation pipe coverage
 
+**Note on Zod Validation Scope:** For Stage 2, Zod validation focuses solely on environment variables at application startup. The `ZodValidationPipe` for request payload validation will be implemented in Stage 3 as part of the `CommonModule`.
+
 
 
 ## Stage 3: Common Utilities and Error Handling

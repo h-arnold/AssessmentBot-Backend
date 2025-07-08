@@ -1,35 +1,48 @@
 
 import { Injectable } from '@nestjs/common';
-import * as dotenv from 'dotenv';
-import * as fs from 'fs';
-import * as path from 'path';
 import { z } from 'zod';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+import * as fs from 'fs';
+
+// Define the Zod schema for environment variables
+const configSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']),
+  PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+  APP_NAME: z.string().default('AssessmentBot-Backend'),
+  APP_VERSION: z.string().optional(),
+});
+
+// Infer the type from the schema
+export type Config = z.infer<typeof configSchema>;
 
 @Injectable()
 export class ConfigService {
-  private readonly envConfig: Record<string, any>;
+  private readonly config: Config;
 
   constructor() {
+    let loadedEnv = {};
     const envFilePath = path.resolve(process.cwd(), '.env');
-    const envConfig = fs.existsSync(envFilePath)
-      ? dotenv.parse(fs.readFileSync(envFilePath))
-      : {};
+    if (fs.existsSync(envFilePath)) {
+      loadedEnv = dotenv.parse(fs.readFileSync(envFilePath));
+    }
 
-    const config = { ...envConfig, ...process.env };
+    // Merge loaded .env variables with process.env, prioritizing process.env
+    const combinedEnv = { ...loadedEnv, ...process.env };
 
-    // Define your schema here
-    const configSchema = z.object({
-        NODE_ENV: z.enum(['development', 'production', 'test']),
-        PORT: z.coerce.number().int().min(1).max(65535),
-        TEST_VAR: z.string().optional(),
-        TEST_VAR_DOTENV: z.string().optional(),
-        PRIORITIZED_VAR: z.string().optional(),
-    });
-
-    this.envConfig = configSchema.parse(config);
+    // Validate environment variables against the schema
+    try {
+      this.config = configSchema.parse(combinedEnv);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.error('Environment variable validation failed:', error.errors);
+        throw new Error('Invalid environment configuration.');
+      }
+      throw error;
+    }
   }
 
-  get(key: string): any {
-    return this.envConfig[key];
+  get<T extends keyof Config>(key: T): Config[T] {
+    return this.config[key];
   }
 }

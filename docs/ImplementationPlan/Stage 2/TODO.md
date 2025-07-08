@@ -19,31 +19,31 @@
   - [X] `PORT should be validated as a number`
   - [X] `PORT should be within valid range`
 
-- [ ] Add schema tests for optional and default values:
-  - [ ] `APP_NAME should return default value when not set`
-  - [ ] `APP_VERSION should be optional and return undefined`
+- [X] Add schema tests for optional and default values: (commit: 888ccc0)
+  - [X] `APP_NAME should return default value when not set`
+  - [X] `APP_VERSION should be optional and return undefined`
 
-- [ ] Add service-level tests for value types:
-  - [ ] `ConfigService should return PORT as a number`
+- [X] Add service-level tests for value types: (commit: 888ccc0)
+  - [X] `ConfigService should return PORT as a number`
 
-- [ ] Add `.env.example` tests:
-  - [ ] `.env.example should contain all required variables`
-  - [ ] `.env.example should use placeholder values`
+- [X] Add `.env.example` tests:
+  - [X] `.env.example should contain all required variables`
+  - [X] `.env.example should use placeholder values`
 
-- [ ] Add environment loading priority & missing file tests:
-  - [ ] `Process environment should override .env file`
-  - [ ] `Missing .env file should not cause errors`
+- [X] Add environment loading priority & missing file tests:
+  - [X] `Process environment should override .env file`
+  - [X] `Missing .env file should not cause errors`
 
 - [ ] Add a note to clarify the scope of Zod validation in Stage 2:
   - [ ] Add a note to `README.md` or `ImplementationOverview.md` clarifying that the `ZodValidationPipe` is part of Stage 3 and that Stage 2 focuses on environment validation at startup.
 
 #### Green Phase: Implementation and Verification (Make tests pass)
 
-- [ ] Scaffold `ConfigModule` and `ConfigService` with stub methods to satisfy imports
+- [X] Scaffold `ConfigModule` and `ConfigService` with stub methods to satisfy imports
 
-- [ ] Implement environment loading logic using `dotenv`
+- [X] Implement environment loading logic using `dotenv`
 
-- [ ] Define Zod schema:
+- [X] Define Zod schema:
 
   ```typescript
   const configSchema = z.object({
@@ -54,12 +54,12 @@
   });
   ```
 
-- [ ] Integrate validation into `ConfigModule.forRoot()` and apply schema
+- [X] Integrate validation into `ConfigModule.forRoot()` and apply schema
 
-- [ ] Populate `ConfigService` to return validated config values
+- [X] Populate `ConfigService` to return validated config values
 
-- [ ] Create `.env.example` file with placeholders for all required variables
+- [X] Create `.env.example` file with placeholders for all required variables
 
-- [ ] Import `ConfigModule` in `AppModule`
+- [X] Import `ConfigModule` in `AppModule`
 
-- [ ] Run tests and ensure all previously failing tests now pass
+- [X] Run tests and ensure all previously failing tests now pass
