@@ -1,4 +1,3 @@
-
 import stylistic from '@stylistic/eslint-plugin';
 import prettier from 'eslint-config-prettier';
 import importPlugin from 'eslint-plugin-import';
@@ -24,8 +23,8 @@ export default tseslint.config(
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        // project: true,
-        // tsconfigRootDir: import.meta.dirname,
+        // project: true, // This will be enabled in a separate config for src files
+        // tsconfigRootDir: import.meta.dirname, // This will be enabled in a separate config for src files
       },
       globals: {
         ...globals.node,
@@ -34,10 +33,22 @@ export default tseslint.config(
     },
   },
   {
+    files: ['src/**/*.ts'], // Apply type-aware rules only to src TypeScript files
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
     rules: {
-      ...tseslint.configs.recommended.rules,
+      ...tseslint.configs.recommendedTypeChecked.rules, // Use type-checked recommended rules
+      ...security.configs.recommended.rules, // Apply security rules that might need type info
+    },
+  },
+  {
+    rules: {
+      ...tseslint.configs.recommended.rules, // General TypeScript rules (non-type-aware)
       ...jest.configs.recommended.rules,
-      ...security.configs.recommended.rules,
       ...prettier.rules,
 
       '@typescript-eslint/interface-name-prefix': 'off',
