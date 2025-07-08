@@ -12,15 +12,15 @@
      - [x] `HttpExceptionFilter should format custom error response with timestamp and path`
      - [x] `HttpExceptionFilter should sanitize sensitive messages in production`
      - [x] `HttpExceptionFilter should include request context (method, path, IP, headers) in logs`
-     - [x] `HttpExceptionFilter should use warn level for 4xx errors and error level for 5xx errors`
+     - [x] `HttpExceptionFilter should use warn level for 4xx errors and error level for 5xx errors` (commit: f927ab5)
 
 3. ZodValidationPipe Tests
-   - [ ] Create `zod-validation.pipe.spec.ts` and add tests:
-     - [ ] `ZodValidationPipe should throw BadRequestException on invalid data`
-     - [ ] `ZodValidationPipe should return transformed data on valid payload`
-     - [ ] `ZodValidationPipe should handle edge cases for empty and null values`
-     - [ ] `ZodValidationPipe should handle array validation scenarios`
-     - [ ] `ZodValidationPipe should log validation failures`
+   - [x] Create `zod-validation.pipe.spec.ts` and add tests:
+     - [x] `ZodValidationPipe should throw BadRequestException on invalid data`
+     - [x] `ZodValidationPipe should return transformed data on valid payload`
+     - [x] `ZodValidationPipe should handle edge cases for empty and null values`
+     - [x] `ZodValidationPipe should handle array validation scenarios`
+     - [x] `ZodValidationPipe should log validation failures`
 
 4. JsonParserUtil Tests
    - [ ] Create `json-parser.util.spec.ts` and add tests:

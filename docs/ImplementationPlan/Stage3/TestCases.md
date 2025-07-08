@@ -59,23 +59,23 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 3.1 Validation Behavior
 
-- [ ] **Test**: `ZodValidationPipe should throw BadRequestException on invalid data`
+- [x] **Test**: `ZodValidationPipe should throw BadRequestException on invalid data`
   - Define Zod schema for a simple DTO (e.g., `{ name: string().min(1) }`)
   - Pass invalid payload to pipe and expect a `BadRequestException` with validation errors
 
-- [ ] **Test**: `ZodValidationPipe should return transformed data on valid payload`
+- [x] **Test**: `ZodValidationPipe should return transformed data on valid payload`
   - Pass valid payload matching schema; expect returned value correctly typed and transformed
 
 - [ ] **Test**: `ZodValidationPipe should handle nested validation schemas`
   - Define complex nested Zod schema with multiple validation rules
   - Test both valid and invalid nested payloads
 
-- [ ] **Test**: `ZodValidationPipe should handle edge cases for empty and null values`
+- [x] **Test**: `ZodValidationPipe should handle edge cases for empty and null values`
   - Test with empty payloads: `{}`, `null`, `undefined`
   - Test with empty strings, empty arrays, and empty objects
   - Verify appropriate validation responses for each edge case
 
-- [ ] **Test**: `ZodValidationPipe should handle array validation scenarios`
+- [x] **Test**: `ZodValidationPipe should handle array validation scenarios`
   - Test with array schemas containing various validation rules
   - Test with empty arrays, arrays with invalid items, and mixed valid/invalid arrays
   - Verify error messages specify which array items failed validation
@@ -101,7 +101,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 3.4 Logging Integration
 
-- [ ] **Test**: `ZodValidationPipe should log validation failures`
+- [x] **Test**: `ZodValidationPipe should log validation failures`
   - Mock NestJS Logger and verify validation failure logging
   - Expect log entries to include request details and validation errors
 
