@@ -15,4 +15,9 @@ export class AppController {
   getHealth(): HealthCheckResponse {
     return this.appService.getHealth();
   }
+
+  @Get('test-error')
+  testError(): void {
+    throw new HttpException('This is a test error', 400);
+  }
 }

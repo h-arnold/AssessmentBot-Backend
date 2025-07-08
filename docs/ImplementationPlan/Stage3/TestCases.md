@@ -40,7 +40,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 2.2 Logging Integration
 
-- [ ] **Test**: `HttpExceptionFilter should log errors with structured format`
+- [x] **Test**: `HttpExceptionFilter should log errors with structured format`
   - Mock NestJS Logger and verify error logging occurs
   - Expect log entries to include: timestamp, level, message, stack trace, request context
 
@@ -82,7 +82,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 3.2 Error Response Consistency
 
-- [ ] **Test**: `ZodValidationPipe should format validation errors consistently`
+- [x] **Test**: `ZodValidationPipe should format validation errors consistently`
   - Test with multiple validation failures
   - Verify error response matches NestJS standard format with detailed field-level errors
 
@@ -92,11 +92,11 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 3.3 Controller Integration
 
-- [ ] **Test**: `Controller endpoint should return 400 for invalid payload`
+- [x] **Test**: `Controller endpoint should return 400 for invalid payload`
   - Use Supertest to POST invalid JSON to an endpoint using the pipe
   - Expect 400 response with details of which fields failed validation
 
-- [ ] **Test**: `Controller endpoint should process valid payload successfully`
+- [x] **Test**: `Controller endpoint should process valid payload successfully`
   - POST valid data; expect 200 OK and correct response body
 
 #### 3.4 Logging Integration
@@ -115,7 +115,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 4.1 Integration Smoke Tests
 
-- [ ] **Test**: `JsonParserUtil should parse or repair valid and mildly malformed JSON strings using jsonrepair`
+- [ ] **Test**: `JsonParserUtil should parse or repair valid and mildly malformed JSON strings using jsonrepair` (Blocked: `jsonrepair` library could not be installed)
   - Mock the `jsonrepair` library import
   - Provide malformed JSON and verify the library is called correctly
   - Expect successful parsing after repair
@@ -123,13 +123,13 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 - [x] **Test**: `JsonParserUtil should handle circular reference scenarios`
   - Note: This test was removed as the `jsonrepair` library is designed to repair syntactically incorrect JSON, not to validate semantic issues like circular references. The library correctly parses the provided string, and `JSON.stringify` itself throws an error when encountering circular references in objects.
 
-- [ ] **Test**: `JsonParserUtil should throw BadRequestException for irreparable JSON`
+- [x] **Test**: `JsonParserUtil should throw BadRequestException for irreparable JSON`
   - Provide a fundamentally broken JSON string
   - Expect a custom `UnparseableJsonResponseException` to be thrown
 
 #### 4.2 Error Handling and Logging
 
-- [ ] **Test**: `JsonParserUtil should log parsing attempts and failures`
+- [x] **Test**: `JsonParserUtil should log parsing attempts and failures`
   - Mock NestJS Logger and verify logging occurs during parsing
   - Expect log entries for both successful repairs and failures
 
@@ -147,21 +147,21 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 5.2 Error Response Integration
 
-- [ ] **Test**: `Global error handling should produce consistent responses across all endpoints`
+- [x] **Test**: `Global error handling should produce consistent responses across all endpoints`
   - Test multiple endpoints with different error types
   - Verify all responses follow the same error format structure
 
-- [ ] **Test**: `Global validation and exception handling should work together`
+- [x] **Test**: `Global validation and exception handling should work together`
   - Send invalid payload to trigger validation pipe
   - Verify exception filter properly formats the validation error response
 
 #### 5.3 Logging Integration
 
-- [ ] **Test**: `Global setup should enable structured logging across all utilities`
+- [x] **Test**: `Global setup should enable structured logging across all utilities`
   - Mock NestJS Logger globally
   - Trigger various error scenarios and verify consistent log format across utilities
 
-- [ ] **Test**: `CommonModule should integrate properly with existing ConfigModule`
+- [x] **Test**: `CommonModule should integrate properly with existing ConfigModule`
   - Verify CommonModule works correctly when imported alongside ConfigModule
   - Test that configuration-dependent behavior works as expected
   - Ensure no conflicts between Stage 2 and Stage 3 implementations
@@ -170,15 +170,15 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 6.1 Security Validation
 
-- [ ] **Test**: `Error responses should not expose sensitive information`
+- [x] **Test**: `Error responses should not expose sensitive information`
   - Test with various error scenarios including database errors, file system errors
   - Verify error messages are sanitized for production use
 
-- [ ] **Test**: `Large payload validation should not cause memory issues`
+- [ ] **Test**: `Large payload validation should not cause memory issues` (Not Implemented)
   - Send very large JSON payloads to validation pipe
   - Verify graceful handling without memory leaks
 
-- [ ] **Test**: `Error responses should handle various sensitive information scenarios`
+- [ ] **Test**: `Error responses should handle various sensitive information scenarios` (Not Implemented)
   - Test with database connection errors, file system errors, API key leaks
   - Test with internal server paths, configuration values, and stack traces
   - Verify all sensitive information is properly masked based on environment
@@ -186,11 +186,11 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 6.2 Performance Testing
 
-- [ ] **Test**: `JsonParserUtil should handle large JSON strings efficiently`
+- [ ] **Test**: `JsonParserUtil should handle large JSON strings efficiently` (Not Implemented)
   - Test with JSON strings of various sizes (1KB, 10KB, 100KB)
   - Verify reasonable parsing time and memory usage
 
-- [ ] **Test**: `ZodValidationPipe should validate complex schemas efficiently`
+- [ ] **Test**: `ZodValidationPipe should validate complex schemas efficiently` (Not Implemented)
   - Test with deeply nested schemas and large arrays
   - Verify validation completes within acceptable time limits
 
@@ -198,21 +198,21 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 7.1 jsonrepair Library
 
-- [ ] **Test**: `jsonrepair library should be properly imported and accessible`
+- [ ] **Test**: `jsonrepair library should be properly imported and accessible` (Blocked: `jsonrepair` library could not be installed)
   - Verify the library is correctly installed and can be imported
   - Test basic functionality of the library directly
 
-- [ ] **Test**: `JsonParserUtil should handle all jsonrepair supported scenarios`
+- [ ] **Test**: `JsonParserUtil should handle all jsonrepair supported scenarios` (Blocked: `jsonrepair` library could not be installed)
   - Test various malformed JSON types that jsonrepair can fix
   - Verify comprehensive coverage of library capabilities
 
 #### 7.2 Zod Library Integration
 
-- [ ] **Test**: `ZodValidationPipe should leverage full Zod validation capabilities`
+- [x] **Test**: `ZodValidationPipe should leverage full Zod validation capabilities`
   - Test with various Zod schema types (strings, numbers, arrays, objects)
   - Verify advanced Zod features like transforms and refinements work correctly
 
-- [ ] **Test**: `Zod error messages should be properly formatted for end users`
+- [x] **Test**: `Zod error messages should be properly formatted for end users`
   - Test with various validation failures
   - Verify error messages are user-friendly and actionable
 

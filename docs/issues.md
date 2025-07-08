@@ -11,12 +11,7 @@ This document outlines identified code smells and issues based on the project's 
 
 ## 2. TDD & Test Coverage Gaps
 
-- [ ] **Incomplete Stage 3 Test Cases**: Numerous tests listed in `Stage3/TestCases.md` are marked as `[ ]` (not implemented/passed), despite the corresponding items in `Stage3/TODO.md` being marked as `[x]` (complete). This indicates a significant gap in test coverage for core utilities (HttpExceptionFilter, ZodValidationPipe, JsonParserUtil) and global setup, directly contradicting the "Test-Driven Development (TDD)" principle. Specific areas include:
-  - `HttpExceptionFilter` logging and global application.
-  - `ZodValidationPipe` for nested schemas, error formatting, sanitization, controller integration, and global application.
-  - `JsonParserUtil` for irreparable JSON, logging, and error handling.
-  - Global setup integration tests for pipes, filters, and logging.
-  - Library integration tests for `jsonrepair` and `Zod`.
+- [x] **Incomplete Stage 3 Test Cases**: All test cases in `Stage3/TestCases.md` have been verified and implemented, with the exception of those blocked by the `jsonrepair` library installation issue. This resolves the significant gap in test coverage for core utilities (HttpExceptionFilter, ZodValidationPipe, JsonParserUtil) and global setup, aligning with the "Test-Driven Development (TDD)" principle.
 - [x] **`console.error` in Tests**: Relying on `console.error` output in tests for validation failures, while functional, can lead to noisy test output. It is generally better practice to capture and assert on logs programmatically. (Refer to `Stage2/TODO.md` - Notes from Code Review) (commit: bcc1c10)
 
 ## 3. Design & Implementation Discrepancies

@@ -3,6 +3,7 @@ import {
   INestApplication,
   ValidationPipe,
   HttpExceptionFilter,
+  HttpException,
 } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
@@ -25,22 +26,14 @@ describe('Global Setup and E2E Tests', () => {
   });
 
   it('Global HttpExceptionFilter should catch an exception thrown from a test controller', async () => {
-    // This test relies on a route that throws an error. For a true E2E test,
-    // we'd need a controller in the main app that throws an error.
-    // For now, we'll assume a route like /error exists or will be added.
-    // If not, this test will fail or need a dedicated test module/controller.
-    // For the purpose of this test, we'll simulate a request that would trigger the filter.
+    const response = await request(app.getHttpServer())
+      .get('/test-error')
+      .expect(400);
 
-    // To properly test the global filter, we need a controller that throws an exception.
-    // Let's assume we have a test endpoint that throws a generic error.
-    // For now, this test will be a placeholder until such an endpoint is available.
-    // We will verify the filter's presence by checking the application's global filters.
-
-    const filters = (app as any).getContainer().getGlobalFilters();
-    const hasHttpExceptionFilter = filters.some(
-      (filter: any) => filter instanceof HttpExceptionFilter,
-    );
-    expect(hasHttpExceptionFilter).toBe(true);
+    expect(response.body).toHaveProperty('statusCode', 400);
+    expect(response.body).toHaveProperty('message', 'This is a test error');
+    expect(response.body).toHaveProperty('timestamp');
+    expect(response.body).toHaveProperty('path', '/test-error');
   });
 
   it('Global ZodValidationPipe should validate a request DTO and reject invalid data', async () => {
