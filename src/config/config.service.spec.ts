@@ -89,5 +89,17 @@ describe('ConfigService', () => {
             expect(() => new ConfigService()).toThrow();
         });
     });
+
+    it('should be validated as a number', () => {
+        process.env.PORT = 'not_a_number';
+        expect(() => new ConfigService()).toThrow();
+    });
+
+    it('should be within valid range', () => {
+        process.env.PORT = '0';
+        expect(() => new ConfigService()).toThrow();
+        process.env.PORT = '65536';
+        expect(() => new ConfigService()).toThrow();
+    });
   });
 });

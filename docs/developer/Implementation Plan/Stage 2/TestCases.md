@@ -57,12 +57,12 @@ Stage 2 implements the `ConfigModule` with Zod-based validation for environment 
 
 #### 2.2 Data Type Validation
 
-- [ ] **Test**: `PORT should be validated as a number`
+- [X] **Test**: `PORT should be validated as a number`
   - Test with valid numeric strings ('3000', '8080')
   - Test with invalid values ('abc', '', 'port')
   - Verify numeric conversion works correctly
 
-- [ ] **Test**: `PORT should be within valid range`
+- [X] **Test**: `PORT should be within valid range`
   - Test with ports below 1024 (should fail in production)
   - Test with valid ports (3000-8080 range)
 

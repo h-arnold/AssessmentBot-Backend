@@ -16,8 +16,8 @@
   - [X] `Validation should fail when PORT is missing`
   - [X] `Validation should pass with valid NODE_ENV values`
   - [X] `Validation should fail with invalid NODE_ENV values`
-  - [ ] `PORT should be validated as a number`
-  - [ ] `PORT should be within valid range`
+  - [X] `PORT should be validated as a number`
+  - [X] `PORT should be within valid range`
 
 - [ ] Add schema tests for optional and default values:
   - [ ] `APP_NAME should return default value when not set`
