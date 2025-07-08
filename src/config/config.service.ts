@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import { z } from 'zod';
 
@@ -19,6 +19,7 @@ export type Config = z.infer<typeof configSchema>;
 @Injectable()
 export class ConfigService {
   private readonly config: Config;
+  private readonly logger = new Logger(ConfigService.name);
 
   constructor() {
     let loadedEnv = {};
@@ -35,7 +36,10 @@ export class ConfigService {
       this.config = configSchema.parse(combinedEnv);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('Environment variable validation failed:', error.errors);
+        this.logger.error(
+          'Environment variable validation failed:',
+          error.errors,
+        );
         throw new Error('Invalid environment configuration.');
       }
       throw error;

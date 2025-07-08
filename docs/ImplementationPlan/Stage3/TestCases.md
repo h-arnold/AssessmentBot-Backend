@@ -51,7 +51,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 2.3 Integration Test
 
-- [ ] **Test**: `Global filter should be applied in main.ts`
+- [x] **Test**: `Global filter should be applied in main.ts`
   - Boot the application with filter registered globally
   - Call an endpoint that throws an exception; verify response format matches filter logic
 
@@ -66,7 +66,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 - [x] **Test**: `ZodValidationPipe should return transformed data on valid payload`
   - Pass valid payload matching schema; expect returned value correctly typed and transformed
 
-- [ ] **Test**: `ZodValidationPipe should handle nested validation schemas`
+- [x] **Test**: `ZodValidationPipe should handle nested validation schemas`
   - Define complex nested Zod schema with multiple validation rules
   - Test both valid and invalid nested payloads
 
@@ -86,7 +86,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
   - Test with multiple validation failures
   - Verify error response matches NestJS standard format with detailed field-level errors
 
-- [ ] **Test**: `ZodValidationPipe should sanitize validation error messages`
+- [x] **Test**: `ZodValidationPipe should sanitize validation error messages`
   - Include potentially sensitive data in validation schema
   - Verify error messages don't expose internal schema details
 
@@ -107,7 +107,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 3.5 Integration Test
 
-- [ ] **Test**: `Global pipe should be applied in main.ts`
+- [x] **Test**: `Global pipe should be applied in main.ts`
   - Boot the application with the pipe registered globally
   - Call an endpoint with an invalid payload and verify the response format matches the pipe's error structure
 
@@ -133,7 +133,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
   - Mock NestJS Logger and verify logging occurs during parsing
   - Expect log entries for both successful repairs and failures
 
-- [ ] **Test**: `JsonParserUtil should throw error on unrepairable JSON`
+- [x] **Test**: `JsonParserUtil should throw error on unrepairable JSON`
   - Provide completely invalid JSON; expect thrown error indicating parse failure
   - Verify error includes original malformed input for debugging (in non-production)
 
@@ -141,7 +141,7 @@ Stage 3 implements the `CommonModule` to provide shared utilities and global exc
 
 #### 5.1 Main.ts Configuration
 
-- [ ] **Test**: `Application should register global pipe and filter`
+- [x] **Test**: `Application should register global pipe and filter`
   - Inspect Nest application metadata or perform an E2E call
   - Verify that `ZodValidationPipe` and `HttpExceptionFilter` are active globally
 

@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 
 import { JsonParserUtil } from './json-parser.util';
 
@@ -23,6 +23,24 @@ describe('JsonParserUtil', () => {
     const irreparableJson = '{{invalid json}';
     expect(() => util.parse(irreparableJson)).toThrow(
       new BadRequestException('Malformed or irreparable JSON string provided.'),
+    );
+  });
+
+  it('should log parsing attempts and failures', () => {
+    const loggerSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const validJson = '{"key": "value"}';
+    util.parse(validJson);
+    expect(loggerSpy).not.toHaveBeenCalled(); // No warning for successful parse
+
+    const invalidJson = 'invalid json';
+    try {
+      util.parse(invalidJson);
+    } catch (e) {
+      // Expected to throw, so catch it
+    }
+    expect(loggerSpy).toHaveBeenCalledWith(
+      'JSON parsing failed', // The message from JsonParserUtil
+      expect.any(Error), // The error object
     );
   });
 });

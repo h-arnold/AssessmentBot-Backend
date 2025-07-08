@@ -16,7 +16,6 @@ This document outlines identified code smells and issues based on the project's 
   - `ZodValidationPipe` for nested schemas, error formatting, sanitization, controller integration, and global application.
   - `JsonParserUtil` for irreparable JSON, logging, and error handling.
   - Global setup integration tests for pipes, filters, and logging.
-  - Security and performance tests for error responses, large payloads, and efficiency.
   - Library integration tests for `jsonrepair` and `Zod`.
 - [ ] **`console.error` in Tests**: Relying on `console.error` output in tests for validation failures, while functional, can lead to noisy test output. It is generally better practice to capture and assert on logs programmatically. (Refer to `Stage2/TODO.md` - Notes from Code Review)
 

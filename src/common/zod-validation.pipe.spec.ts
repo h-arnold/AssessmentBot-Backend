@@ -72,4 +72,134 @@ describe('ZodValidationPipe', () => {
     );
     expect(loggerSpy).toHaveBeenCalled();
   });
+
+  describe('nested validation', () => {
+    const nestedSchema = z.object({
+      user: z.object({
+        id: z.string().uuid(),
+        name: z.string().min(3),
+        address: z.object({
+          street: z.string(),
+          city: z.string(),
+        }),
+      }),
+      products: z.array(
+        z.object({
+          productId: z.string(),
+          quantity: z.number().min(1),
+        }),
+      ),
+    });
+    let nestedPipe: ZodValidationPipe;
+
+    beforeEach(() => {
+      nestedPipe = new ZodValidationPipe(nestedSchema);
+    });
+
+    it('should handle nested validation schemas with valid data', () => {
+      const validData = {
+        user: {
+          id: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
+          name: 'John Doe',
+          address: {
+            street: '123 Main St',
+            city: 'Anytown',
+          },
+        },
+        products: [
+          { productId: 'prod1', quantity: 1 },
+          { productId: 'prod2', quantity: 5 },
+        ],
+      };
+      expect(nestedPipe.transform(validData, {} as ArgumentMetadata)).toEqual(
+        validData,
+      );
+    });
+
+    it('should throw BadRequestException for invalid nested data', () => {
+      const invalidData = {
+        user: {
+          id: 'invalid-uuid', // Invalid UUID
+          name: 'Jo', // Too short
+          address: {
+            street: '123 Main St',
+            city: 'Anytown',
+          },
+        },
+        products: [
+          { productId: 'prod1', quantity: 0 }, // Quantity too low
+        ],
+      };
+      expect(() =>
+        nestedPipe.transform(invalidData, {} as ArgumentMetadata),
+      ).toThrow(BadRequestException);
+    });
+  });
+
+  it('should format validation errors consistently', () => {
+    const schemaWithMultipleErrors = z.object({
+      email: z.string().email(),
+      password: z.string().min(8),
+    });
+    const pipeWithMultipleErrors = new ZodValidationPipe(
+      schemaWithMultipleErrors,
+    );
+
+    const invalidData = {
+      email: 'invalid-email',
+      password: 'short',
+    };
+
+    let thrownError: unknown;
+    try {
+      pipeWithMultipleErrors.transform(invalidData, {} as ArgumentMetadata);
+    } catch (error) {
+      thrownError = error;
+    }
+    expect(thrownError).toBeInstanceOf(BadRequestException);
+    const response = (
+      thrownError as BadRequestException
+    ).getResponse() as ZodErrorResponse;
+    expect(response).toHaveProperty('message', 'Validation failed');
+    expect(response).toHaveProperty('errors');
+    expect(Array.isArray(response.errors)).toBe(true);
+    expect(response.errors).toHaveLength(2);
+    expect(response.errors[0]).toHaveProperty('path', ['email']);
+    expect(response.errors[1]).toHaveProperty('path', ['password']);
+  });
+
+  it('should sanitize validation error messages in production', () => {
+    const sensitiveSchema = z.object({
+      apiKey: z.string().refine((val) => val.startsWith('sk-'), {
+        message: 'Invalid API Key format',
+      }),
+    });
+    const sensitivePipe = new ZodValidationPipe(sensitiveSchema);
+
+    const originalNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+
+    let prodError: unknown;
+    try {
+      sensitivePipe.transform({ apiKey: 'invalid' }, {} as ArgumentMetadata);
+    } catch (error) {
+      prodError = error;
+    }
+    expect(prodError).toBeInstanceOf(BadRequestException);
+    const response = (
+      prodError as BadRequestException
+    ).getResponse() as ZodErrorResponse;
+    expect(response).toHaveProperty('message', 'Validation failed');
+    expect(response).toHaveProperty('errors');
+    expect(Array.isArray(response.errors)).toBe(true);
+    // In production, specific error messages should be generic or sanitized
+    expect(response.errors[0].message).not.toContain('Invalid API Key format');
+    expect(response.errors[0].message).toEqual('Invalid input'); // Zod's default for refined errors
+    process.env.NODE_ENV = originalNodeEnv;
+  });
 });
+
+type ZodErrorResponse = {
+  message: string;
+  errors: Array<{ path?: unknown[]; message?: string }>;
+};
