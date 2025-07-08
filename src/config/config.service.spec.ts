@@ -87,7 +87,16 @@ describe('ConfigService', () => {
     });
 
     it('should prioritize process.env over .env file', async () => {
-      fs.writeFileSync('.env', 'APP_VERSION=dotenv_version');
+      // Mock .env file existence and content
+      (fs.existsSync as jest.Mock).mockImplementation((filePath) => {
+        return filePath.includes('.env');
+      });
+      (fs.readFileSync as jest.Mock).mockImplementation((filePath) => {
+        if (filePath.includes('.env')) {
+          return 'APP_VERSION=dotenv_version';
+        }
+        return ''; // Default for other files
+      });
       process.env.APP_VERSION = 'process_env_version';
       const module: TestingModule = await Test.createTestingModule({
         providers: [ConfigService],
