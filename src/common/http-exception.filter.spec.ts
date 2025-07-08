@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Logger, ArgumentsHost } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Logger,
+  ArgumentsHost,
+} from '@nestjs/common';
 
 import { HttpExceptionFilter } from './http-exception.filter';
 
@@ -15,7 +20,10 @@ describe('HttpExceptionFilter', () => {
 
   it('should format custom error response with timestamp and path', () => {
     // Create a test exception with a custom message and status
-    const exception = new HttpException('Test Exception', HttpStatus.BAD_REQUEST);
+    const exception = new HttpException(
+      'Test Exception',
+      HttpStatus.BAD_REQUEST,
+    );
     // Mock the response object's json and status methods
     const mockJson = jest.fn();
     const mockStatus = jest.fn().mockImplementation(() => ({
@@ -68,11 +76,26 @@ describe('HttpExceptionFilter', () => {
      */
     const mockArgumentsHost: ArgumentsHost = {
       switchToHttp: mockHttpArgumentsHost,
-      getArgByIndex: function <T = unknown>(index: number): T { return undefined as T; },
-      getArgs: function <T extends unknown[] = unknown[]>(): T { return [] as T; },
-      getType: function <TContext extends string = 'http' | 'rpc' | 'ws' | 'graphql'>(): TContext { return 'http' as TContext; },
-      switchToRpc: jest.fn(() => ({ getData: jest.fn(), getContext: jest.fn() })),
-      switchToWs: jest.fn(() => ({ getData: jest.fn(), getClient: jest.fn(), getPattern: jest.fn() })),
+      getArgByIndex: function <T = unknown>(index: number): T {
+        return undefined as T;
+      },
+      getArgs: function <T extends unknown[] = unknown[]>(): T {
+        return [] as T;
+      },
+      getType: function <
+        TContext extends string = 'http' | 'rpc' | 'ws' | 'graphql',
+      >(): TContext {
+        return 'http' as TContext;
+      },
+      switchToRpc: jest.fn(() => ({
+        getData: jest.fn(),
+        getContext: jest.fn(),
+      })),
+      switchToWs: jest.fn(() => ({
+        getData: jest.fn(),
+        getClient: jest.fn(),
+        getPattern: jest.fn(),
+      })),
     };
     // Call the filter's catch method with the mocked exception and arguments host
     filter.catch(exception, mockArgumentsHost);
@@ -87,10 +110,15 @@ describe('HttpExceptionFilter', () => {
   });
 
   it('should sanitize sensitive messages in production', () => {
-    const exception = new HttpException('Internal database error', HttpStatus.INTERNAL_SERVER_ERROR);
+    const exception = new HttpException(
+      'Internal database error',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
     const mockJson = jest.fn();
     const mockStatus = jest.fn().mockImplementation(() => ({ json: mockJson }));
-    const mockGetResponse = jest.fn().mockImplementation(() => ({ status: mockStatus }));
+    const mockGetResponse = jest
+      .fn()
+      .mockImplementation(() => ({ status: mockStatus }));
     /**
      * Mocks the behavior of a request object for testing purposes.
      *
@@ -142,7 +170,9 @@ describe('HttpExceptionFilter', () => {
     const exception = new HttpException('Not Found', HttpStatus.NOT_FOUND);
     const mockJson = jest.fn();
     const mockStatus = jest.fn().mockImplementation(() => ({ json: mockJson }));
-    const mockGetResponse = jest.fn().mockImplementation(() => ({ status: mockStatus }));
+    const mockGetResponse = jest
+      .fn()
+      .mockImplementation(() => ({ status: mockStatus }));
     const mockGetRequest = jest.fn().mockImplementation(() => ({
       url: '/not-found',
       method: 'GET',
@@ -203,7 +233,12 @@ describe('HttpExceptionFilter', () => {
       switchToHttp: () => ({
         getRequest: function <T = unknown>(): T {
           // Return a fake request object with required properties
-          return { url: '/not-found', method: 'GET', ip: '127.0.0.1', headers: { 'user-agent': 'jest' } } as T;
+          return {
+            url: '/not-found',
+            method: 'GET',
+            ip: '127.0.0.1',
+            headers: { 'user-agent': 'jest' },
+          } as T;
         },
         getResponse: function <T = unknown>(): T {
           // Return a fake response object with a status method
@@ -236,8 +271,13 @@ describe('HttpExceptionFilter', () => {
 
   it('should use error level for 5xx errors', () => {
     // This test checks that 5xx errors are logged with error level
-    const exception = new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
-    const loggerSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    const exception = new HttpException(
+      'Internal Server Error',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+    const loggerSpy = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation();
     // The following function signatures are required to satisfy strict linter and type checks
     function statusFn2(): { json: () => void } {
       return { json: (): void => {} };
@@ -246,7 +286,12 @@ describe('HttpExceptionFilter', () => {
       switchToHttp: () => ({
         getRequest: function <T = unknown>(): T {
           // Return a fake request object with required properties
-          return { url: '/error', method: 'GET', ip: '127.0.0.1', headers: { 'user-agent': 'jest' } } as T;
+          return {
+            url: '/error',
+            method: 'GET',
+            ip: '127.0.0.1',
+            headers: { 'user-agent': 'jest' },
+          } as T;
         },
         getResponse: function <T = unknown>(): T {
           // Return a fake response object with a status method

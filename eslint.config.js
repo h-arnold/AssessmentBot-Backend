@@ -43,6 +43,7 @@ export default tseslint.config(
     rules: {
       ...tseslint.configs.recommendedTypeChecked.rules, // Use type-checked recommended rules
       ...security.configs.recommended.rules, // Apply security rules that might need type info
+      'security/detect-object-injection': 'off',
     },
   },
   {

@@ -1,4 +1,3 @@
-
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -44,7 +43,6 @@ export class ConfigService {
   }
 
   get<T extends keyof Config>(key: T): Config[T] {
-    // eslint-disable-next-line security/detect-object-injection
     return this.config[key];
   }
 }

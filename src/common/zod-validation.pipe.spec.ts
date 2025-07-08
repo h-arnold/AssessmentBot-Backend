@@ -27,7 +27,9 @@ describe('ZodValidationPipe', () => {
 
   it('should return transformed data on valid payload', () => {
     const validData = { name: 'test' };
-    expect(pipe.transform(validData, {} as ArgumentMetadata)).toEqual(validData);
+    expect(pipe.transform(validData, {} as ArgumentMetadata)).toEqual(
+      validData,
+    );
   });
 
   it('should handle edge cases for empty and null values', () => {
@@ -49,14 +51,16 @@ describe('ZodValidationPipe', () => {
 
     it('should validate a valid array', () => {
       const validData = ['a', 'b', 'c'];
-      expect(arrayPipe.transform(validData, {} as ArgumentMetadata)).toEqual(validData);
+      expect(arrayPipe.transform(validData, {} as ArgumentMetadata)).toEqual(
+        validData,
+      );
     });
 
     it('should throw BadRequestException on an invalid array', () => {
       const invalidData = ['a', 1, 'c'];
-      expect(() => arrayPipe.transform(invalidData, {} as ArgumentMetadata)).toThrow(
-        BadRequestException,
-      );
+      expect(() =>
+        arrayPipe.transform(invalidData, {} as ArgumentMetadata),
+      ).toThrow(BadRequestException);
     });
   });
 

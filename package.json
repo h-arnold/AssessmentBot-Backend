@@ -87,7 +87,8 @@
     "testEnvironment": "node"
   },
   "lint-staged": {
-    "*.ts": "eslint --fix"
+    "*.ts": "eslint",
+    "*.{js,ts,json,md}": "prettier --check"
   },
   "repository": {
     "type": "git",

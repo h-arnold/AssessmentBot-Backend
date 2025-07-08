@@ -1,6 +1,9 @@
-
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe, HttpExceptionFilter } from '@nestjs/common';
+import {
+  INestApplication,
+  ValidationPipe,
+  HttpExceptionFilter,
+} from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { ZodValidationPipe } from './../src/common/zod-validation.pipe';
@@ -34,7 +37,9 @@ describe('Global Setup and E2E Tests', () => {
     // We will verify the filter's presence by checking the application's global filters.
 
     const filters = (app as any).getContainer().getGlobalFilters();
-    const hasHttpExceptionFilter = filters.some((filter: any) => filter instanceof HttpExceptionFilter);
+    const hasHttpExceptionFilter = filters.some(
+      (filter: any) => filter instanceof HttpExceptionFilter,
+    );
     expect(hasHttpExceptionFilter).toBe(true);
   });
 
@@ -43,7 +48,9 @@ describe('Global Setup and E2E Tests', () => {
     // We will verify the pipe's presence by checking the application's global pipes.
 
     const pipes = (app as any).getContainer().getGlobalPipes();
-    const hasZodValidationPipe = pipes.some((pipe: any) => pipe instanceof ZodValidationPipe);
+    const hasZodValidationPipe = pipes.some(
+      (pipe: any) => pipe instanceof ZodValidationPipe,
+    );
     expect(hasZodValidationPipe).toBe(true);
   });
 

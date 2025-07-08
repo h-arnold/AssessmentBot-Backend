@@ -6,7 +6,9 @@ export class JsonParserUtil {
     try {
       return JSON.parse(jsonString);
     } catch (error) {
-      throw new BadRequestException('Malformed or irreparable JSON string provided.');
+      throw new BadRequestException(
+        'Malformed or irreparable JSON string provided.',
+      );
     }
   }
 }

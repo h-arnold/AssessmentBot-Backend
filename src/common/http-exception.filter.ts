@@ -1,4 +1,10 @@
-import { Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import {
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
 import { Request } from 'express';
 
@@ -11,16 +17,21 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
     const response = ctx.getResponse();
     const request = ctx.getRequest<Request>();
 
-    const status = exception instanceof HttpException
-      ? exception.getStatus()
-      : HttpStatus.INTERNAL_SERVER_ERROR;
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
 
     let message: string;
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
       if (typeof response === 'string') {
         message = response;
-      } else if (typeof response === 'object' && response !== null && 'message' in response) {
+      } else if (
+        typeof response === 'object' &&
+        response !== null &&
+        'message' in response
+      ) {
         const msg = (response as { message: string | string[] }).message;
         message = Array.isArray(msg) ? msg.join(', ') : msg;
       } else {
@@ -53,13 +64,19 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
     if (status >= 400 && status < 500) {
       this.logger.warn(`HTTP ${status} - ${message}`, logContext);
     } else if (status >= 500) {
-      this.logger.error(`HTTP ${status} - ${message}`, logContext, exception instanceof Error ? exception.stack : undefined);
+      this.logger.error(
+        `HTTP ${status} - ${message}`,
+        logContext,
+        exception instanceof Error ? exception.stack : undefined,
+      );
     }
 
     response.status(status).json(errorResponse);
   }
 
-  private sanitizeHeaders(headers: Record<string, string | string[]>): Record<string, string | string[]> {
+  private sanitizeHeaders(
+    headers: Record<string, string | string[]>,
+  ): Record<string, string | string[]> {
     const result = { ...headers };
     if ('authorization' in result) result['authorization'] = '[REDACTED]';
     if ('cookie' in result) result['cookie'] = '[REDACTED]';
