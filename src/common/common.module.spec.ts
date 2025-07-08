@@ -31,5 +31,4 @@ describe('CommonModule', () => {
     expect(pipe).toBeDefined();
     expect(util).toBeDefined();
   });
-  
 });

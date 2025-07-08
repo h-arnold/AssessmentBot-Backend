@@ -39,10 +39,10 @@ describe('HttpExceptionFilter', () => {
     }
     /**
      * Mocks the `ArgumentsHost` interface for HTTP requests in NestJS unit tests.
-     * 
+     *
      * This mock provides implementations for `getResponse`, `getRequest`, and `getNext` methods,
      * allowing tests to simulate the behavior of the HTTP context within exception filters or interceptors.
-     * 
+     *
      * @returns An object with mocked `getResponse`, `getRequest`, and `getNext` methods.
      */
     const mockHttpArgumentsHost = jest.fn().mockImplementation(() => ({
@@ -52,10 +52,10 @@ describe('HttpExceptionFilter', () => {
     }));
     /**
      * A mock implementation of the NestJS `ArgumentsHost` interface for use in unit tests.
-     * 
+     *
      * This mock provides stubbed methods for switching between HTTP, RPC, and WebSocket contexts,
      * as well as retrieving arguments and context types. The HTTP context is provided by `mockHttpArgumentsHost`.
-     * 
+     *
      * Methods:
      * - `switchToHttp`: Returns the mocked HTTP arguments host.
      * - `getArgByIndex`: Returns `undefined` for any index, typed as generic `T`.
@@ -63,7 +63,7 @@ describe('HttpExceptionFilter', () => {
      * - `getType`: Always returns `'http'` as the context type.
      * - `switchToRpc`: Returns a mock object with stubbed `getData` and `getContext` methods.
      * - `switchToWs`: Returns a mock object with stubbed `getData`, `getClient`, and `getPattern` methods.
-     * 
+     *
      * Useful for simulating the behavior of `ArgumentsHost` in exception filters and other NestJS constructs during testing.
      */
     const mockArgumentsHost: ArgumentsHost = {
@@ -93,13 +93,13 @@ describe('HttpExceptionFilter', () => {
     const mockGetResponse = jest.fn().mockImplementation(() => ({ status: mockStatus }));
     /**
      * Mocks the behavior of a request object for testing purposes.
-     * 
+     *
      * This mock function simulates an HTTP request with predefined properties:
      * - `url`: The request URL (`/test`).
      * - `method`: The HTTP method used (`POST`).
      * - `ip`: The IP address of the requester (`127.0.0.1`).
      * - `headers`: An object containing request headers (with `'user-agent': 'jest'`).
-     * 
+     *
      * @returns An object representing a mock HTTP request.
      */
     const mockGetRequest = jest.fn().mockImplementation(() => ({
@@ -156,10 +156,10 @@ describe('HttpExceptionFilter', () => {
     }));
     /**
      * Mock implementation of the `ArgumentsHost` interface used for testing purposes.
-     * 
+     *
      * This mock object provides stubbed methods to simulate the behavior of NestJS's `ArgumentsHost`,
      * allowing for controlled testing of exception filters and other components that depend on the host context.
-     * 
+     *
      * @property switchToHttp - Mocked method to simulate switching to HTTP context.
      * @property getArgByIndex - Jest mock function to retrieve an argument by index.
      * @property getArgs - Jest mock function to retrieve all arguments.

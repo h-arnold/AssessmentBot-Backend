@@ -1,4 +1,3 @@
-
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -25,7 +24,7 @@ describe('ConfigService', () => {
     process.env = { ...originalEnv };
     process.env.NODE_ENV = 'test';
     process.env.PORT = '3000';
-    
+
     delete process.env.APP_VERSION; // Ensure APP_VERSION is clean for tests that expect it to be undefined
 
     // Clear all fs mocks before each test
@@ -108,36 +107,36 @@ describe('ConfigService', () => {
 
   describe('Zod schema validation', () => {
     it('should fail when NODE_ENV is missing', () => {
-        delete process.env.NODE_ENV;
-        expect(() => new ConfigService()).toThrow();
+      delete process.env.NODE_ENV;
+      expect(() => new ConfigService()).toThrow();
     });
 
     it('should pass with valid NODE_ENV values', () => {
-        const validEnvs = ['development', 'production', 'test'];
-        validEnvs.forEach(env => {
-            process.env.NODE_ENV = env;
-            expect(() => new ConfigService()).not.toThrow();
-        });
+      const validEnvs = ['development', 'production', 'test'];
+      validEnvs.forEach((env) => {
+        process.env.NODE_ENV = env;
+        expect(() => new ConfigService()).not.toThrow();
+      });
     });
 
     it('should fail with invalid NODE_ENV values', () => {
-        const invalidEnvs = ['invalid', '', null, undefined];
-        invalidEnvs.forEach(env => {
-            process.env.NODE_ENV = env;
-            expect(() => new ConfigService()).toThrow();
-        });
+      const invalidEnvs = ['invalid', '', null, undefined];
+      invalidEnvs.forEach((env) => {
+        process.env.NODE_ENV = env;
+        expect(() => new ConfigService()).toThrow();
+      });
     });
 
     it('should be validated as a number', () => {
-        process.env.PORT = 'not_a_number';
-        expect(() => new ConfigService()).toThrow();
+      process.env.PORT = 'not_a_number';
+      expect(() => new ConfigService()).toThrow();
     });
 
     it('should be within valid range', () => {
-        process.env.PORT = '0';
-        expect(() => new ConfigService()).toThrow();
-        process.env.PORT = '65536';
-        expect(() => new ConfigService()).toThrow();
+      process.env.PORT = '0';
+      expect(() => new ConfigService()).toThrow();
+      process.env.PORT = '65536';
+      expect(() => new ConfigService()).toThrow();
     });
   });
 
@@ -191,10 +190,10 @@ SOME_OTHER_VAR=value
 
     it('.env.example should contain all required variables', () => {
       const fileContent = (fs.readFileSync as jest.Mock)('.env.example', 'utf-8');
-      const lines = fileContent.split('\n').filter(line => line.trim() !== '' && !line.startsWith('#'));
-      const variablesInFile = lines.map(line => line.split('=')[0]);
+      const lines = fileContent.split('\n').filter((line) => line.trim() !== '' && !line.startsWith('#'));
+      const variablesInFile = lines.map((line) => line.split('=')[0]);
 
-      expectedRequiredVars.forEach(variable => {
+      expectedRequiredVars.forEach((variable) => {
         expect(variablesInFile).toContain(variable);
       });
     });
