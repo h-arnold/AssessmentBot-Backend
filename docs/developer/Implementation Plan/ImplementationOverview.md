@@ -2,7 +2,8 @@
 
 This document outlines the high-level implementation stages for the Assessment Bot Backend. Each stage builds upon the previous, resulting in a modular, testable, and maintainable application.
 
-## Stage 1: Project Initialization and Setup
+## ✅ (COMPLETE) Stage 1: Project Initialization and Setup
+
 - **Objectives**: Scaffold a NestJS application, configure TypeScript, and set up version control and linting.  
 - **Deliverables**:
   - NestJS monorepo created via Nest CLI
@@ -15,6 +16,7 @@ This document outlines the high-level implementation stages for the Assessment B
   - Health check endpoint (`/health`) returns application status and version
 
 ## Stage 2: Configuration and Environment Management
+
 - **Objectives**: Implement `ConfigModule` to load and validate environment variables using Zod schemas.
 - **Deliverables**:
   - `ConfigModule` with Zod-based validation pipe
@@ -24,7 +26,10 @@ This document outlines the high-level implementation stages for the Assessment B
   - Application fails to start on missing or invalid env vars
   - Unit tests for validation pipe coverage
 
+
+
 ## Stage 3: Common Utilities and Error Handling
+
 - **Objectives**: Create shared utilities and global exception filters.
 - **Deliverables**:
   - `CommonModule` exporting `HttpExceptionFilter`, `ZodValidationPipe`, and `JsonParserUtil`
@@ -35,6 +40,7 @@ This document outlines the high-level implementation stages for the Assessment B
   - Unit tests for each utility
 
 ## Stage 4: Authentication and API Key Guard
+
 - **Objectives**: Secure endpoints with API Key authentication using Passport.js.
 - **Deliverables**:
   - `AuthModule` containing `ApiKeyStrategy` and `ApiKeyGuard`
@@ -45,6 +51,7 @@ This document outlines the high-level implementation stages for the Assessment B
   - Unit tests for guard and strategy logic
 
 ## Stage 5: Assessor Feature Module
+
 - **Objectives**: Develop the `AssessorModule`, controllers, DTOs, and services.
 - **Deliverables**:
   - `AssessorController` with CRUD endpoints for assessment tasks
@@ -55,6 +62,7 @@ This document outlines the high-level implementation stages for the Assessment B
   - Unit tests for controller and service layer
 
 ## Stage 6: LLM Integration
+
 - **Objectives**: Implement `LLMModule` and service hierarchy for prompt handling.
 - **Deliverables**:
   - `Prompt` base class and `TextPrompt`, `TablePrompt`, `ImagePrompt` implementations
@@ -68,6 +76,7 @@ This document outlines the high-level implementation stages for the Assessment B
   - Prompt templates load correctly from markdown files
 
 ## Stage 7: JSON Repair and Parsing
+
 - **Objectives**: Robustly handle LLM responses, repairing malformed JSON.
 - **Deliverables**:
   - Integration of `json-repair` library in `JsonParserUtil`
@@ -77,6 +86,7 @@ This document outlines the high-level implementation stages for the Assessment B
   - Unit tests covering edge cases of malformed data
 
 ## Stage 8: Logging and Throttling
+
 - **Objectives**: Add structured logging and rate limiting.
 - **Deliverables**:
   - `LoggerModule` with NestJS Logger integration
@@ -87,6 +97,7 @@ This document outlines the high-level implementation stages for the Assessment B
   - Rate limits enforced; tests simulate throttling behavior
 
 ## Stage 9: API Documentation (Swagger)
+
 - **Objectives**: Generate OpenAPI spec and interactive docs.
 - **Deliverables**:
   - `SwaggerModule` setup in `AppModule`
@@ -97,6 +108,7 @@ This document outlines the high-level implementation stages for the Assessment B
   - E2E test for API docs endpoint
 
 ## Stage 10: Testing, CI/CD, and Deployment
+
 - **Objectives**: Finalize tests, integrate CI, and prepare deployment pipelines.
 - **Deliverables**:
   - Unit and E2E tests in Jest, coverage reports
