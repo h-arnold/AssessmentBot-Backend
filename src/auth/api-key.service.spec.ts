@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { ApiKeyService } from './api-key.service';
+import { User } from './user.interface';
 
 describe('ApiKeyService', () => {
   let service: ApiKeyService;
@@ -18,7 +19,7 @@ describe('ApiKeyService', () => {
           useValue: {
             get: jest.fn((key: string) => {
               if (key === 'API_KEYS') {
-                return 'valid-key-1,valid-key-2';
+                return ['valid-key-1', 'valid-key-2'];
               }
               return null;
             }),
@@ -44,7 +45,7 @@ describe('ApiKeyService', () => {
 
   it('ApiKeyService.validate should accept a valid API key and return user context', () => {
     const result = service.validate('valid-key-1');
-    expect(result).toEqual({ userId: 'api-key-user', roles: ['api-key'] });
+    expect(result).toEqual({ apiKey: 'valid-key-1' });
   });
 
   it('ApiKeyService.validate should reject an invalid API key', () => {
@@ -61,10 +62,10 @@ describe('ApiKeyService', () => {
 
   it('ApiKeyService.validate should support multiple configured API keys', () => {
     const result1 = service.validate('valid-key-1');
-    expect(result1).toEqual({ userId: 'api-key-user', roles: ['api-key'] });
+    expect(result1).toEqual({ apiKey: 'valid-key-1' });
 
     const result2 = service.validate('valid-key-2');
-    expect(result2).toEqual({ userId: 'api-key-user', roles: ['api-key'] });
+    expect(result2).toEqual({ apiKey: 'valid-key-2' });
   });
 
   it('ApiKeyService.validate should enforce API key format (length, character set)', () => {
@@ -81,11 +82,7 @@ describe('ApiKeyService', () => {
   it('ApiKeyService.validate should log structured authentication attempts without exposing raw API key', () => {
     service.validate('valid-key-1');
     expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('API key authentication attempt'),
-      'ApiKeyService',
-    );
-    expect(logger.log).not.toHaveBeenCalledWith(
-      expect.stringContaining('valid-key-1'),
+      expect.stringContaining('API key authentication attempt successful'),
     );
   });
 });

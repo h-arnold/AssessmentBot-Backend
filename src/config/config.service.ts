@@ -14,9 +14,8 @@ const configSchema = z.object({
   API_KEYS: z
     .string()
     .optional()
-    .transform((val) =>
-      val ? val.split(',').map((s) => s.trim()) : undefined,
-    ),
+    .transform((val) => (val ? val.split(',').map((s) => s.trim()) : undefined))
+    .pipe(z.array(z.string().regex(/^[a-zA-Z0-9_-]+$/)).optional()),
 });
 
 // Infer the type from the schema

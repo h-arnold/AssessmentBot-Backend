@@ -68,28 +68,28 @@ Below is a guided, step-by-step process for implementing and testing API key aut
 
 ### 5. Configuration Integration Tests
 
-- [ ] Update `config.service.spec.ts` to include API key validation:
-  - [ ] `ConfigService should validate API_KEYS environment variable`
-  - [ ] `ConfigService should reject malformed API keys at startup`
-  - [ ] `ConfigService should support multiple comma-separated API keys`
-  - [ ] `ConfigService should fail gracefully on missing API_KEYS`
-  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
+- [x] Update `config.service.spec.ts` to include API key validation:
+  - [x] `ConfigService should validate API_KEYS environment variable`
+  - [x] `ConfigService should reject malformed API keys at startup`
+  - [x] `ConfigService should support multiple comma-separated API keys`
+  - [x] `ConfigService should fail gracefully on missing API_KEYS`
+  - [x] Commit your changes. Note the commit id here: `39fedb6`
 
 ### 6. E2E Authentication Tests
 
-- [ ] Create `auth.e2e-spec.ts` and add tests:
-  - [ ] `Protected route without API key returns 401 Unauthorized`
-  - [ ] `Protected route with invalid API key returns 401 Unauthorized`
-  - [ ] `Protected route with valid API key returns 200 OK`
-  - [ ] `Unprotected routes remain accessible without API key`
-  - [ ] `Unauthorized responses use consistent error format from HttpExceptionFilter`
-  - [ ] `Malformed Authorization header returns 401 Unauthorized`
-  - [ ] `Empty Authorization header returns 401 Unauthorized`
-  - [ ] `API key validation is case-sensitive`
-  - [ ] `API key validation handles whitespace correctly`
-  - [ ] `/health endpoint remains accessible without authentication`
-  - [ ] `Protected route with valid API key returns 200 OK and includes user context in response`
-  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
+- [x] Create `auth.e2e-spec.ts` and add tests:
+  - [x] `Protected route without API key returns 401 Unauthorized`
+  - [x] `Protected route with invalid API key returns 401 Unauthorized`
+  - [x] `Protected route with valid API key returns 200 OK`
+  - [x] `Unprotected routes remain accessible without API key`
+  - [x] `Unauthorized responses use consistent error format from HttpExceptionFilter`
+  - [x] `Malformed Authorization header returns 401 Unauthorized`
+  - [x] `Empty Authorization header returns 401 Unauthorized`
+  - [x] `API key validation is case-sensitive`
+  - [x] `API key validation handles whitespace correctly`
+  - [x] `/health endpoint remains accessible without authentication`
+  - [x] `Protected route with valid API key returns 200 OK and includes user context in response`
+  - [x] Commit your changes. Note the commit id here: `39fedb6`
 
 --- Previous Attempt Notes ---
 
@@ -121,7 +121,7 @@ I will proceed with creating the `src/auth` directory and the initial test files
 
 ### 6. Install Dependencies
 
-- [ ] Install Passport.js dependencies:
+- [x] Install Passport.js dependencies:
 
   ```bash
   npm install @nestjs/passport passport passport-http-bearer
@@ -132,9 +132,9 @@ I will proceed with creating the `src/auth` directory and the initial test files
 
 ### 7. Create AuthModule Structure
 
-- [ ] Create the directory `src/auth`
+- [x] Create the directory `src/auth`
 
-- [ ] Scaffold `AuthModule` in `src/auth/auth.module.ts`:
+- [x] Scaffold `AuthModule` in `src/auth/auth.module.ts`:
   - Import `PassportModule` from `@nestjs/passport`
   - Provide and export `ApiKeyStrategy` and `ApiKeyGuard`
   - Import `ConfigModule` for accessing environment variables
@@ -142,7 +142,7 @@ I will proceed with creating the `src/auth` directory and the initial test files
 
 ### 8. Implement ApiKeyStrategy
 
-- [ ] Implement `ApiKeyStrategy` in `src/auth/api-key.strategy.ts`:
+- [x] Implement `ApiKeyStrategy` in `src/auth/api-key.strategy.ts`:
   - Extend `PassportStrategy` with `Strategy` from `passport-http-bearer`
   - Inject `ConfigService` to access API keys from environment
   - Implement `validate(token: string)` method
@@ -155,7 +155,7 @@ I will proceed with creating the `src/auth` directory and the initial test files
 
 ### 9. Implement ApiKeyGuard
 
-- [ ] Implement `ApiKeyGuard` in `src/auth/api-key.guard.ts`:
+- [x] Implement `ApiKeyGuard` in `src/auth/api-key.guard.ts`:
   - Extend `AuthGuard('bearer')` from `@nestjs/passport`
   - Handle execution context appropriately
   - Provide clear error messages for authentication failures
@@ -164,7 +164,7 @@ I will proceed with creating the `src/auth` directory and the initial test files
 
 ### 10. Update Configuration Schema
 
-- [ ] Update `src/config/config.service.ts`:
+- [x] Update `src/config/config.service.ts`:
   - Add `API_KEYS` to the Zod environment schema
   - Validate API key format during application startup
   - Support comma-separated multiple keys

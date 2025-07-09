@@ -1,8 +1,10 @@
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { ApiKeyGuard } from './api-key.guard';
+import { ApiKeyService } from './api-key.service';
 import { ApiKeyStrategy } from './api-key.strategy';
 import { AuthModule } from './auth.module';
 
@@ -18,6 +20,7 @@ describe('AuthModule', () => {
       providers: [
         ApiKeyStrategy,
         ApiKeyGuard,
+        ApiKeyService,
         {
           provide: ConfigService,
           useValue: {
@@ -29,6 +32,16 @@ describe('AuthModule', () => {
             }),
           },
         },
+        {
+          provide: Logger,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+            warn: jest.fn(),
+            debug: jest.fn(),
+            verbose: jest.fn(),
+          },
+        },
       ],
     }).compile();
   });
@@ -37,11 +50,13 @@ describe('AuthModule', () => {
     expect(module).toBeDefined();
   });
 
-  it('AuthModule should export ApiKeyStrategy and ApiKeyGuard providers', () => {
+  it('AuthModule should export ApiKeyStrategy, ApiKeyGuard and ApiKeyService providers', () => {
     const apiKeyStrategy = module.get<ApiKeyStrategy>(ApiKeyStrategy);
     const apiKeyGuard = module.get<ApiKeyGuard>(ApiKeyGuard);
+    const apiKeyService = module.get<ApiKeyService>(ApiKeyService);
     expect(apiKeyStrategy).toBeDefined();
     expect(apiKeyGuard).toBeDefined();
+    expect(apiKeyService).toBeDefined();
   });
 
   it('AuthModule should integrate PassportModule correctly', () => {
