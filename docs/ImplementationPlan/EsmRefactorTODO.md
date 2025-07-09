@@ -33,7 +33,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
      - `import/no-commonjs` (disallow `module.exports` and `exports`).
      - `import/extensions` (enforce explicit `.js` extensions in imports if you want to future-proof for ESM, but this is optional if compiling to CommonJS).
    - Add these rules to your ESLint config and run `npm run lint` to check for violations.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `7d5e05e`)
 
 ## Phase 2: Codebase Refactoring
 
