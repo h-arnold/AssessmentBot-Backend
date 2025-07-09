@@ -126,5 +126,6 @@ This document outlines the steps required to refactor the Assessment Bot Backend
     1. Determine why `ConfigService`'s Zod transformation is not consistently applied in production.
     2. Implement a robust solution to ensure `API_KEYS` is always an array when accessed by `ApiKeyService`, regardless of the environment or how it's provided (e.g., from `.env` or `process.env`).
     3. Update relevant tests to reliably catch this discrepancy.
+  - [x] **Commit your changes** (commit id: `851be36`)
 - **Dependency Compatibility:** Some older npm packages might not be fully ESM-compatible. Be prepared to find ESM alternatives or use tools like `esm` or `patch-package` as temporary workarounds.
 - **Incremental Approach:** For larger codebases, consider an incremental refactoring approach, converting modules one by one.
