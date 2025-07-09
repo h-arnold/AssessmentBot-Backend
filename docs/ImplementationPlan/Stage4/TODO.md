@@ -174,7 +174,7 @@ I will proceed with creating the `src/auth` directory and the initial test files
 
 ### 11. Create Protected Test Endpoint
 
-- [ ] Add a protected test endpoint to `src/app.controller.ts`:
+- [x] Add a protected test endpoint to `src/app.controller.ts`:
   - Create `@Get('protected')` endpoint decorated with `@UseGuards(ApiKeyGuard)`
   - Return a simple response to verify authentication works
   - Include user context from successful authentication in response
@@ -182,7 +182,7 @@ I will proceed with creating the `src/auth` directory and the initial test files
 
 ### 12. Integration Setup
 
-- [ ] Update `src/app.module.ts`:
+- [x] Update `src/app.module.ts`:
   - Add `AuthModule` to the imports array
   - Ensure proper module dependency order
   - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
@@ -231,5 +231,7 @@ I will proceed with creating the `src/auth` directory and the initial test files
   - Verify error responses match expected format
   - Test authentication with multiple configured keys
   - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
+
+**Current Blocker:** Unable to execute specific E2E test files using Jest configuration. The `testPathPatterns` option is not working as expected, and attempts to modify `testRegex` or `rootDir` in `jest-e2e.config.cjs` have not resolved the issue. This prevents isolated testing of the authentication E2E flow.
 
 --- End of content ---
