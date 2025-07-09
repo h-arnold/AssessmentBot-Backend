@@ -1,9 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
-export class ApiKeyGuard extends AuthGuard('bearer') {
-  constructor() {
-    super();
-  }
-}
+export class ApiKeyGuard {}
