@@ -1,6 +1,6 @@
 # Stage 5: Assessor Feature Module TODO
 
-- [ ] Create a new git branch for this work:
+- [x] Create a new git branch for this work:
   ```bash
   git checkout -b Stage5
   ```
@@ -15,29 +15,29 @@ This document outlines the tasks for implementing the Assessor feature module, f
 
 #### Red Phase: Write Failing Tests for DTO Validation
 
-- [ ] Create a new directory `src/v1/assessor/` for the new module's source code.
-- [ ] Create a test file `src/v1/assessor/dto/create-assessor.dto.spec.ts`.
+- [x] Create a new directory `src/v1/assessor/` for the new module's source code.
+- [x] Create a test file `src/v1/assessor/dto/create-assessor.dto.spec.ts`.
 - [ ] In the test file, write tests that assert the Zod schema rejects invalid data. Cover the following cases from `TestCases.md`:
-  - [ ] **Invalid Payloads**:
-    - [ ] Reject when any required field (`taskType`, `reference`, `template`, `studentResponse`) is missing.
-    - [ ] Reject empty strings for `reference`, `template`, and `studentResponse`.
-    - [ ] Reject payloads with extra, unsupported fields.
-    - [ ] Reject `null` or `undefined` for any required field.
-    - [ ] Reject when fields are a mix of types (e.g., some strings, some Buffer/base64).
+  - [x] **Invalid Payloads**:
+    - [x] Reject when any required field (`taskType`, `reference`, `template`, `studentResponse`) is missing.
+    - [x] Reject empty strings for `reference`, `template`, and `studentResponse`.
+    - [x] Reject payloads with extra, unsupported fields.
+    - [x] Reject `null` or `undefined` for any required field.
+    - [x] Reject when fields are a mix of types (e.g., some strings, some Buffer/base64).
 - [ ] Write tests that assert the Zod schema accepts valid data:
-  - [ ] **Valid Payloads**:
-    - [ ] Accept a payload where `taskType` is `TEXT` and all other fields are non-empty strings.
-    - [ ] Accept a payload where `taskType` is `TABLE` and all other fields are non-empty strings.
-    - [ ] Accept a payload where `taskType` is `IMAGE` and all other fields are non-empty strings.
-    - [ ] Accept a payload where `taskType` is `IMAGE` and fields are Buffers or base64 strings.
+  - [x] **Valid Payloads**:
+    - [x] Accept a payload where `taskType` is `TEXT` and all other fields are non-empty strings.
+    - [x] Accept a payload where `taskType` is `TABLE` and all other fields are non-empty strings.
+    - [x] Accept a payload where `taskType` is `IMAGE` and all other fields are non-empty strings.
+    - [x] Accept a payload where `taskType` is `IMAGE` and fields are Buffers or base64 strings.
 
 #### Green Phase: Implement the DTO and Zod Schema
 
-- [ ] Create the DTO file `src/v1/assessor/dto/create-assessor.dto.ts`.
-- [ ] Define a `TaskType` enum with values `TEXT`, `TABLE`, and `IMAGE`.
-- [ ] Define the Zod schema for `CreateAssessorDto` that enforces all the validation rules tested in the red phase.
-- [ ] Create a TypeScript type `CreateAssessorDto` inferred from the Zod schema.
-- [ ] Run the tests created in the red phase and ensure they all pass.
+- [x] Create the DTO file `src/v1/assessor/dto/create-assessor.dto.ts`.
+- [x] Define a `TaskType` enum with values `TEXT`, `TABLE`, and `IMAGE`.
+- [x] Define the Zod schema for `CreateAssessorDto` that enforces all the validation rules tested in the red phase.
+- [x] Create a TypeScript type `CreateAssessorDto` inferred from the Zod schema.
+- [x] Run the tests created in the red phase and ensure they all pass.
 
 #### Refactor & Commit
 
