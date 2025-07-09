@@ -1,5 +1,4 @@
 import { Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { Test, TestingModule } from '@nestjs/testing';
 
@@ -7,6 +6,7 @@ import { ApiKeyGuard } from './api-key.guard';
 import { ApiKeyService } from './api-key.service';
 import { ApiKeyStrategy } from './api-key.strategy';
 import { AuthModule } from './auth.module';
+import { ConfigService, Config } from '../config/config.service';
 
 describe('AuthModule', () => {
   let module: TestingModule;
@@ -24,7 +24,7 @@ describe('AuthModule', () => {
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn((key: string) => {
+            get: jest.fn((key: keyof Config) => {
               if (key === 'API_KEYS') {
                 return ['test-key'];
               }
