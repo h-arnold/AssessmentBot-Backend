@@ -63,7 +63,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
 
 5. **Handle `__dirname` and `__filename`:**
    - In ESM, `__dirname` and `__filename` are not directly available. If you use these, ensure your code is compatible with both ESM and CommonJS, or use Node.js utilities as needed.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `d65e169`)
 
 6. **Review Dynamic Imports:**
    - If any dynamic `import()` calls exist, ensure they are correctly handled and resolve to ESM.
