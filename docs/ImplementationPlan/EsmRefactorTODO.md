@@ -67,7 +67,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
 
 6. **Review Dynamic Imports:**
    - If any dynamic `import()` calls exist, ensure they are correctly handled and resolve to ESM.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `7b79de1`)
 
 ## Phase 3: Build and Deployment Adjustments
 
