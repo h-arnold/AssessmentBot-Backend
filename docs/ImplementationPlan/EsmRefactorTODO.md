@@ -75,7 +75,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
    - After refactoring, run `npm run build` and inspect the `dist` directory.
    - Ensure compiled files are correctly structured and use CommonJS syntax for compatibility.
    - Verify that `dist/package.json` (if present) correctly has `"type": "commonjs"`.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `7701aff`)
 
 2. **Update Dockerfile:**
    - Ensure the `CMD` instruction correctly points to the CommonJS entry point (e.g., `node dist/src/main.js`).
