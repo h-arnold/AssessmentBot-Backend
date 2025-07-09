@@ -55,7 +55,6 @@ Below is a guided, step-by-step process for implementing and testing API key aut
   - [x] `ApiKeyStrategy should be defined and inject ApiKeyService`
   - [x] `ApiKeyStrategy.validate should call ApiKeyService.validate and return the user context`
   - [x] `ApiKeyStrategy.validate should throw UnauthorizedException when service rejects`
-  - [x] `ApiKeyStrategy should log delegation events appropriately`
   - [x] No direct key-format or lookup logic here (covered in service tests)
 
 ### 4. ApiKeyGuard Tests
