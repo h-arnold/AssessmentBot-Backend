@@ -59,7 +59,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
 4. **Convert `module.exports` to `export`:**
    - Globally replace `module.exports` and `exports` with `export` statements.
    - Distinguish between `export default` and named exports.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `a95716a`)
 
 5. **Handle `__dirname` and `__filename`:**
    - In ESM, `__dirname` and `__filename` are not directly available. If you use these, ensure your code is compatible with both ESM and CommonJS, or use Node.js utilities as needed.
