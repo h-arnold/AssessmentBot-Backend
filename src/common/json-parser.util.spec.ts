@@ -31,6 +31,12 @@ describe('JsonParserUtil', () => {
       a: { b: { c: { d: { e: 1 } } } },
     });
 
+    const specialCharsJson = '{"key": "value with "quotes" and \backslashes"}';
+    expect(util.parse(specialCharsJson)).toEqual({
+      key: 'value with ',
+      quotes: 'and \backslashes',
+    });
+
     const unicodeJson = '{"greeting": "Hello, \u00c9cole!"}';
     expect(util.parse(unicodeJson)).toEqual({ greeting: 'Hello, École!' });
   });

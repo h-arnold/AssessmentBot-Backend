@@ -48,9 +48,21 @@ export default tseslint.config(
     },
   },
   {
+    files: ['test/**/*.ts', 'src/**/*.spec.ts'], // Apply type-aware rules and Jest rules to test files
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.json', './jest-e2e.config.cjs'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      ...jest.configs.recommended.rules, // Apply Jest recommended rules
+      // You might want to add more specific rules for test files here
+    },
+  },
+  {
     rules: {
       ...tseslint.configs.recommended.rules, // General TypeScript rules (non-type-aware)
-      ...jest.configs.recommended.rules,
       ...prettier.rules,
 
       '@typescript-eslint/interface-name-prefix': 'off',

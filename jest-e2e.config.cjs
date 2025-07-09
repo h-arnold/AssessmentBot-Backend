@@ -1,0 +1,14 @@
+module.exports = {
+  moduleFileExtensions: [
+    "js",
+    "json",
+    "ts"
+  ],
+  rootDir: ".",
+  testEnvironment: "node",
+  
+  transform: {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  testRegex: ".+\\.e2e-spec\\.ts$"
+};

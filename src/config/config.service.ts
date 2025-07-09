@@ -11,6 +11,11 @@ const configSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   APP_NAME: z.string().default('AssessmentBot-Backend'),
   APP_VERSION: z.string().optional(),
+  API_KEYS: z
+    .string()
+    .optional()
+    .transform((val) => (val ? val.split(',').map((s) => s.trim()) : undefined))
+    .pipe(z.array(z.string().regex(/^[a-zA-Z0-9_-]+$/)).optional()),
 });
 
 // Infer the type from the schema

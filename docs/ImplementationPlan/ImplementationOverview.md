@@ -28,7 +28,7 @@ This document outlines the high-level implementation stages for the Assessment B
 
 **Note on Zod Validation Scope:** For Stage 2, Zod validation focuses solely on environment variables at application startup. The `ZodValidationPipe` for request payload validation will be implemented in Stage 3 as part of the `CommonModule`.
 
-## ✅ (COMPLETE) Stage 3: Common Utilities and Error Handling
+## Stage 3: Common Utilities and Error Handling
 
 - **Objectives**: Create shared utilities and global exception filters.
 - **Deliverables**:
@@ -39,7 +39,7 @@ This document outlines the high-level implementation stages for the Assessment B
   - Validation errors return appropriate HTTP responses
   - Unit tests for each utility
 
-## Stage 4: Authentication and API Key Guard
+## ✅ (COMPLETE) Stage 4: Authentication and API Key Guard
 
 - **Objectives**: Secure endpoints with API Key authentication using Passport.js.
 - **Deliverables**:
@@ -49,6 +49,34 @@ This document outlines the high-level implementation stages for the Assessment B
 - **Test Criteria**:
   - Protected endpoints return 401 without valid API key
   - Unit tests for guard and strategy logic
+
+### Module Resolution and Compilation Issues Encountered
+
+During the implementation and verification of Stage 4, significant challenges were encountered related to module resolution and compilation, particularly when deploying the application within a Docker environment. These issues manifested as the application failing to start with `ERR_MODULE_NOT_FOUND` or `SyntaxError: Cannot use import statement outside a module` errors.
+
+**Problem Description:**
+
+The core of the problem stemmed from a mismatch between how TypeScript compiled the application's modules and how Node.js attempted to load them at runtime, especially within the Docker container.
+
+1.  **Initial Docker Build Failure (`Cannot find module '/app/dist/main'`):**
+    - **Cause:** The `docker-compose.yml` file initially included a volume mount (`.:/app`) that inadvertently overwrote the `dist` directory generated during the Docker image's build stage with the host machine's (potentially empty or outdated) `dist` directory. This resulted in the compiled application files not being present inside the container at runtime.
+    - **Solution:** The problematic volume mount (`.:/app`) was removed from `docker-compose.yml`. This ensured that the `dist` directory, containing the compiled application, was correctly preserved from the Docker build stage.
+
+2.  **Incorrect Main Module Path (`Cannot find module '/app/dist/main'` after volume fix):**
+    - **Cause:** After resolving the volume mount issue, the application still failed to start because the `CMD` in the `Dockerfile` (`CMD ["node", "dist/main"]`) was pointing to `dist/main`, while the `nest build` command was compiling the `src/main.ts` file into `dist/src/main.js` (due to `rootDir` implicitly being `src` and `outDir` being `dist` in `tsconfig.json`).
+    - **Solution:** The `CMD` in `Dockerfile` was updated to `CMD ["node", "dist/src/main.js"]` to correctly reference the compiled entry point. Similarly, the `start:prod` script in `package.json` was updated to `node dist/src/main.js`.
+
+3.  **ES Module/CommonJS Conflict (`SyntaxError: Cannot use import statement outside a module` and `ERR_MODULE_NOT_FOUND`):**
+    - **Cause:** The project's `package.json` had `"type": "module"`, indicating an ES module project. However, the `tsconfig.json` was configured to compile to ES modules (`"module": "ES2022"`), and a `postbuild` script was attempting to force `dist/package.json` to `"type": "commonjs"`. This created a conflict where compiled ES module syntax (`import` statements) was being run in a CommonJS context, leading to syntax errors. Additionally, Node.js's stricter ES module resolution rules caused `ERR_MODULE_NOT_FOUND` when imports lacked `.js` extensions (e.g., `import { AppModule } from './app.module';`).
+    - **Solution:** Based on historical project notes (from `docs/ImplementationPlan/Stage1/TODO.md` and `docs/issues.md`), the established and working solution for this project was to compile to CommonJS. Therefore, `tsconfig.json` was updated to set `"module": "CommonJS"`. This ensured that the compiled JavaScript files used CommonJS syntax (`require`/`module.exports`), which aligned with the `postbuild` script's intention to set `dist/package.json` to `"type": "commonjs"`. This resolved the module resolution conflicts and allowed the application to start successfully.
+
+**Lessons Learned and Future Prevention:**
+
+- **Module System Consistency:** Ensure strict consistency between `package.json` (`"type"` field), `tsconfig.json` (`"module"` and `"moduleResolution"`), and any build-time modifications (e.g., `postbuild` scripts) regarding ES Modules vs. CommonJS.
+- **Docker Volume Mounts:** Be cautious with broad volume mounts (`.:/app`) in `docker-compose.yml` as they can inadvertently overwrite build artifacts generated within the container. Prefer specific mounts for source code if live reloading is required, or rely on the Docker build process to include compiled assets.
+- **Entry Point Verification:** Always verify the exact compiled output path of the main application file (`main.js`) and ensure that the `CMD` in the `Dockerfile` and `start` scripts in `package.json` correctly reference this path.
+- **Comprehensive Logging:** Detailed application logs (both during build and runtime) are crucial for diagnosing subtle issues like module resolution failures.
+- **Referencing Project History:** Consult project documentation (like `TODO.md` and `issues.md`) for historical context on resolved issues and established workarounds, as these often contain critical information about the project's specific configuration choices.
 
 ## Stage 5: Assessor Feature Module
 
