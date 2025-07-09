@@ -154,7 +154,7 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 - [ ] Review the module file and ensure all dependencies are correctly listed.
 - [ ] Commit the final changes for this stage.
-- [ ] **Commit ID**: `________________`
+- [X] **Commit ID**: `ea5547d`
 
 ---
 
@@ -170,15 +170,17 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 #### Tasks:
 
-- [ ] Build and run the application (`npm run start:dev`) or via Docker Compose (`docker-compose up -d`).
-- [ ] Install HTTP client dependency for scripting (e.g., `npm install axios --save-dev`).
-- [ ] Create a TypeScript script at `scripts/verify-assessor.ts` that:
-  - [ ] Sends a POST to `/v1/assessor` with a valid JSON payload and valid API key, asserts `201 Created` and expected response body.
-  - [ ] Sends a POST to `/v1/assessor` with an invalid payload, asserts `400 Bad Request`.
-  - [ ] Sends a POST to `/v1/assessor` without an `Authorization` header, asserts `401 Unauthorized`.
-- [ ] Add an npm script to `package.json`:
+- [X] Build and run the application (`npm run start:dev`) or via Docker Compose (`docker-compose up -d`).
+- [X] Install HTTP client dependency for scripting (e.g., `npm install axios --save-dev`).
+- [X] Create a TypeScript script at `scripts/verify-assessor.ts` that:
+  - [X] Sends a POST to `/v1/assessor` with a valid JSON payload and valid API key, asserts `201 Created` and expected response body.
+- [X] Sends a POST to `/v1/assessor` with an invalid payload, asserts `400 Bad Request`.
+- [X] Sends a POST to `/v1/assessor` without an `Authorization` header, asserts `401 Unauthorized`.
+- [X] Add an npm script to `package.json`:
   ```json
   "verify:assessor": "ts-node scripts/verify-assessor.ts"
+```
+- [X] Run `npm run verify:assessor` and ensure all tests pass.
   ```
 - [ ] Run `npm run verify:assessor` and ensure all tests pass.
 - [ ] Optionally, add a Postman collection `postman/AssessorTests.postman_collection.json` for manual verification.

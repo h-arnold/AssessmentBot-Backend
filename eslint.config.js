@@ -16,7 +16,7 @@ export default tseslint.config(
       '@stylistic': stylistic,
       jest,
       security,
-      import: importPlugin,
+      
     },
   },
   {
@@ -71,17 +71,7 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'error',
       'no-eval': 'error',
 
-      'import/order': [
-        'error',
-        {
-          groups: ['builtin', 'external', 'internal', ['parent', 'sibling']],
-          'newlines-between': 'always',
-          alphabetize: {
-            order: 'asc',
-            caseInsensitive: true,
-          },
-        },
-      ],
+      
 
       '@typescript-eslint/explicit-function-return-type': 'warn',
 
