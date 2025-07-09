@@ -80,7 +80,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
 2. **Update Dockerfile:**
    - Ensure the `CMD` instruction correctly points to the CommonJS entry point (e.g., `node dist/src/main.js`).
    - Verify that the Docker build process correctly handles compilation and module resolution.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `f523df1`)
 
 3. **Update `docker-compose.yml`:**
    - Ensure any volume mounts are compatible with the new build output.
