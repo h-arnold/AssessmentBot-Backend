@@ -72,7 +72,7 @@ export default tseslint.config(
       'no-eval': 'error',
 
       'import/order': [
-        'off',
+        'error',
         {
           groups: ['builtin', 'external', 'internal', ['parent', 'sibling']],
           'newlines-between': 'always',

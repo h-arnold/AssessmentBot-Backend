@@ -120,7 +120,7 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 - [ ] Review the controller and E2E test code.
 - [ ] Commit the changes.
-- [ ] **Commit ID**: `________________`
+- [X] **Commit ID**: `f3ea5e8`
 
 ---
 
@@ -136,19 +136,19 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 #### Red Phase: Write Failing Integration Tests
 
-- [ ] Create a module test file `src/v1/assessor/assessor.module.spec.ts`.
-- [ ] Write a test to ensure the `AssessorModule` can be compiled successfully by the NestJS `Test.createTestingModule`.
-- [ ] Write a test to ensure that `AssessorController` and `AssessorService` are available for injection from the module context.
+- [X] Create a module test file `src/v1/assessor/assessor.module.spec.ts`.
+- [X] Write a test to ensure the `AssessorModule` can be compiled successfully by the NestJS `Test.createTestingModule`.
+- [X] Write a test to ensure that `AssessorController` and `AssessorService` are available for injection from the module context.
 
 #### Green Phase: Create and Integrate the Module
 
-- [x] Create the module file `src/v1/assessor/assessor.module.ts`.
-- [x] Define the `AssessorModule` using the `@Module()` decorator.
-- [x] Add `AssessorController` to the `controllers` array.
-- [x] Add `AssessorService` to the `providers` array.
-- [x] Import the new `AssessorModule` into the `imports` array of the main `AppModule` in `src/app.module.ts`.
-- [ ] Run the module integration tests and ensure they pass.
-- [ ] Run the entire test suite (`npm test`) to ensure all new and existing tests pass.
+- [X] Create the module file `src/v1/assessor/assessor.module.ts`.
+- [X] Define the `AssessorModule` using the `@Module()` decorator.
+- [X] Add `AssessorController` to the `controllers` array.
+- [X] Add `AssessorService` to the `providers` array.
+- [X] Import the new `AssessorModule` into the `imports` array of the main `AppModule` in `src/app.module.ts`.
+- [X] Run the module integration tests and ensure they pass.
+- [X] Run the entire test suite (`npm test`) to ensure all new and existing tests pass.
 
 #### Refactor & Commit
 
