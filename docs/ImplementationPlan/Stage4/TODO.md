@@ -73,6 +73,7 @@ Below is a guided, step-by-step process for implementing and testing API key aut
   - [ ] `ConfigService should reject malformed API keys at startup`
   - [ ] `ConfigService should support multiple comma-separated API keys`
   - [ ] `ConfigService should fail gracefully on missing API_KEYS`
+  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 ### 6. E2E Authentication Tests
 
@@ -88,6 +89,7 @@ Below is a guided, step-by-step process for implementing and testing API key aut
   - [ ] `API key validation handles whitespace correctly`
   - [ ] `/health endpoint remains accessible without authentication`
   - [ ] `Protected route with valid API key returns 200 OK and includes user context in response`
+  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 --- Previous Attempt Notes ---
 
@@ -95,9 +97,9 @@ Below is a guided, step-by-step process for implementing and testing API key aut
 
 **Issues Encountered:**
 
-1.  **Mocking Complexity for `AuthGuard`:** Directly mocking `AuthGuard` and its internal dependencies (like `PassportStrategy` and `ExecutionContext`) proved to be overly complex and brittle. Changes to the `AuthGuard` implementation or its dependencies frequently broke the mocks, leading to time-consuming debugging of test setups rather than actual logic.
-2.  **Logger Injection:** Initially, `ApiKeyStrategy` created its own `Logger` instance, making it difficult to mock and verify logging behavior in unit tests. While this was addressed by injecting `Logger`, the overall mocking strategy for authentication components remained challenging.
-3.  **Interdependencies:** The tight coupling between `AuthModule`, `ApiKeyStrategy`, and `ApiKeyGuard`, combined with NestJS's dependency injection, made isolated unit testing difficult without extensive and fragile mocking.
+1. **Mocking Complexity for `AuthGuard`:** Directly mocking `AuthGuard` and its internal dependencies (like `PassportStrategy` and `ExecutionContext`) proved to be overly complex and brittle. Changes to the `AuthGuard` implementation or its dependencies frequently broke the mocks, leading to time-consuming debugging of test setups rather than actual logic.
+2. **Logger Injection:** Initially, `ApiKeyStrategy` created its own `Logger` instance, making it difficult to mock and verify logging behavior in unit tests. While this was addressed by injecting `Logger`, the overall mocking strategy for authentication components remained challenging.
+3. **Interdependencies:** The tight coupling between `AuthModule`, `ApiKeyStrategy`, and `ApiKeyGuard`, combined with NestJS's dependency injection, made isolated unit testing difficult without extensive and fragile mocking.
 
 **Revised Testing Strategy Consideration:**
 Given the difficulties with extensive mocking for `AuthGuard`, a more pragmatic approach for testing the authentication flow might involve a hybrid strategy:
@@ -120,10 +122,13 @@ I will proceed with creating the `src/auth` directory and the initial test files
 ### 6. Install Dependencies
 
 - [ ] Install Passport.js dependencies:
+
   ```bash
   npm install @nestjs/passport passport passport-http-bearer
   npm install -D @types/passport @types/passport-http-bearer
   ```
+
+  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 ### 7. Create AuthModule Structure
 
@@ -133,6 +138,7 @@ I will proceed with creating the `src/auth` directory and the initial test files
   - Import `PassportModule` from `@nestjs/passport`
   - Provide and export `ApiKeyStrategy` and `ApiKeyGuard`
   - Import `ConfigModule` for accessing environment variables
+- [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 ### 8. Implement ApiKeyStrategy
 
@@ -145,6 +151,7 @@ I will proceed with creating the `src/auth` directory and the initial test files
   - Return user context object for successful authentication
   - Throw `UnauthorizedException` for invalid keys
   - Validate API key format (minimum length, character set)
+  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 ### 9. Implement ApiKeyGuard
 
@@ -153,6 +160,7 @@ I will proceed with creating the `src/auth` directory and the initial test files
   - Handle execution context appropriately
   - Provide clear error messages for authentication failures
   - Preserve request context for logging in HttpExceptionFilter
+  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 ### 10. Update Configuration Schema
 
@@ -162,6 +170,7 @@ I will proceed with creating the `src/auth` directory and the initial test files
   - Support comma-separated multiple keys
   - Provide getter method for API keys array
   - Add validation for minimum key length and format requirements
+  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 ### 11. Create Protected Test Endpoint
 
@@ -169,16 +178,19 @@ I will proceed with creating the `src/auth` directory and the initial test files
   - Create `@Get('protected')` endpoint decorated with `@UseGuards(ApiKeyGuard)`
   - Return a simple response to verify authentication works
   - Include user context from successful authentication in response
+  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 ### 12. Integration Setup
 
 - [ ] Update `src/app.module.ts`:
   - Add `AuthModule` to the imports array
   - Ensure proper module dependency order
+  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 - [ ] Verify `main.ts` configuration:
   - Ensure global `HttpExceptionFilter` handles `UnauthorizedException` correctly
   - No additional global setup required for guards (applied per route)
+  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 ### 13. Environment Configuration
 
@@ -186,6 +198,7 @@ I will proceed with creating the `src/auth` directory and the initial test files
   - Add `API_KEYS` example with multiple comma-separated keys
   - Include format requirements and security notes in comments
   - Provide guidance on key generation and rotation
+  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 ### 14. Documentation
 
@@ -195,6 +208,7 @@ I will proceed with creating the `src/auth` directory and the initial test files
   - Provide examples of API key usage in requests
   - Include security considerations and rate limiting recommendations
   - Document the authorization header format: `Authorization: Bearer <api-key>`
+  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 ### 15. Verification and Testing
 
@@ -209,11 +223,13 @@ I will proceed with creating the `src/auth` directory and the initial test files
   - Test that ConfigModule, CommonModule, and AuthModule work together
   - Ensure no conflicts with existing global filters and pipes
   - Verify authentication logs appear in structured format
+  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 - [ ] Manual verification:
   - Start dev server with valid API keys in environment
   - Test protected endpoints with curl/Postman
   - Verify error responses match expected format
   - Test authentication with multiple configured keys
+  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
 --- End of content ---
