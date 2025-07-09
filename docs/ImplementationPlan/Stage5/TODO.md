@@ -78,7 +78,7 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 - [ ] Review the service and test code.
 - [ ] Commit the changes.
-- [ ] **Commit ID**: `________________`
+- [x] **Commit ID**: `ce1b3a2`
 
 ---
 
@@ -94,27 +94,27 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 #### Red Phase: Write Failing End-to-End (E2E) Tests
 
-- [ ] Create a new E2E test file `test/assessor.e2e-spec.ts`.
-- [ ] Set up the test environment using `supertest` and the NestJS `Test` module.
-- [ ] Write E2E tests for the `POST /v1/assessor` endpoint:
-  - [ ] Test for endpoint existence: a `POST` request to `/v1/assessor` should not result in a `404 Not Found`.
-  - [ ] Test for validation failure: send an invalid DTO (e.g., missing `taskType`) and assert that the response is `400 Bad Request`.
-  - [ ] Test for validation success: send a valid DTO and assert that the response is `201 Created`.
-  - [ ] Test that the `AssessorService`'s `createAssessment` method is called exactly once with the correct payload when the request is valid. Use a mock provider for the service.
-  - [ ] Write E2E tests for authentication/authorisation:
-    - [ ] Returns **401 Unauthorized** when no API key is provided.
-    - [ ] Returns **401 Unauthorized** when an invalid API key is provided.
+- [x] Create a new E2E test file `test/assessor.e2e-spec.ts`.
+- [x] Set up the test environment using `supertest` and the NestJS `Test` module.
+- [x] Write E2E tests for the `POST /v1/assessor` endpoint:
+  - [x] Test for endpoint existence: a `POST` request to `/v1/assessor` should not result in a `404 Not Found`.
+  - [x] Test for validation failure: send an invalid DTO (e.g., missing `taskType`) and assert that the response is `400 Bad Request`.
+  - [x] Test for validation success: send a valid DTO and assert that the response is `201 Created`.
+  - [x] Test that the `AssessorService`'s `createAssessment` method is called exactly once with the correct payload when the request is valid. Use a mock provider for the service.
+  - [x] Write E2E tests for authentication/authorisation:
+    - [x] Returns **401 Unauthorized** when no API key is provided.
+    - [x] Returns **401 Unauthorized** when an invalid API key is provided.
 
 #### Green Phase: Implement the Controller
 
-- [ ] Create the controller file `src/v1/assessor/assessor.controller.ts`.
-- [ ] Create the `AssessorController` class with the `@Controller('v1/assessor')` decorator.
-- [ ] Create a `create` method with the `@Post()` decorator.
-- [ ] Use the `ZodValidationPipe` in the method signature to validate the request body against the `createAssessorDtoSchema`.
-- [ ] Inject `AssessorService` into the controller.
-- [ ] Call the `assessorService.createAssessment` method from the controller's `create` method.
-- [ ] Ensure the controller uses `@UseGuards(ApiKeyGuard)` or global guard for authentication on endpoints.
-- [ ] Run the E2E tests and ensure they pass.
+- [x] Create the controller file `src/v1/assessor/assessor.controller.ts`.
+- [x] Create the `AssessorController` class with the `@Controller('v1/assessor')` decorator.
+- [x] Create a `create` method with the `@Post()` decorator.
+- [x] Use the `ZodValidationPipe` in the method signature to validate the request body against the `createAssessorDtoSchema`.
+- [x] Inject `AssessorService` into the controller.
+- [x] Call the `assessorService.createAssessment` method from the controller's `create` method.
+- [x] Ensure the controller uses `@UseGuards(ApiKeyGuard)` or global guard for authentication on endpoints.
+- [x] Run the E2E tests and ensure they pass.
 
 #### Refactor & Commit
 
@@ -142,11 +142,11 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 #### Green Phase: Create and Integrate the Module
 
-- [ ] Create the module file `src/v1/assessor/assessor.module.ts`.
-- [ ] Define the `AssessorModule` using the `@Module()` decorator.
-- [ ] Add `AssessorController` to the `controllers` array.
-- [ ] Add `AssessorService` to the `providers` array.
-- [ ] Import the new `AssessorModule` into the `imports` array of the main `AppModule` in `src/app.module.ts`.
+- [x] Create the module file `src/v1/assessor/assessor.module.ts`.
+- [x] Define the `AssessorModule` using the `@Module()` decorator.
+- [x] Add `AssessorController` to the `controllers` array.
+- [x] Add `AssessorService` to the `providers` array.
+- [x] Import the new `AssessorModule` into the `imports` array of the main `AppModule` in `src/app.module.ts`.
 - [ ] Run the module integration tests and ensure they pass.
 - [ ] Run the entire test suite (`npm test`) to ensure all new and existing tests pass.
 
