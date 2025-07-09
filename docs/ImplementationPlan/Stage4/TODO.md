@@ -179,7 +179,7 @@ Below is a guided, step-by-step process for implementing and testing API key aut
   - Add `API_KEYS` example with multiple comma-separated keys
   - Include format requirements and security notes in comments
   - Provide guidance on key generation and rotation
-  - [x] Commit your changes. Note the commit id here: `COMMIT_ID`
+  - [x] Commit your changes. Note the commit id here: `d6e71fc`
 
 ### 14. Documentation
 
