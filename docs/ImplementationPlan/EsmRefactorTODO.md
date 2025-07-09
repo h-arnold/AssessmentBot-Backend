@@ -84,7 +84,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
 
 3. **Update `docker-compose.yml`:**
    - Ensure any volume mounts are compatible with the new build output.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `41a1cb2`)
 
 ## Phase 4: Testing and Verification
 
