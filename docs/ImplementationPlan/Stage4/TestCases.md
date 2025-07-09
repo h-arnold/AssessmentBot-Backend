@@ -65,62 +65,62 @@ Stage 4 implements the `AuthModule` to secure endpoints using API keys via Passp
 
 #### 1.4 API Key Configuration Tests
 
-- [ ] **Test**: API keys should be loaded from environment variables
+- [x] **Test**: API keys should be loaded from environment variables
   - Verify that the strategy reads API keys from the ConfigService/environment variables
 
-- [ ] **Test**: Application should fail to start with missing API key configuration
+- [x] **Test**: Application should fail to start with missing API key configuration
   - Test that missing required API key environment variables prevent application startup
 
-- [ ] **Test**: Application should validate API key format at startup
+- [x] **Test**: Application should validate API key format at startup
   - Test that malformed API keys in configuration are rejected during application initialization
 
 ### 2. Integration (E2E) Tests
 
 #### 2.1 Protected Routes
 
-- [ ] **Test**: Request to a protected route without an API key returns `401 Unauthorized`
+- [x] **Test**: Request to a protected route without an API key returns `401 Unauthorized`
   - Use Supertest to call an endpoint decorated with `@UseGuards(ApiKeyGuard)` and assert a 401 response
 
-- [ ] **Test**: Request to a protected route with an invalid API key returns `401 Unauthorized`
+- [x] **Test**: Request to a protected route with an invalid API key returns `401 Unauthorized`
   - Send `Authorization: Bearer invalid-key` header and verify the response
 
-- [ ] **Test**: Request to a protected route with a valid API key returns `200 OK`
+- [x] **Test**: Request to a protected route with a valid API key returns `200 OK`
   - Send `Authorization: Bearer <valid-key>` and verify the response payload
 
-- [ ] **Test**: Request to a protected route with a valid API key returns `200 OK` and includes authenticated user context in the response body
+- [x] **Test**: Request to a protected route with a valid API key returns `200 OK` and includes authenticated user context in the response body
 
 #### 2.2 Unprotected Routes
 
-- [ ] **Test**: `GET /` (or other public endpoint) remains accessible without an API key
+- [x] **Test**: `GET /` (or other public endpoint) remains accessible without an API key
   - Call a non-protected endpoint and expect a `200 OK` response
 
 #### 2.3 Error Response Format
 
-- [ ] **Test**: Unauthorized responses use the consistent error format from `HttpExceptionFilter`
+- [x] **Test**: Unauthorized responses use the consistent error format from `HttpExceptionFilter`
   - Trigger a 401 error and verify the JSON response body matches the defined structure: `{ "statusCode": 401, "message": "Unauthorized", "timestamp": "...", "path": "..." }`
 
 #### 2.4 Header Format and Edge Cases
 
-- [ ] **Test**: Request with malformed Authorization header returns `401 Unauthorized`
+- [x] **Test**: Request with malformed Authorization header returns `401 Unauthorized`
   - Send headers like `Authorization: invalid-format` or `Authorization: Bearer` (without key) and verify 401 response
 
-- [ ] **Test**: Request with empty Authorization header returns `401 Unauthorized`
+- [x] **Test**: Request with empty Authorization header returns `401 Unauthorized`
   - Send `Authorization: Bearer ` (with just spaces) and verify proper error handling
 
-- [ ] **Test**: API key validation is case-sensitive
+- [x] **Test**: API key validation is case-sensitive
   - If keys are configured as case-sensitive, verify that `Bearer ABC123` fails when valid key is `abc123`
 
-- [ ] **Test**: API key validation trims whitespace
+- [x] **Test**: API key validation trims whitespace
   - Verify that `Bearer  abc123  ` (with extra spaces) is handled correctly
 
 ### 3. Compatibility Tests
 
 #### 3.1 Health Endpoint
 
-- [ ] **Test**: `/health` endpoint response format remains unchanged and accessible without a key
+- [x] **Test**: `/health` endpoint response format remains unchanged and accessible without a key
   - Validate the schema of the response: `{ status: string, version: string }`
 
 #### 3.2 CommonModule Integration
 
-- [ ] **Test**: `HttpExceptionFilter` from `CommonModule` correctly handles `UnauthorizedException` thrown by the `ApiKeyGuard`
+- [x] **Test**: `HttpExceptionFilter` from `CommonModule` correctly handles `UnauthorizedException` thrown by the `ApiKeyGuard`
   - This is implicitly covered by test `2.3` but serves as a specific check on the integration between `AuthModule` and `CommonModule`.
