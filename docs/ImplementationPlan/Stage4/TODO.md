@@ -228,12 +228,12 @@ Below is a guided, step-by-step process for implementing and testing API key aut
   - Verify authentication logs appear in structured format
   - [x] Commit your changes. Note the commit id here: `0f948c3`
 
-- [ ] Manual verification:
+- [x] Manual verification:
   - Start dev server with valid API keys in environment
   - Test protected endpoints with curl/Postman
   - Verify error responses match expected format
   - Test authentication with multiple configured keys
-  - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
+  - [x] Commit your changes. Note the commit id here: `a1216e6`
 
 **Issues Encountered and Solved:**
 
