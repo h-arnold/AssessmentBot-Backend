@@ -116,10 +116,15 @@ This document outlines the steps required to refactor the Assessment Bot Backend
 
 3. **Dependency Compatibility Review:**
    - Review all dependencies for ESM compatibility. Replace or patch any that are not ESM-ready, and monitor for updates to migrate to full ESM in the future.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `5fdbcdf`)
 
 ## Important Considerations
 
 - **API Key Discrepancy:** Investigate the discrepancy between API key acceptance in tests and production environment.
+  - **Diagnosis:** When running the application in production mode (`npm run start:prod`), the `ConfigService`'s Zod transformation for `API_KEYS` (which splits a comma-separated string into an array) is not being applied correctly. The `ApiKeyService` receives the raw comma-separated string from `process.env` instead of the transformed array. This leads to `ApiKeyService` failing to validate API keys, resulting in 401 Unauthorized errors in production, even with valid keys. In contrast, E2E tests explicitly set `process.env.API_KEYS` as a string, and the `ApiKeyService`'s internal parsing (added during refactoring) correctly handles this, allowing tests to pass.
+  - **Next Steps:**
+    1. Determine why `ConfigService`'s Zod transformation is not consistently applied in production.
+    2. Implement a robust solution to ensure `API_KEYS` is always an array when accessed by `ApiKeyService`, regardless of the environment or how it's provided (e.g., from `.env` or `process.env`).
+    3. Update relevant tests to reliably catch this discrepancy.
 - **Dependency Compatibility:** Some older npm packages might not be fully ESM-compatible. Be prepared to find ESM alternatives or use tools like `esm` or `patch-package` as temporary workarounds.
 - **Incremental Approach:** For larger codebases, consider an incremental refactoring approach, converting modules one by one.

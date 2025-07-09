@@ -14,13 +14,11 @@ export class ApiKeyService {
     const apiKeysFromConfig = this.configService.get<string | string[]>(
       'API_KEYS',
     );
-    if (typeof apiKeysFromConfig === 'string') {
-      this.apiKeys = apiKeysFromConfig.split(',').map((s) => s.trim());
-    } else if (Array.isArray(apiKeysFromConfig)) {
-      this.apiKeys = apiKeysFromConfig;
-    } else {
-      this.apiKeys = [];
-    }
+    console.log(
+      'apiKeysFromConfig (prod):',
+      apiKeysFromConfig,
+      typeof apiKeysFromConfig,
+    );
   }
 
   validate(apiKey: string): User | null {
