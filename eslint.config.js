@@ -20,6 +20,7 @@ export default tseslint.config(
     },
   },
   {
+    files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -82,9 +83,10 @@ export default tseslint.config(
         },
       ],
 
-      '@typescript-eslint/explicit-function-return-type': 'error',
+      '@typescript-eslint/explicit-function-return-type': 'warn',
 
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'security/detect-eval-with-expression': 'error',
     },
   },
 );

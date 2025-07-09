@@ -1,3 +1,7 @@
+# Stage 3: Issues and Resolutions
+
+**IMPORTANT NOTE**: These issues have now been resolved. This document serves as a record of changes made and their justification in case it needs to be revisited in the future.
+
 # Identified Code Smells and Issues
 
 This document outlines identified code smells and issues based on the project's core principles and current implementation status. These should be addressed by another engineer.
