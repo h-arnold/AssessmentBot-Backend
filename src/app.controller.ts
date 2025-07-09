@@ -1,6 +1,9 @@
-import { Controller, Get, HttpException } from '@nestjs/common';
+import { Controller, Get, HttpException, UseGuards, Req } from '@nestjs/common';
+import { Request } from 'express';
 
 import { AppService, HealthCheckResponse } from './app.service';
+import { ApiKeyGuard } from './auth/api-key.guard';
+import { User } from './auth/user.interface';
 
 @Controller()
 export class AppController {
@@ -19,5 +22,11 @@ export class AppController {
   @Get('test-error')
   testError(): void {
     throw new HttpException('This is a test error', 400);
+  }
+
+  @UseGuards(ApiKeyGuard)
+  @Get('protected')
+  getProtected(@Req() req: Request): { message: string; user: User } {
+    return { message: 'This is a protected endpoint', user: req.user as User };
   }
 }

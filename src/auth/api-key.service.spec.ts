@@ -19,7 +19,7 @@ describe('ApiKeyService', () => {
           useValue: {
             get: jest.fn((key: string) => {
               if (key === 'API_KEYS') {
-                return ['valid-key-1', 'valid-key-2'];
+                return 'valid-key-1,valid-key-2';
               }
               return null;
             }),
