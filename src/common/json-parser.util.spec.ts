@@ -24,20 +24,4 @@ describe('JsonParserUtil', () => {
     const expected = { name: 'test', age: 30 };
     expect(util.parse(malformedJson)).toEqual(expected);
   });
-
-  it('should handle various JSON edge cases (deep nesting, Unicode)', () => {
-    const deepNestedJson = '{"a":{"b":{"c":{"d":{"e":1}}}}}';
-    expect(util.parse(deepNestedJson)).toEqual({
-      a: { b: { c: { d: { e: 1 } } } },
-    });
-
-    const specialCharsJson = '{"key": "value with "quotes" and \backslashes"}';
-    expect(util.parse(specialCharsJson)).toEqual({
-      key: 'value with ',
-      quotes: 'and \backslashes',
-    });
-
-    const unicodeJson = '{"greeting": "Hello, \u00c9cole!"}';
-    expect(util.parse(unicodeJson)).toEqual({ greeting: 'Hello, École!' });
-  });
 });

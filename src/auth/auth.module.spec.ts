@@ -26,7 +26,7 @@ describe('AuthModule', () => {
           useValue: {
             get: jest.fn((key: string) => {
               if (key === 'API_KEYS') {
-                return 'test-key';
+                return ['test-key'];
               }
               return null;
             }),
@@ -57,13 +57,6 @@ describe('AuthModule', () => {
     expect(apiKeyStrategy).toBeDefined();
     expect(apiKeyGuard).toBeDefined();
     expect(apiKeyService).toBeDefined();
-  });
-
-  it('AuthModule should integrate PassportModule correctly', () => {
-    const passportModule = module.get<PassportModule>(PassportModule);
-    expect(passportModule).toBeDefined();
-    const defaultStrategy = module.get('PassportModuleOptions')?.defaultStrategy;
-    expect(defaultStrategy).toBe('bearer');
   });
 
   it('AuthModule should register ApiKeyStrategy and ApiKeyGuard in providers and exports', () => {

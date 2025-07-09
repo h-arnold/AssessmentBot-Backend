@@ -11,12 +11,16 @@ export class ApiKeyService {
     private readonly configService: ConfigService,
     private readonly logger: Logger,
   ) {
-    const apiKeysFromConfig = this.configService.get<string[]>('API_KEYS');
-    if (!apiKeysFromConfig || !Array.isArray(apiKeysFromConfig)) {
+    const apiKeysFromConfig = this.configService.get<string | string[]>(
+      'API_KEYS',
+    );
+    if (typeof apiKeysFromConfig === 'string') {
+      this.apiKeys = apiKeysFromConfig.split(',').map((s) => s.trim());
+    } else if (Array.isArray(apiKeysFromConfig)) {
+      this.apiKeys = apiKeysFromConfig;
+    } else {
       this.apiKeys = [];
-      return;
     }
-    this.apiKeys = apiKeysFromConfig;
   }
 
   validate(apiKey: string): User | null {
