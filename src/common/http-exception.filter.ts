@@ -23,17 +23,42 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
     let message: string;
+    interface ZodErrorDetail {
+      code: string;
+      expected?: string;
+      received?: string;
+      path: (string | number)[];
+      message: string;
+    }
+
+    let errors: ZodErrorDetail[] | undefined; // Add a variable for errors
+
     if (exception instanceof HttpException) {
-      const response = exception.getResponse();
-      if (typeof response === 'string') {
-        message = response;
+      const exceptionResponse = exception.getResponse(); // Rename to avoid conflict
+      if (typeof exceptionResponse === 'string') {
+        message = exceptionResponse;
       } else if (
-        typeof response === 'object' &&
-        response !== null &&
-        'message' in response
+        typeof exceptionResponse === 'object' &&
+        exceptionResponse !== null
       ) {
-        const msg = (response as { message: string | string[] }).message;
-        message = Array.isArray(msg) ? msg.join(', ') : msg;
+        // Extract message
+        if ('message' in exceptionResponse) {
+          const msg = (exceptionResponse as { message: string | string[] })
+            .message;
+          message = Array.isArray(msg) ? msg.join(', ') : msg;
+        } else {
+          message = 'Internal server error'; // Default if no message
+        }
+
+        // Extract errors if present (for validation errors)
+        if (
+          'errors' in exceptionResponse &&
+          Array.isArray(
+            (exceptionResponse as { errors: ZodErrorDetail[] }).errors,
+          )
+        ) {
+          errors = (exceptionResponse as { errors: ZodErrorDetail[] }).errors;
+        }
       } else {
         message = 'Internal server error';
       }
@@ -46,12 +71,18 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
       message = 'Internal server error';
     }
 
-    const errorResponse = {
+    const errorResponse: Record<string, unknown> = {
+      // Use unknown for more strict typing
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
       message: message,
     };
+
+    if (errors) {
+      // Add errors to the response if they exist
+      errorResponse.errors = errors;
+    }
 
     const logContext = {
       method: request.method,

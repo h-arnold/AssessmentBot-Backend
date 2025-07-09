@@ -9,5 +9,6 @@ module.exports = {
   
   transform: {
     "^.+\\.(t|j)s$": "ts-jest"
-  }
+  },
+  testRegex: ".+\\.e2e-spec\\.ts$"
 };
