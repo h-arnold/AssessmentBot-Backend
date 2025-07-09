@@ -120,7 +120,7 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 - [ ] Review the controller and E2E test code.
 - [ ] Commit the changes.
-- [X] **Commit ID**: `f3ea5e8`
+- [x] **Commit ID**: `f3ea5e8`
 
 ---
 
@@ -136,25 +136,25 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 #### Red Phase: Write Failing Integration Tests
 
-- [X] Create a module test file `src/v1/assessor/assessor.module.spec.ts`.
-- [X] Write a test to ensure the `AssessorModule` can be compiled successfully by the NestJS `Test.createTestingModule`.
-- [X] Write a test to ensure that `AssessorController` and `AssessorService` are available for injection from the module context.
+- [x] Create a module test file `src/v1/assessor/assessor.module.spec.ts`.
+- [x] Write a test to ensure the `AssessorModule` can be compiled successfully by the NestJS `Test.createTestingModule`.
+- [x] Write a test to ensure that `AssessorController` and `AssessorService` are available for injection from the module context.
 
 #### Green Phase: Create and Integrate the Module
 
-- [X] Create the module file `src/v1/assessor/assessor.module.ts`.
-- [X] Define the `AssessorModule` using the `@Module()` decorator.
-- [X] Add `AssessorController` to the `controllers` array.
-- [X] Add `AssessorService` to the `providers` array.
-- [X] Import the new `AssessorModule` into the `imports` array of the main `AppModule` in `src/app.module.ts`.
-- [X] Run the module integration tests and ensure they pass.
-- [X] Run the entire test suite (`npm test`) to ensure all new and existing tests pass.
+- [x] Create the module file `src/v1/assessor/assessor.module.ts`.
+- [x] Define the `AssessorModule` using the `@Module()` decorator.
+- [x] Add `AssessorController` to the `controllers` array.
+- [x] Add `AssessorService` to the `providers` array.
+- [x] Import the new `AssessorModule` into the `imports` array of the main `AppModule` in `src/app.module.ts`.
+- [x] Run the module integration tests and ensure they pass.
+- [x] Run the entire test suite (`npm test`) to ensure all new and existing tests pass.
 
 #### Refactor & Commit
 
 - [ ] Review the module file and ensure all dependencies are correctly listed.
 - [ ] Commit the final changes for this stage.
-- [X] **Commit ID**: `ea5547d`
+- [x] **Commit ID**: `ea5547d`
 
 ---
 
@@ -170,18 +170,21 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 #### Tasks:
 
-- [X] Build and run the application (`npm run start:dev`) or via Docker Compose (`docker-compose up -d`).
-- [X] Install HTTP client dependency for scripting (e.g., `npm install axios --save-dev`).
-- [X] Create a TypeScript script at `scripts/verify-assessor.ts` that:
-  - [X] Sends a POST to `/v1/assessor` with a valid JSON payload and valid API key, asserts `201 Created` and expected response body.
-- [X] Sends a POST to `/v1/assessor` with an invalid payload, asserts `400 Bad Request`.
-- [X] Sends a POST to `/v1/assessor` without an `Authorization` header, asserts `401 Unauthorized`.
-- [X] Add an npm script to `package.json`:
+- [x] Build and run the application (`npm run start:dev`) or via Docker Compose (`docker-compose up -d`).
+- [x] Install HTTP client dependency for scripting (e.g., `npm install axios --save-dev`).
+- [x] Create a TypeScript script at `scripts/verify-assessor.ts` that:
+  - [x] Sends a POST to `/v1/assessor` with a valid JSON payload and valid API key, asserts `201 Created` and expected response body.
+- [x] Sends a POST to `/v1/assessor` with an invalid payload, asserts `400 Bad Request`.
+- [x] Sends a POST to `/v1/assessor` without an `Authorization` header, asserts `401 Unauthorized`.
+- [x] Add an npm script to `package.json`:
   ```json
   "verify:assessor": "ts-node scripts/verify-assessor.ts"
+  ```
+
 ```
 - [X] Run `npm run verify:assessor` and ensure all tests pass.
-  ```
+```
+
 - [ ] Run `npm run verify:assessor` and ensure all tests pass.
 - [ ] Optionally, add a Postman collection `postman/AssessorTests.postman_collection.json` for manual verification.
 
@@ -192,7 +195,7 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
   ```
   chore: add TypeScript smoke tests for assessor module (verify-assessor.ts)
   ```
-- [X] **Commit ID**: `890d6c5`
+- [x] **Commit ID**: `890d6c5`
 
 ---
 
@@ -202,17 +205,17 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 #### Tasks:
 
-- [X] Update the main `README.md` to include:
-  - [X] A description of the new Assessor endpoint and its purpose.
-  - [X] Example request/response for `/v1/assessor`.
+- [x] Update the main `README.md` to include:
+  - [x] A description of the new Assessor endpoint and its purpose.
+  - [x] Example request/response for `/v1/assessor`.
   - [ ] Any new environment variables or configuration relevant to the Assessor module.
-- [X] Update API documentation in `docs/api/API_Documentation.md`:
-  - [X] Add the new `/v1/assessor` endpoint, request/response schema, and error codes.
-  - [X] Document authentication requirements (API key).
-  - [X] List all validation rules and expected payloads.
-- [X] Update or add JSDoc comments in all new and modified TypeScript files:
-  - [X] DTOs, controller, service, and module.
-  - [X] Ensure all public methods and classes are documented.
+- [x] Update API documentation in `docs/api/API_Documentation.md`:
+  - [x] Add the new `/v1/assessor` endpoint, request/response schema, and error codes.
+  - [x] Document authentication requirements (API key).
+  - [x] List all validation rules and expected payloads.
+- [x] Update or add JSDoc comments in all new and modified TypeScript files:
+  - [x] DTOs, controller, service, and module.
+  - [x] Ensure all public methods and classes are documented.
 - [ ] If any new configuration is added, update `docs/config/` as appropriate.
 - [ ] If any new test cases or scenarios are discovered, update `docs/ImplementationPlan/Stage5/TestCases.md`.
 - [ ] Review and update any other relevant documentation (e.g., diagrams, implementation plans) to reflect the new feature.
@@ -224,6 +227,7 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
   ```
   docs: update documentation for assessor module and API
   ```
+- [x] **Commit ID**: `f50d8d6`
 
 ---
 
