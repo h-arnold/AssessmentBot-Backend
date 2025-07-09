@@ -96,7 +96,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
 2. **Manual Verification:**
    - Start the application locally and within Docker.
    - Test protected and unprotected endpoints to ensure full functionality.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `b4c64d7`)
 
 3. **Automated Linting for ESM Syntax Compliance:**
    - Run `npm run lint` to ensure no CommonJS patterns remain and all ESM rules are enforced in your source code.
