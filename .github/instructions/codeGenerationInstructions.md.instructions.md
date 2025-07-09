@@ -1,3 +1,7 @@
+---
+applyTo: '**'
+---
+
 # Gemini Code-Assist Instructions
 
 This document provides guidance for interacting with the Assessment Bot backend codebase.

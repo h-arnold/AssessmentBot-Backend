@@ -87,6 +87,14 @@ export default tseslint.config(
 
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'security/detect-eval-with-expression': 'error',
+      '@typescript-eslint/no-var-requires': 'error',
+      'import/no-commonjs': 'error',
+    },
+  },
+  {
+    files: ['**/*.cjs'],
+    rules: {
+      'import/no-commonjs': 'off',
     },
   },
 );

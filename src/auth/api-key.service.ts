@@ -1,7 +1,7 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
 import { User } from './user.interface';
+import { ConfigService, Config } from '../config/config.service';
 
 @Injectable()
 export class ApiKeyService {
@@ -11,12 +11,13 @@ export class ApiKeyService {
     private readonly configService: ConfigService,
     private readonly logger: Logger,
   ) {
-    const apiKeysFromConfig = this.configService.get<string[]>('API_KEYS');
-    if (!apiKeysFromConfig || !Array.isArray(apiKeysFromConfig)) {
-      this.apiKeys = [];
-      return;
+    const apiKeysFromConfig = this.configService.get('API_KEYS');
+    this.apiKeys = Array.isArray(apiKeysFromConfig) ? apiKeysFromConfig : [];
+    if (!this.apiKeys.length) {
+      this.logger.warn(
+        'No API keys configured. All requests will be unauthorised.',
+      );
     }
-    this.apiKeys = apiKeysFromConfig;
   }
 
   validate(apiKey: string): User | null {
