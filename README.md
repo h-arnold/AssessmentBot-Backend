@@ -17,8 +17,8 @@ It will start initially as a monolithic application that will be run in a minima
 6. **TDD**: Write tests for your code. Use a test framework like Jest or Mocha to ensure that your code is reliable and maintainable. Write unit tests for individual functions and integration tests for the overall system.
    - Leverage NestJS’s built-in testing utilities (TestingModule) and e2e support with Jest and Supertest; use the Nest CLI to scaffold and run both unit and e2e tests out of the box.
 7. **Strong Object-Oriented Design**: Use object-oriented design principles to create a clean and maintainable codebase. This includes using classes, interfaces, and inheritance where appropriate.
-    a. **Refactor to avoid God Objects**: Avoid creating "God Objects" that have too many responsibilities. Instead, break down complex objects into smaller, more manageable components.
-    b. **SOLID**: Follow the SOLID principles.
+   a. **Refactor to avoid God Objects**: Avoid creating "God Objects" that have too many responsibilities. Instead, break down complex objects into smaller, more manageable components.
+   b. **SOLID**: Follow the SOLID principles.
 8. **Documentation**: Write clear and concise documentation for your code. Use JSDoc comments to document functions, classes, and modules. Provide examples of how to use the code and explain any complex logic.
 
 ## Getting Started
@@ -83,15 +83,15 @@ A consistent code style is enforced automatically to allow developers to focus o
 QA is a multi-layered approach that builds confidence in the application's stability and security.
 
 1. **Testing Pyramid**: The TDD principle is expanded with a structured testing approach:
-    - **Unit Tests (Jest)**: The foundation. Individual classes and functions are tested in isolation, with external dependencies mocked.
-    - **Integration Tests (NestJS `TestingModule`)**: The middle layer. Tests the interaction *between* internal modules (e.g., Controller -> Service) to ensure they are wired correctly, without making external network calls.
-    - **E2E Tests (Jest & Supertest)**: The top of the pyramid. The entire application is spun up to test the full request-response cycle via real HTTP requests, validating everything from authentication to the final response shape.
+   - **Unit Tests (Jest)**: The foundation. Individual classes and functions are tested in isolation, with external dependencies mocked.
+   - **Integration Tests (NestJS `TestingModule`)**: The middle layer. Tests the interaction _between_ internal modules (e.g., Controller -> Service) to ensure they are wired correctly, without making external network calls.
+   - **E2E Tests (Jest & Supertest)**: The top of the pyramid. The entire application is spun up to test the full request-response cycle via real HTTP requests, validating everything from authentication to the final response shape.
 
 2. **Code Coverage Enforcement**: Jest's `--coverage` flag will be used within a CI/CD pipeline to enforce a minimum test coverage threshold. This ensures the TDD principle is consistently applied.
 
 3. **Automated Security Scanning**:
-    - **Dependency Scanning**: Tools like `npm audit` and GitHub's Dependabot will be used to automatically scan for vulnerabilities in third-party packages and facilitate updates.
-    - **Static Application Security Testing (SAST)**: The `eslint-plugin-security` provides a baseline. Further analysis can be performed by tools like SonarQube/SonarCloud to detect more complex security vulnerabilities and track code quality over time.
+   - **Dependency Scanning**: Tools like `npm audit` and GitHub's Dependabot will be used to automatically scan for vulnerabilities in third-party packages and facilitate updates.
+   - **Static Application Security Testing (SAST)**: The `eslint-plugin-security` provides a baseline. Further analysis can be performed by tools like SonarQube/SonarCloud to detect more complex security vulnerabilities and track code quality over time.
 
 4. **API Schema & Documentation**: To support the **Documentation** principle and provide clarity for API consumers, the project will use `@nestjs/swagger`. This package automatically generates an interactive OpenAPI (Swagger) specification directly from the code (Controllers and DTOs), ensuring the documentation is always in sync with the implementation.
 
@@ -99,13 +99,17 @@ QA is a multi-layered approach that builds confidence in the application's stabi
 
 1. Request comes in via the REST API. Contains Auth Token (API Key in the header) and a JSON body with reference task, template task and student response. A typical request payload looks like this:
 
-``` json
+```json
 {
-    "reference:": "A string or blob containing the reference task",
-    "template:": "A string or blob containing the template task",
-    "studentResponse:" : "A string or blob containing the student's response"
+  "taskType": "One of: text, table, image (ENUM)",
+  "reference": "A string or blob containing the reference task",
+  "template": "A string or blob containing the template task",
+  "studentResponse": "A string or blob containing the student's response"
 }
 ```
+
+- The `taskType` field is an ENUM, not a resource. It is not possible to list, create, or delete task types via the API. Only the above values are valid, and new types can only be added by updating the codebase.
+- The API exposes only a single endpoint for assessment submission (e.g., `POST /assessment`). There are no endpoints for listing, updating, or deleting assessment types.
 
 2. Request is validated using Zod schemas.
 3. If the request is valid, it is authenticated using Passport.js.
@@ -131,41 +135,41 @@ src
 ├── main.ts
 │
 ├── v1
-│   └── assessor
-│       ├── dto
-│       │   └── create-assessor.dto.ts
-│       ├── assessor.controller.ts
-│       ├── assessor.module.ts
-│       └── assessor.service.ts
+│ └── assessor
+│ ├── dto
+│ │ └── create-assessor.dto.ts
+│ ├── assessor.controller.ts
+│ ├── assessor.module.ts
+│ └── assessor.service.ts
 │
 ├── auth
-│   ├── guards
-│   │   └── api-key.guard.ts
-│   ├── strategies
-│   │   └── api-key.strategy.ts
-│   └── auth.module.ts
+│ ├── guards
+│ │ └── api-key.guard.ts
+│ ├── strategies
+│ │ └── api-key.strategy.ts
+│ └── auth.module.ts
 │
 ├── common
-│   ├── filters
-│   │   └── http-exception.filter.ts
-│   ├── logger
-│   │   └── logger.module.ts
-│   ├── pipes
-│   │   └── zod-validation.pipe.ts
-│   └── utils
-│       └── json-parser.util.ts
+│ ├── filters
+│ │ └── http-exception.filter.ts
+│ ├── logger
+│ │ └── logger.module.ts
+│ ├── pipes
+│ │ └── zod-validation.pipe.ts
+│ └── utils
+│ └── json-parser.util.ts
 │
 ├── config
-│   └── config.module.ts
+│ └── config.module.ts
 │
 ├── docs
-│   └── swagger.module.ts
+│ └── swagger.module.ts
 │
 ├── prompt
-│   ├── prompt.superclass.ts
-│   ├── text-prompt.subclass.ts
-│   ├── table-prompt.subclass.ts
-│   └── image-prompt.subclass.ts
+│ ├── prompt.superclass.ts
+│ ├── text-prompt.subclass.ts
+│ ├── table-prompt.subclass.ts
+│ └── image-prompt.subclass.ts
 │
 
 ### Component Breakdown
@@ -217,7 +221,7 @@ The testing strategy follows the classic testing pyramid model:
 - **Scope**: Forms the largest part of the test suite, ensuring individual components behave as expected.
 
 - **Location**: Also co-located with the source files, often testing the module's primary entry point, like a controller.
-- **Purpose**: To test the interaction *between* multiple, co-dependent classes within the application's dependency injection container. NestJS's `Test.createTestingModule()` is used to build a testing module that mirrors the actual application module, but with external infrastructure (like LLM clients or databases) mocked.
+- **Purpose**: To test the interaction _between_ multiple, co-dependent classes within the application's dependency injection container. NestJS's `Test.createTestingModule()` is used to build a testing module that mirrors the actual application module, but with external infrastructure (like LLM clients or databases) mocked.
 - **Scope**: Verifies that modules are wired correctly and that components like controllers, services, and guards work together as intended.
 
 - **Location**: In the root `test/` directory.
