@@ -44,7 +44,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
      - `grep -r "module.exports" src/`
      - `grep -r "exports." src/`
    - Refactor any matches to ESM syntax.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `9868d77`)
 
 2. **Convert `require()` to `import`:**
    - Globally replace `require()` calls with `import` statements.
