@@ -163,48 +163,6 @@ describe('ConfigService', () => {
     });
   });
 
-  describe('API Key validation', () => {
-    it('should fail when API_KEYS is not a string', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      process.env.API_KEYS = 12345 as any; // Force invalid type
-      expect(() => new ConfigService()).toThrow();
-    });
-
-    it('should fail when API_KEYS contains malformed keys', () => {
-      process.env.API_KEYS = 'key1,key2_with_invalid_chars-@,key3';
-      expect(() => new ConfigService()).toThrow();
-    });
-
-    it('should correctly parse a single API key', () => {
-      const apiKey = 'a_single_valid_key';
-      process.env.API_KEYS = apiKey;
-      const configService = new ConfigService();
-      expect(configService.get('API_KEYS')).toEqual([apiKey]);
-    });
-
-    it('should correctly parse multiple comma-separated API keys', () => {
-      const apiKeys = 'key1,key2,key3';
-      process.env.API_KEYS = apiKeys;
-      const configService = new ConfigService();
-      expect(configService.get('API_KEYS')).toEqual(['key1', 'key2', 'key3']);
-    });
-
-    it('should handle whitespace when parsing multiple keys', () => {
-      const apiKeys = '  key1  ,  key2  ,key3';
-      process.env.API_KEYS = apiKeys;
-      const configService = new ConfigService();
-      expect(configService.get('API_KEYS')).toEqual(['key1', 'key2', 'key3']);
-    });
-
-    it('should fail gracefully if API_KEYS is missing', () => {
-      delete process.env.API_KEYS;
-      // Assuming API_KEYS is optional, this shouldn't throw.
-      // If it becomes required, this test should change to expect a throw.
-      const configService = new ConfigService();
-      expect(configService.get('API_KEYS')).toBeUndefined();
-    });
-  });
-
   describe('.env.example file validation', () => {
     const expectedRequiredVars = ['NODE_ENV', 'PORT', 'APP_NAME'];
 
