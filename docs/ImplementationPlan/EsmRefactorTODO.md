@@ -49,7 +49,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
 2. **Convert `require()` to `import`:**
    - Globally replace `require()` calls with `import` statements.
    - Pay close attention to default vs. named imports.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `656a7fd`)
 
 3. **Add `.js` Extensions to Local Imports (Optional):**
    - For future ESM compatibility, you may add `.js` extensions to all relative imports, but this is not required for CommonJS output.
