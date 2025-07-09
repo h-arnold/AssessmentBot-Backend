@@ -20,7 +20,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
    - Set `"target"` to a modern ECMAScript version (e.g., `"ES2022"`).
    - Verify `"outDir": "./dist"` and `"rootDir": "./src"` are correctly configured.
    - Optionally, use `"moduleResolution": "Node"` or `"NodeNext"` as needed.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `c2febdf`)
 
 4. **Update `jest.config.js` (or `jest-e2e.config.cjs`):**
    - Configure Jest to work with ESM syntax in your source, but ensure it can run tests against CommonJS output.
