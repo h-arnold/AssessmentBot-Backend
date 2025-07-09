@@ -192,6 +192,7 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
   ```
   chore: add TypeScript smoke tests for assessor module (verify-assessor.ts)
   ```
+- [X] **Commit ID**: `890d6c5`
 
 ---
 
@@ -201,17 +202,17 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 #### Tasks:
 
-- [ ] Update the main `README.md` to include:
-  - [ ] A description of the new Assessor endpoint and its purpose.
-  - [ ] Example request/response for `/v1/assessor`.
+- [X] Update the main `README.md` to include:
+  - [X] A description of the new Assessor endpoint and its purpose.
+  - [X] Example request/response for `/v1/assessor`.
   - [ ] Any new environment variables or configuration relevant to the Assessor module.
-- [ ] Update API documentation in `docs/api/API_Documentation.md`:
-  - [ ] Add the new `/v1/assessor` endpoint, request/response schema, and error codes.
-  - [ ] Document authentication requirements (API key).
-  - [ ] List all validation rules and expected payloads.
-- [ ] Update or add JSDoc comments in all new and modified TypeScript files:
-  - [ ] DTOs, controller, service, and module.
-  - [ ] Ensure all public methods and classes are documented.
+- [X] Update API documentation in `docs/api/API_Documentation.md`:
+  - [X] Add the new `/v1/assessor` endpoint, request/response schema, and error codes.
+  - [X] Document authentication requirements (API key).
+  - [X] List all validation rules and expected payloads.
+- [X] Update or add JSDoc comments in all new and modified TypeScript files:
+  - [X] DTOs, controller, service, and module.
+  - [X] Ensure all public methods and classes are documented.
 - [ ] If any new configuration is added, update `docs/config/` as appropriate.
 - [ ] If any new test cases or scenarios are discovered, update `docs/ImplementationPlan/Stage5/TestCases.md`.
 - [ ] Review and update any other relevant documentation (e.g., diagrams, implementation plans) to reflect the new feature.
