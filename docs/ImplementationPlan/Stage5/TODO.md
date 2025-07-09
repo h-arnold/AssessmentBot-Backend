@@ -43,7 +43,7 @@ This document outlines the tasks for implementing the Assessor feature module, f
 
 - [ ] Review the DTO and test code for clarity, consistency, and adherence to project standards.
 - [ ] Commit the changes with a clear message.
-- [ ] **Commit ID**: `________________`
+- [x] **Commit ID**: `e3834e8`
 
 ---
 
@@ -59,20 +59,20 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 #### Red Phase: Write Failing Tests for the Service
 
-- [ ] Create the service test file `src/v1/assessor/assessor.service.spec.ts`.
-- [ ] Write a test to ensure the `AssessorService` can be created and is defined.
-- [ ] Write a test for a `createAssessment` method that:
-  - [ ] Exists on the service.
-  - [ ] Accepts an argument that conforms to the `CreateAssessorDto` type.
-  - [ ] Returns a placeholder or stubbed response (e.g., a simple object or string).
-  - [ ] Simulate and assert error handling: when an internal error is thrown, the method should propagate or reject appropriately.
+- [x] Create the service test file `src/v1/assessor/assessor.service.spec.ts`.
+- [x] Write a test to ensure the `AssessorService` can be created and is defined.
+- [x] Write a test for a `createAssessment` method that:
+  - [x] Exists on the service.
+  - [x] Accepts an argument that conforms to the `CreateAssessorDto` type.
+  - [x] Returns a placeholder or stubbed response (e.g., a simple object or string).
+  - [x] Simulate and assert error handling: when an internal error is thrown, the method should propagate or reject appropriately.
 
 #### Green Phase: Implement the Service Skeleton
 
-- [ ] Create the service file `src/v1/assessor/assessor.service.ts`.
-- [ ] Create the `AssessorService` class.
-- [ ] Implement the `createAssessment` method with the correct signature and a stubbed return value.
-- [ ] Run the service tests and ensure they pass.
+- [x] Create the service file `src/v1/assessor/assessor.service.ts`.
+- [x] Create the `AssessorService` class.
+- [x] Implement the `createAssessment` method with the correct signature and a stubbed return value.
+- [x] Run the service tests and ensure they pass.
 
 #### Refactor & Commit
 
