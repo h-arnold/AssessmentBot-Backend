@@ -60,10 +60,10 @@ describe('AuthModule', () => {
   });
 
   it('AuthModule should integrate PassportModule correctly', () => {
-    // This test implicitly checks PassportModule integration by ensuring ApiKeyStrategy is provided
-    // and the module compiles without errors. More explicit checks would involve
-    // inspecting the module's internal providers, which is not straightforward.
-    expect(true).toBeTruthy(); // Placeholder, actual check is compilation success
+    const passportModule = module.get<PassportModule>(PassportModule);
+    expect(passportModule).toBeDefined();
+    const defaultStrategy = module.get('PassportModuleOptions')?.defaultStrategy;
+    expect(defaultStrategy).toBe('bearer');
   });
 
   it('AuthModule should register ApiKeyStrategy and ApiKeyGuard in providers and exports', () => {
