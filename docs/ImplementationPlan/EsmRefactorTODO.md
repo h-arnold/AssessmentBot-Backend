@@ -54,7 +54,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
 3. **Add `.js` Extensions to Local Imports (Optional):**
    - For future ESM compatibility, you may add `.js` extensions to all relative imports, but this is not required for CommonJS output.
    - Use ESLint to enforce this rule if you want to prepare for a future ESM-only migration.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `fd5d41d`)
 
 4. **Convert `module.exports` to `export`:**
    - Globally replace `module.exports` and `exports` with `export` statements.
