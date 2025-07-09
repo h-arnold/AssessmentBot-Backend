@@ -95,28 +95,6 @@ Below is a guided, step-by-step process for implementing and testing API key aut
 
 **Status:** Reverted to a clean state after encountering significant issues with mocking `AuthGuard` and `Logger` in unit tests. All tests are currently passing after reverting to commit `b363af8` and fixing a test case in `src/common/json-parser.util.spec.ts` (commit: `b107bbf`).
 
-**Issues Encountered:**
-
-1. **Mocking Complexity for `AuthGuard`:** Directly mocking `AuthGuard` and its internal dependencies (like `PassportStrategy` and `ExecutionContext`) proved to be overly complex and brittle. Changes to the `AuthGuard` implementation or its dependencies frequently broke the mocks, leading to time-consuming debugging of test setups rather than actual logic.
-2. **Logger Injection:** Initially, `ApiKeyStrategy` created its own `Logger` instance, making it difficult to mock and verify logging behavior in unit tests. While this was addressed by injecting `Logger`, the overall mocking strategy for authentication components remained challenging.
-3. **Interdependencies:** The tight coupling between `AuthModule`, `ApiKeyStrategy`, and `ApiKeyGuard`, combined with NestJS's dependency injection, made isolated unit testing difficult without extensive and fragile mocking.
-
-**Revised Testing Strategy Consideration:**
-Given the difficulties with extensive mocking for `AuthGuard`, a more pragmatic approach for testing the authentication flow might involve a hybrid strategy:
-
-- **Unit Tests for `ApiKeyStrategy` (focused on `validate` method):** Continue with unit tests for `ApiKeyStrategy` to ensure its `validate` method correctly processes API keys against the `ConfigService` and handles various valid/invalid scenarios. Mock `ConfigService` and `Logger` for these tests.
-- **E2E Tests for `ApiKeyGuard` and Authentication Flow:** Instead of heavily mocking `AuthGuard` in unit tests, rely more on end-to-end (E2E) tests to verify the `ApiKeyGuard`'s behavior. This involves:
-  - Setting up a minimal NestJS application with the `AuthModule` and a protected endpoint.
-  - Using `supertest` to make actual HTTP requests to this protected endpoint.
-  - Providing valid/invalid API keys via `Authorization` headers.
-  - Asserting on the HTTP status codes (e.g., 200 OK, 401 Unauthorized) and response bodies.
-  - This approach tests the entire authentication pipeline (Passport.js integration, strategy, guard, and `HttpExceptionFilter`) as a whole, reducing the need for complex and fragile mocks.
-
-**Next Steps:**
-I will proceed with creating the `src/auth` directory and the initial test files as per the TODO list, but with a stronger emphasis on E2E tests for `ApiKeyGuard` and the overall authentication flow, and simpler unit tests for `ApiKeyStrategy`.
-
---- End Previous Attempt Notes ---
-
 ## Green Phase: Implementation and Verification (Make tests pass)
 
 ### 6. Install Dependencies
@@ -187,6 +165,8 @@ I will proceed with creating the `src/auth` directory and the initial test files
   - Ensure proper module dependency order
   - [x] Commit your changes. Note the commit id here: `23da179`
 
+**Current Blocker:** Unable to execute specific E2E test files using Jest configuration. The `testPathPatterns` option is not working as expected, and attempts to modify `testRegex` or `rootDir` in `jest-e2e.config.cjs` have not resolved the issue. This prevents isolated testing of the authentication E2E flow.
+
 - [ ] Verify `main.ts` configuration:
   - Ensure global `HttpExceptionFilter` handles `UnauthorizedException` correctly
   - No additional global setup required for guards (applied per route)
@@ -254,6 +234,19 @@ I will proceed with creating the `src/auth` directory and the initial test files
   - Test authentication with multiple configured keys
   - [ ] Commit your changes. Note the commit id here: `COMMIT_ID`
 
-**Current Blocker:** Unable to execute specific E2E test files using Jest configuration. The `testPathPatterns` option is not working as expected, and attempts to modify `testRegex` or `rootDir` in `jest-e2e.config.cjs` have not resolved the issue. This prevents isolated testing of the authentication E2E flow.
+**Issues Encountered:**
 
---- End of content ---
+1. **Mocking Complexity for `AuthGuard`:** Directly mocking `AuthGuard` and its internal dependencies (like `PassportStrategy` and `ExecutionContext`) proved to be overly complex and brittle. Changes to the `AuthGuard` implementation or its dependencies frequently broke the mocks, leading to time-consuming debugging of test setups rather than actual logic.
+2. **Logger Injection:** Initially, `ApiKeyStrategy` created its own `Logger` instance, making it difficult to mock and verify logging behavior in unit tests. While this was addressed by injecting `Logger`, the overall mocking strategy for authentication components remained challenging.
+3. **Interdependencies:** The tight coupling between `AuthModule`, `ApiKeyStrategy`, and `ApiKeyGuard`, combined with NestJS's dependency injection, made isolated unit testing difficult without extensive and fragile mocking.
+
+**Revised Testing Strategy Consideration:**
+Given the difficulties with extensive mocking for `AuthGuard`, a more pragmatic approach for testing the authentication flow might involve a hybrid strategy:
+
+- **Unit Tests for `ApiKeyStrategy` (focused on `validate` method):** Continue with unit tests for `ApiKeyStrategy` to ensure its `validate` method correctly processes API keys against the `ConfigService` and handles various valid/invalid scenarios. Mock `ConfigService` and `Logger` for these tests.
+- **E2E Tests for `ApiKeyGuard` and Authentication Flow:** Instead of heavily mocking `AuthGuard` in unit tests, rely more on end-to-end (E2E) tests to verify the `ApiKeyGuard`'s behavior. This involves:
+  - Setting up a minimal NestJS application with the `AuthModule` and a protected endpoint.
+  - Using `supertest` to make actual HTTP requests to this protected endpoint.
+  - Providing valid/invalid API keys via `Authorization` headers.
+  - Asserting on the HTTP status codes (e.g., 200 OK, 401 Unauthorized) and response bodies.
+  - This approach tests the entire authentication pipeline (Passport.js integration, strategy, guard, and `HttpExceptionFilter`) as a whole, reducing the need for complex and fragile mocks.
