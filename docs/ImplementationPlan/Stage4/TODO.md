@@ -189,7 +189,7 @@ Below is a guided, step-by-step process for implementing and testing API key aut
   - Provide examples of API key usage in requests
   - Include security considerations and rate limiting recommendations
   - Document the authorization header format: `Authorization: Bearer <api-key>`
-  - [x] Commit your changes. Note the commit id here: `COMMIT_ID`
+  - [x] Commit your changes. Note the commit id here: `803002f`
 
 ### 15. Verification and Testing
 
