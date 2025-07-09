@@ -1,9 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
+
 // import { AppModule } from './../src/app.module'; // No longer directly importing AppModule
-import { ZodValidationPipe } from './../src/common/zod-validation.pipe';
 import { HttpExceptionFilter } from './../src/common/http-exception.filter';
+import { ZodValidationPipe } from './../src/common/zod-validation.pipe';
 import { TestAppModule } from './test-app.module'; // Import the new TestAppModule
 
 describe('Global Setup and E2E Tests', () => {
@@ -36,15 +37,6 @@ describe('Global Setup and E2E Tests', () => {
     expect(response.body).toHaveProperty('path', '/test-error');
   });
 
-  // Removed the test that used app.getContainer() for ZodValidationPipe
-  // it('Global ZodValidationPipe should validate a request DTO and reject invalid data', async () => {
-  //   const pipes = (app as any).getContainer().getGlobalPipes();
-  //   const hasZodValidationPipe = pipes.some(
-  //     (pipe: any) => pipe instanceof ZodValidationPipe,
-  //   );
-  //   expect(hasZodValidationPipe).toBe(true);
-  // });
-
   it('Controller endpoint should return 400 for invalid payload', async () => {
     const response = await request(app.getHttpServer())
       .post('/test-validation')
@@ -74,19 +66,4 @@ describe('Global Setup and E2E Tests', () => {
     // This test implicitly passes if the application starts without errors and previous tests pass.
     expect(app).toBeDefined();
   });
-
-  // Removed the test that used app.getContainer() for global pipe and filter registration
-  // it('Application should register global pipe and filter', async () => {
-  //   const filters = (app as any).getContainer().getGlobalFilters();
-  //   const hasHttpExceptionFilter = filters.some(
-  //     (filter: any) => filter instanceof HttpExceptionFilter,
-  //   );
-  //   expect(hasHttpExceptionFilter).toBe(true);
-
-  //   const pipes = (app as any).getContainer().getGlobalPipes();
-  //   const hasZodValidationPipe = pipes.some(
-  //     (pipe: any) => pipe instanceof ZodValidationPipe,
-  //   );
-  //   expect(hasZodValidationPipe).toBe(true);
-  // });
 });

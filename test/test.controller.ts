@@ -7,8 +7,9 @@ import {
   HttpStatus,
   HttpException,
 } from '@nestjs/common';
-import { ZodValidationPipe } from '../src/common/zod-validation.pipe';
 import { z } from 'zod';
+
+import { ZodValidationPipe } from '../src/common/zod-validation.pipe';
 
 // Define a simple DTO for validation testing
 const TestDtoSchema = z.object({

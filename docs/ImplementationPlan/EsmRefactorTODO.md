@@ -25,7 +25,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
 4. **Update `jest.config.js` (or `jest-e2e.config.cjs`):**
    - Configure Jest to work with ESM syntax in your source, but ensure it can run tests against CommonJS output.
    - Use `ts-jest` or similar tools to bridge ESM syntax and CommonJS output.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `3e263e7`)
 
 5. **Set Up ESLint Rules to Enforce ESM Syntax:**
    - Install and configure ESLint plugins/rules to detect and prevent CommonJS patterns in your source code:

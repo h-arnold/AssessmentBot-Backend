@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { AppModule } from '../src/app.module'; // Import the main AppModule
+
 import { TestController } from './test.controller';
+import { AppModule } from '../src/app.module'; // Import the main AppModule
 
 @Module({
   imports: [AppModule], // Import the main application module
