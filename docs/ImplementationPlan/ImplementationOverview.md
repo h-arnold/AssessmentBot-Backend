@@ -4,7 +4,7 @@ This document outlines the high-level implementation stages for the Assessment B
 
 ## ✅ (COMPLETE) Stage 1: Project Initialization and Setup
 
-- **Objectives**: Scaffold a NestJS application, configure TypeScript, and set up version control and linting.  
+- **Objectives**: Scaffold a NestJS application, configure TypeScript, and set up version control and linting.
 - **Deliverables**:
   - NestJS monorepo created via Nest CLI
   - ESLint + Prettier configuration, Husky hooks, lint-staged setup
@@ -28,8 +28,6 @@ This document outlines the high-level implementation stages for the Assessment B
 
 **Note on Zod Validation Scope:** For Stage 2, Zod validation focuses solely on environment variables at application startup. The `ZodValidationPipe` for request payload validation will be implemented in Stage 3 as part of the `CommonModule`.
 
-
-
 ## Stage 3: Common Utilities and Error Handling
 
 - **Objectives**: Create shared utilities and global exception filters.
@@ -41,7 +39,7 @@ This document outlines the high-level implementation stages for the Assessment B
   - Validation errors return appropriate HTTP responses
   - Unit tests for each utility
 
-## Stage 4: Authentication and API Key Guard
+## ✅ (COMPLETE) Stage 4: Authentication and API Key Guard
 
 - **Objectives**: Secure endpoints with API Key authentication using Passport.js.
 - **Deliverables**:
@@ -123,4 +121,4 @@ This document outlines the high-level implementation stages for the Assessment B
 
 ---
 
-*Once all stages are complete, the Assessment Bot Backend will be production-ready, fully documented, and verified through automated tests and CI/CD pipelines.*
+_Once all stages are complete, the Assessment Bot Backend will be production-ready, fully documented, and verified through automated tests and CI/CD pipelines._
