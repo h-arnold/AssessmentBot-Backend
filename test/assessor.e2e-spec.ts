@@ -1,11 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-
 import * as request from 'supertest';
 
+import { AppModule } from './../src/app.module';
 import { ApiKeyGuard } from './../src/auth/api-key.guard';
 import { ConfigService } from './../src/config/config.service';
-import { AppModule } from './../src/app.module';
 import { AssessorService } from './../src/v1/assessor/assessor.service';
 import {
   CreateAssessorDto,

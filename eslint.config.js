@@ -66,7 +66,7 @@ export default tseslint.config(
       ...prettier.rules,
 
       '@typescript-eslint/interface-name-prefix': 'off',
-      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'error',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
       'no-eval': 'error',
@@ -82,8 +82,6 @@ export default tseslint.config(
           },
         },
       ],
-
-      '@typescript-eslint/explicit-function-return-type': 'warn',
 
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'security/detect-eval-with-expression': 'error',

@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { AssessorController } from './assessor.controller';
-import { AssessorService } from './assessor.service';
 import { AssessorModule } from './assessor.module';
+import { AssessorService } from './assessor.service';
 
 describe('AssessorModule', () => {
   let module: TestingModule;
