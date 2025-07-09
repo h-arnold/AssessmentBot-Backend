@@ -5,10 +5,8 @@
   "author": "Hamish Arnold",
   "private": true,
   "license": "ISC",
-  "type": "module",
   "scripts": {
     "build": "nest build",
-    "postbuild": "echo '{\"type\": \"commonjs\"}' > dist/package.json",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
