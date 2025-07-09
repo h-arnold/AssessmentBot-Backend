@@ -13,7 +13,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
    - Ensure your source code uses ESM syntax (import/export), but set the build output to CommonJS for now.
    - You may keep or remove `"type": "module"` depending on your build and runtime needs, but ensure your build output (e.g., `dist/package.json`) is set to CommonJS if required by NestJS.
    - Remove any `postbuild` scripts that are no longer necessary for module type switching.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `91abeb2`)
 
 3. **Update `tsconfig.json`:**
    - Set `"module": "CommonJS"` in `compilerOptions` to ensure compatibility with NestJS and CommonJS dependencies.
