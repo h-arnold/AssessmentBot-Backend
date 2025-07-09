@@ -91,7 +91,7 @@ This document outlines the steps required to refactor the Assessment Bot Backend
 1. **Run All Tests:**
    - Execute `npm test` and `npm run test:e2e` to ensure all unit, integration, and E2E tests pass with the refactoring.
    - Address any new test failures related to module resolution or syntax.
-   - [ ] **Commit your changes** (commit id: `________`)
+   - [x] **Commit your changes** (commit id: `3069883`)
 
 2. **Manual Verification:**
    - Start the application locally and within Docker.
@@ -120,5 +120,6 @@ This document outlines the steps required to refactor the Assessment Bot Backend
 
 ## Important Considerations
 
+- **API Key Discrepancy:** Investigate the discrepancy between API key acceptance in tests and production environment.
 - **Dependency Compatibility:** Some older npm packages might not be fully ESM-compatible. Be prepared to find ESM alternatives or use tools like `esm` or `patch-package` as temporary workarounds.
 - **Incremental Approach:** For larger codebases, consider an incremental refactoring approach, converting modules one by one.
