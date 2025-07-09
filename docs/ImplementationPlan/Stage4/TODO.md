@@ -172,7 +172,7 @@ Below is a guided, step-by-step process for implementing and testing API key aut
 - [x] Verify `main.ts` configuration:
   - Ensure global `HttpExceptionFilter` handles `UnauthorizedException` correctly
   - No additional global setup required for guards (applied per route)
-  - [x] E2E test setup is functional and ready for authentication tests. (commit: COMMIT_ID_PLACEHOLDER)
+  - [x] E2E test setup is functional and ready for authentication tests. (commit: 2429781f00e09de93212603941b0817be8b508e9)
 
 ### 13. Environment Configuration
 
