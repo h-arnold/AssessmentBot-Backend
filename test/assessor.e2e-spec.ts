@@ -1,3 +1,4 @@
+// ...existing code...
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { json } from 'express';
@@ -13,6 +14,121 @@ import {
 } from './../src/v1/assessor/dto/create-assessor.dto';
 
 describe('AssessorController (e2e)', () => {
+  // ...existing code...
+
+  describe('Image Validation', () => {
+    const validPngBase64 =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
+    const validJpegBase64 =
+      'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/ACoAB//Z';
+    const validPngBuffer = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
+      'base64',
+    );
+    const validJpegBuffer = Buffer.from(
+      '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/ACoAB//Z',
+      'base64',
+    );
+
+    it('should accept a valid PNG base64 image', async () => {
+      const payload = {
+        taskType: TaskType.IMAGE,
+        reference: validPngBase64,
+        template: validPngBase64,
+        studentResponse: validPngBase64,
+      };
+      await request(app.getHttpServer())
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${validApiKey}`)
+        .send(payload)
+        .expect((res) => {
+          expect([200, 201]).toContain(res.status);
+        });
+    });
+
+    it('should accept a valid JPEG base64 image', async () => {
+      const payload = {
+        taskType: TaskType.IMAGE,
+        reference: validJpegBase64,
+        template: validJpegBase64,
+        studentResponse: validJpegBase64,
+      };
+      await request(app.getHttpServer())
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${validApiKey}`)
+        .send(payload)
+        .expect((res) => {
+          expect([200, 201]).toContain(res.status);
+        });
+    });
+
+    it('should reject a GIF base64 image (disallowed type)', async () => {
+      const gifBase64 =
+        'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+      const payload = {
+        taskType: TaskType.IMAGE,
+        reference: gifBase64,
+        template: gifBase64,
+        studentResponse: gifBase64,
+      };
+      const res = await request(app.getHttpServer())
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${validApiKey}`)
+        .send(payload);
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBeDefined();
+    });
+
+    it('should reject a PNG image exceeding size limit', async () => {
+      const largePng =
+        'data:image/png;base64,' +
+        Buffer.alloc(2 * 1024 * 1024).toString('base64');
+      const payload = {
+        taskType: TaskType.IMAGE,
+        reference: largePng,
+        template: largePng,
+        studentResponse: largePng,
+      };
+      const res = await request(app.getHttpServer())
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${validApiKey}`)
+        .send(payload);
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBeDefined();
+    });
+
+    it('should reject an invalid base64 image string', async () => {
+      const invalidBase64 = 'data:image/png;base64,not-a-base64-string';
+      const payload = {
+        taskType: TaskType.IMAGE,
+        reference: invalidBase64,
+        template: invalidBase64,
+        studentResponse: invalidBase64,
+      };
+      const res = await request(app.getHttpServer())
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${validApiKey}`)
+        .send(payload);
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBeDefined();
+    });
+
+    it('should reject an empty base64 image string', async () => {
+      const emptyBase64 = 'data:image/png;base64,';
+      const payload = {
+        taskType: TaskType.IMAGE,
+        reference: emptyBase64,
+        template: emptyBase64,
+        studentResponse: emptyBase64,
+      };
+      const res = await request(app.getHttpServer())
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${validApiKey}`)
+        .send(payload);
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBeDefined();
+    });
+  });
   let app: INestApplication;
   let assessorService: AssessorService;
   let configService: ConfigService;

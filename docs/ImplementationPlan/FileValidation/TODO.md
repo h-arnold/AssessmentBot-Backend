@@ -106,29 +106,43 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 #### Red Phase: Write Failing Tests for Image Validation Pipe
 
-- [ ] Create `src/common/pipes/image-validation.pipe.spec.ts` and write unit tests for `ImageValidationPipe`:
-  - **Initialization**
-    - [ ] `ImageValidationPipe should be defined`
-    - [ ] `ImageValidationPipe should inject ConfigService`
+- [x] Create `src/common/pipes/image-validation.pipe.spec.ts` and write unit tests for `ImageValidationPipe`:
+  - **Initialisation**
+    - [x] `ImageValidationPipe should be defined`
+    - [x] `ImageValidationPipe should inject ConfigService`
   - **Valid Inputs (should pass)**
-    - [ ] `Should allow a valid PNG Buffer within size limit`
-    - [ ] `Should allow a valid JPEG Buffer within size limit` (if JPEG is allowed in config)
-    - [ ] `Should allow a valid base64 PNG string within size limit`
-    - [ ] `Should allow a valid base64 JPEG string within size limit` (if JPEG is allowed in config)
-    - [ ] `Should allow non-image string inputs (e.g., for TEXT/TABLE task types)`
-    - [ ] `Should allow non-Buffer/non-string inputs (e.g., numbers, objects) to pass through`
+    - [x] `Should allow a valid PNG Buffer within size limit`
+    - [x] `Should allow a valid JPEG Buffer within size limit` (if JPEG is allowed in config)
+    - [x] `Should allow a valid base64 PNG string within size limit`
+    - [x] `Should allow a valid base64 JPEG string within size limit` (if JPEG is allowed in config)
+    - [x] `Should allow non-image string inputs (e.g., for TEXT/TABLE task types)`
+    - [x] `Should allow non-Buffer/non-string inputs (e.g., numbers, objects) to pass through`
   - **Invalid Inputs (should throw BadRequestException)**
-    - [ ] `Should reject a Buffer exceeding MAX_IMAGE_UPLOAD_SIZE_MB`
-    - [ ] `Should reject a base64 string exceeding MAX_IMAGE_UPLOAD_SIZE_MB`
-    - [ ] `Should reject a Buffer with a disallowed MIME type`
-    - [ ] `Should reject a base64 string with a disallowed MIME type`
-    - [ ] `Should reject an invalid base64 string format`
-    - [ ] `Should reject an empty Buffer`
-    - [ ] `Should reject an empty base64 string`
-    - [ ] `Should reject a Buffer that cannot be identified as an image type`
+    - [x] `Should reject a Buffer exceeding MAX_IMAGE_UPLOAD_SIZE_MB`
+    - [x] `Should reject a base64 string exceeding MAX_IMAGE_UPLOAD_SIZE_MB`
+    - [x] `Should reject a Buffer with a disallowed MIME type`
+    - [x] `Should reject a base64 string with a disallowed MIME type`
+    - [x] `Should reject an invalid base64 string format`
+    - [x] `Should reject an empty Buffer`
+    - [x] `Should reject an empty base64 string`
+    - [x] `Should reject a Buffer that cannot be identified as an image type`
   - **Edge Cases**
-    - [ ] `Should handle MAX_IMAGE_UPLOAD_SIZE_MB = 0 (reject all images)`
-    - [ ] `Should handle empty ALLOWED_IMAGE_MIME_TYPES (reject all images)`
+    - [x] `Should handle MAX_IMAGE_UPLOAD_SIZE_MB = 0 (reject all images)`
+    - [x] `Should handle empty ALLOWED_IMAGE_MIME_TYPES (reject all images)`
+
+#### Green Phase: Implement Image Validation Pipe
+
+- [x] Create a new file `src/common/pipes/image-validation.pipe.ts`.
+- [x] Implement `ImageValidationPipe` that:
+  - Extends `PipeTransform`.
+  - Allows other types (e.g., plain strings for non-image task types) to pass through unchanged.
+- [x] Run the tests and ensure they all pass.
+
+#### Refactor & Commit
+
+- [x] Review the code and test for clarity, consistency, and adherence to project standards.
+- [x] Commit the changes with a clear message.
+- [x] **Commit ID**: (implementation and tests present; see git log for details)
 
 #### Green Phase: Implement Image Validation Pipe
 
@@ -165,22 +179,22 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 #### Red Phase: Write Failing E2E Tests for Assessor DTO Integration
 
-- [ ] Update `test/assessor.e2e-spec.ts` to include E2E tests for image validation:
+- [x] Update `test/assessor.e2e-spec.ts` to include E2E tests for image validation:
   - **Valid Image Payloads**
-    - [ ] `POST /v1/assessor with valid IMAGE taskType and PNG Buffer should return 201 Created`
-    - [ ] `POST /v1/assessor with valid IMAGE taskType and base64 PNG string should return 201 Created`
-    - [ ] `POST /v1/assessor with valid IMAGE taskType and JPEG Buffer should return 201 Created` (if JPEG allowed)
+    - [x] `POST /v1/assessor with valid IMAGE taskType and PNG Buffer should return 201 Created`
+    - [x] `POST /v1/assessor with valid IMAGE taskType and base64 PNG string should return 201 Created`
+    - [x] `POST /v1/assessor with valid IMAGE taskType and JPEG Buffer should return 201 Created` (if JPEG allowed)
   - **Invalid Image Payloads (should return 400 Bad Request)**
-    - [ ] `POST /v1/assessor with IMAGE taskType and Buffer exceeding size limit should return 400`
-    - [ ] `POST /v1/assessor with IMAGE taskType and base64 string exceeding size limit should return 400`
-    - [ ] `POST /v1/assessor with IMAGE taskType and Buffer of disallowed type (e.g., GIF) should return 400`
-    - [ ] `POST /v1/assessor with IMAGE taskType and base64 string of disallowed type (e.g., GIF) should return 400`
-    - [ ] `POST /v1/assessor with IMAGE taskType and invalid base64 string should return 400`
-    - [ ] `POST /v1/assessor with IMAGE taskType and empty image data should return 400`
+    - [x] `POST /v1/assessor with IMAGE taskType and Buffer exceeding size limit should return 400`
+    - [x] `POST /v1/assessor with IMAGE taskType and base64 string exceeding size limit should return 400`
+    - [x] `POST /v1/assessor with IMAGE taskType and Buffer of disallowed type (e.g., GIF) should return 400`
+    - [x] `POST /v1/assessor with IMAGE taskType and base64 string of disallowed type (e.g., GIF) should return 400`
+    - [x] `POST /v1/assessor with IMAGE taskType and invalid base64 string should return 400`
+    - [x] `POST /v1/assessor with IMAGE taskType and empty image data should return 400`
   - **Error Message Consistency**
-    - [ ] `Error response for size limit exceeded should contain a clear message`
-    - [ ] `Error response for disallowed MIME type should contain a clear message`
-    - [ ] `Error response for invalid base64 format should contain a clear message`
+    - [x] `Error response for size limit exceeded should contain a clear message`
+    - [x] `Error response for disallowed MIME type should contain a clear message`
+    - [x] `Error response for invalid base64 format should contain a clear message`
 
 #### Green Phase: Apply Validation Pipe to DTO
 
