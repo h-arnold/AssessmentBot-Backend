@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",
+    "module": "CommonJS",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -19,6 +19,6 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": false,
     "resolveJsonModule": true,
-    "moduleResolution": "nodenext"
+    "moduleResolution": "node"
   }
 }
