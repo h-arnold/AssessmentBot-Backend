@@ -106,12 +106,20 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
   }
 
   private sanitiseHeaders(
-    headers: Record<string, string | string[]>,
+    headers: Record<string, string | string[] | undefined>,
   ): Record<string, string | string[]> {
-    const result = { ...headers };
-    if ('authorization' in result) result['authorization'] = '[REDACTED]';
-    if ('cookie' in result) result['cookie'] = '[REDACTED]';
-    if ('x-api-key' in result) result['x-api-key'] = '[REDACTED]';
-    return result;
+    const sanitised: Record<string, string | string[]> = {};
+    for (const key in headers) {
+      const value = headers[key];
+      if (value !== undefined) {
+        sanitised[key] = value;
+      }
+    }
+
+    if ('authorization' in sanitised) sanitised['authorization'] = '[REDACTED]';
+    if ('cookie' in sanitised) sanitised['cookie'] = '[REDACTED]';
+    if ('x-api-key' in sanitised) sanitised['x-api-key'] = '[REDACTED]';
+
+    return sanitised;
   }
 }

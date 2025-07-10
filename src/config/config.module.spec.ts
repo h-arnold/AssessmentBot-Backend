@@ -42,7 +42,7 @@ describe('ConfigModule', () => {
     process.env.APP_NAME = 'TestApp';
     process.env.APP_VERSION = '1.0.0';
 
-    let testModule: TestingModule;
+    let testModule: TestingModule | undefined;
     let error: unknown;
     try {
       testModule = await Test.createTestingModule({
@@ -59,11 +59,12 @@ describe('ConfigModule', () => {
 
     expect(error).toBeUndefined();
     expect(testModule).toBeDefined();
-    const configService = testModule.get<ConfigService>(ConfigService);
+    const configService =
+      testModule && testModule.get<ConfigService>(ConfigService);
     expect(configService).toBeDefined();
-    expect(configService.get('NODE_ENV')).toBe('test');
-    expect(configService.get('PORT')).toBe(3000);
-    expect(configService.get('APP_NAME')).toBe('TestApp');
-    expect(configService.get('APP_VERSION')).toBe('1.0.0');
+    expect(configService?.get('NODE_ENV')).toBe('test');
+    expect(configService?.get('PORT')).toBe(3000);
+    expect(configService?.get('APP_NAME')).toBe('TestApp');
+    expect(configService?.get('APP_VERSION')).toBe('1.0.0');
   });
 });

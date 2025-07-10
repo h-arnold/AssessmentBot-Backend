@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { z } from 'zod';
 
 import { CommonModule } from './common.module';
 import { HttpExceptionFilter } from './http-exception.filter';
@@ -12,7 +13,10 @@ describe('CommonModule', () => {
     module = await Test.createTestingModule({
       providers: [
         HttpExceptionFilter,
-        { provide: ZodValidationPipe, useValue: new ZodValidationPipe(null) }, // Provide a mock instance
+        {
+          provide: ZodValidationPipe,
+          useValue: new ZodValidationPipe(z.any()),
+        }, // Provide a mock instance with a valid Zod schema
         JsonParserUtil,
       ],
     }).compile();

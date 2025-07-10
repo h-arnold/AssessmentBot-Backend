@@ -111,6 +111,34 @@ QA is a multi-layered approach that builds confidence in the application's stabi
 - The `taskType` field is an ENUM, not a resource. It is not possible to list, create, or delete task types via the API. Only the above values are valid, and new types can only be added by updating the codebase.
 - The API exposes only a single endpoint for assessment submission (e.g., `POST /assessment`). There are no endpoints for listing, updating, or deleting assessment types.
 
+### Assessor Endpoint (`POST /v1/assessor`)
+
+This endpoint is responsible for initiating an assessment. It accepts a JSON payload containing the details of the assessment task, including the type of task (text, table, or image), a reference solution, a template, and the student's response. The endpoint is secured with an API key.
+
+**Request Example:**
+
+```json
+{
+  "taskType": "TEXT",
+  "reference": "The quick brown fox jumps over the lazy dog.",
+  "template": "Write a sentence about a fox.",
+  "studentResponse": "A fox is a mammal."
+}
+```
+
+**Response Example (201 Created):**
+
+```json
+{
+  "message": "Assessment created successfully"
+}
+```
+
+**Error Responses:**
+
+- `400 Bad Request`: If the payload is invalid (e.g., missing required fields, incorrect data types).
+- `401 Unauthorized`: If no API key is provided or the API key is invalid.
+
 2. Request is validated using Zod schemas.
 3. If the request is valid, it is authenticated using Passport.js.
 4. The request is handled by a NestJS `Controller`, which delegates the core logic to an appropriate `AssessorService` (e.g., for text, tables, or images).
