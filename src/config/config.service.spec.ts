@@ -123,7 +123,7 @@ describe('ConfigService', () => {
     it('should fail with invalid NODE_ENV values', () => {
       const invalidEnvs = ['invalid', '', null, undefined];
       invalidEnvs.forEach((env) => {
-        process.env.NODE_ENV = env;
+        process.env.NODE_ENV = env === null ? undefined : env;
         expect(() => new ConfigService()).toThrow();
       });
     });
@@ -239,8 +239,8 @@ SOME_OTHER_VAR=value
       );
       const lines = fileContent
         .split('\n')
-        .filter((line) => line.trim() !== '' && !line.startsWith('#'));
-      const variablesInFile = lines.map((line) => line.split('=')[0]);
+        .filter((line: string) => line.trim() !== '' && !line.startsWith('#'));
+      const variablesInFile = lines.map((line: string) => line.split('=')[0]);
 
       expectedRequiredVars.forEach((variable) => {
         expect(variablesInFile).toContain(variable);

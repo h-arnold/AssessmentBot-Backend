@@ -80,7 +80,7 @@ describe('HttpExceptionFilter', () => {
         return undefined as T;
       },
       getArgs: function <T extends unknown[] = unknown[]>(): T {
-        return [] as T;
+        return [] as unknown as T;
       },
       getType: function <
         TContext extends string = 'http' | 'rpc' | 'ws' | 'graphql',
