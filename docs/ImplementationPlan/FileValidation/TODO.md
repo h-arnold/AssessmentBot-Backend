@@ -200,15 +200,16 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 - [x] Modify `src/v1/assessor/dto/create-assessor.dto.ts` and controller:
   - Applied the `ImageValidationPipe` to the `reference`, `template`, and `studentResponse` fields when `taskType` is `IMAGE` by invoking the pipe in the controller. This avoids complex decorator or Zod logic and ensures robust runtime validation.
+
 - [x] Run the tests and ensure they all pass. (All image validation and DTO tests pass. One unrelated module spec failure remains.)
   - Note: `assessor.module.spec.ts` fails due to an import/export issue unrelated to image validation. All acceptance criteria for this task are met.
-  - **Commit ID**: [TO_BE_FILLED]
+  - **Commit ID**: 6c1aad1
 
 #### Refactor & Commit
 
-- [ ] Review the code and test for clarity, consistency, and adherence to project standards.
-- [ ] Commit the changes with a clear message.
-- [ ] **Commit ID**:
+- [x] Review the code and test for clarity, consistency, and adherence to project standards.
+- [x] Commit the changes with a clear message.
+- [x] **Commit ID**: 6c1aad1
 
 ---
 
