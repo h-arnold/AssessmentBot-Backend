@@ -124,5 +124,34 @@ describe('CreateAssessorDto', () => {
       const result = createAssessorDtoSchema.safeParse(payload);
       expect(result.success).toBe(false);
     });
+
+    it('should reject an IMAGE task payload with mixed string and Buffer types', () => {
+      const payload = {
+        taskType: TaskType.IMAGE,
+        reference: 'a string',
+        template: Buffer.from('a buffer'),
+        studentResponse: 'another string',
+      };
+      const result = createAssessorDtoSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      const error = (result as { error: ZodError }).error;
+      expect(error.issues[0].message).toContain(
+        'For IMAGE taskType, reference, template, and studentResponse must all be of the same type',
+      );
+    });
+
+    it('should accept a valid IMAGE task payload with base64 strings', () => {
+      const validPayload = {
+        taskType: TaskType.IMAGE,
+        reference:
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+        template:
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+        studentResponse:
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+      };
+      const result = createAssessorDtoSchema.safeParse(validPayload);
+      expect(result.success).toBe(true);
+    });
   });
 });

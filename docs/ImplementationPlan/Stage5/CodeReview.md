@@ -25,7 +25,7 @@ The following tasks from the `TODO.md` are not yet complete or require further a
 
 ### Code Quality and Security
 
-1.  **Stricter DTO Validation**: The `create-assessor.dto.ts` uses `z.discriminatedUnion` which is good, but the validation for the `IMAGE` task type could be more robust. The current implementation allows for a mix of `string` and `Buffer` types for the `reference`, `template`, and `studentResponse` fields. This could lead to unexpected behaviour. It is recommended to enforce that all three fields are of the same type.
+1.  **Stricter DTO Validation**: The `create-assessor.dto.ts` uses `z.discriminatedUnion` which is good, but the validation for the `IMAGE` task type could be more robust. The current implementation allows for a mix of `string` and `Buffer` types for the `reference`, `template`, and `studentResponse` fields. This could lead to unexpected behaviour. It is recommended to enforce that all three fields are of the same type. (Done in commit e736597)
 
 2.  **E2E Test Assertions**: The E2E tests in `test/assessor.e2e-spec.ts` use `expect(true).toBe(true)` as a placeholder assertion. This should be replaced with more meaningful assertions that check the response body and status code.
 
