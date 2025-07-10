@@ -102,9 +102,9 @@ QA is a multi-layered approach that builds confidence in the application's stabi
 ```json
 {
   "taskType": "One of: text, table, image (ENUM)",
-  "reference": "A string or blob containing the reference task",
-  "template": "A string or blob containing the template task",
-  "studentResponse": "A string or blob containing the student's response"
+  "referenceTask": "A string or blob containing the reference task",
+  "templateTask": "A string or blob containing the template task",
+  "studentTask": "A string or blob containing the student's response"
 }
 ```
 
