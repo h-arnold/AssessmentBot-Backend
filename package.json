@@ -5,6 +5,7 @@
   "author": "Hamish Arnold",
   "private": true,
   "license": "ISC",
+  "type": "module",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -19,7 +20,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./jest-e2e.config.cjs",
-    "verify:assessor": "ts-node scripts/verify-assessor.ts",
+    "verify:assessor": "node --loader ts-node/esm scripts/verify-assessor.ts",
     "prepare": "husky"
   },
   "dependencies": {

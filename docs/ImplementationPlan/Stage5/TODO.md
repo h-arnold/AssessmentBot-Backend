@@ -24,7 +24,7 @@ This document outlines the tasks for implementing the Assessor feature module, f
     - [x] Reject payloads with extra, unsupported fields.
     - [x] Reject `null` or `undefined` for any required field.
     - [x] Reject when fields are a mix of types (e.g., some strings, some Buffer/base64).
-- [ ] Write tests that assert the Zod schema accepts valid data:
+- [x] Write tests that assert the Zod schema accepts valid data:
   - [x] **Valid Payloads**:
     - [x] Accept a payload where `taskType` is `TEXT` and all other fields are non-empty strings.
     - [x] Accept a payload where `taskType` is `TABLE` and all other fields are non-empty strings.

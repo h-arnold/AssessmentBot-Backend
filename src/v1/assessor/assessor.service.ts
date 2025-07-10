@@ -10,7 +10,11 @@ export class AssessorService {
   /**
    * Creates a new assessment based on the provided data.
    * @param createAssessorDto The data transfer object containing assessment details.
-   * @returns A promise that resolves to an object with a success message.
+   * @returns A promise that resolves to an object with a message indicating the result.
+   * @example
+   * {
+   *   message: 'Assessment created successfully'
+   * }
    */
   async createAssessment(
     createAssessorDto: CreateAssessorDto,

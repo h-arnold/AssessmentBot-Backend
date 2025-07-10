@@ -26,20 +26,36 @@ This endpoint is responsible for initiating an assessment. It accepts a JSON pay
 - **Method:** `POST`
 - **Description:** Initiates an assessment based on the provided task details.
 - **Request Body:** `application/json`
+
+  **Schema:**
+
   ```json
   {
-    "taskType": "TEXT",
+    "taskType": "TEXT | TABLE | IMAGE",
     "reference": "string | Buffer (base64 encoded for images)",
     "template": "string | Buffer (base64 encoded for images)",
     "studentResponse": "string | Buffer (base64 encoded for images)"
   }
   ```
+
   - `taskType`: (Required) The type of assessment task. Must be one of `TEXT`, `TABLE`, or `IMAGE`.
   - `reference`: (Required) The reference solution or content for the assessment. Can be a string (for TEXT/TABLE) or a base64 encoded string/Buffer (for IMAGE).
   - `template`: (Required) The template or instructions for the assessment. Can be a string (for TEXT/TABLE) or a base64 encoded string/Buffer (for IMAGE).
   - `studentResponse`: (Required) The student's response to be assessed. Can be a string (for TEXT/TABLE) or a base64 encoded string/Buffer (for IMAGE).
 
+  **Example (`TEXT` task):**
+
+  ```json
+  {
+    "taskType": "TEXT",
+    "reference": "The quick brown fox jumps over the lazy dog.",
+    "template": "Write a sentence about a fox.",
+    "studentResponse": "A fox is a mammal."
+  }
+  ```
+
 - **Response (201 Created):**
+
   ```json
   {
     "message": "Assessment created successfully"

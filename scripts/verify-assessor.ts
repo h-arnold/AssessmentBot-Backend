@@ -5,8 +5,14 @@ const VALID_API_KEY = process.env.API_KEYS
   ? process.env.API_KEYS.split(',')[0]
   : 'test-api-key'; // Use the first API key if available, otherwise a default
 
+const delay = (ms: number): Promise<void> =>
+  new Promise((res) => setTimeout(res, ms));
+
 async function verifyAssessorEndpoint(): Promise<void> {
-  console.warn('Starting Assessor Endpoint Verification...');
+  let allTestsPassed = true;
+  process.stdout.write('Starting Assessor Endpoint Verification...\n');
+
+  await delay(5000); // Wait 5 seconds for the server to start
 
   // Test 1: Send a POST to /v1/assessor with a valid JSON payload and valid API key, asserts 201 Created
   try {
@@ -25,16 +31,24 @@ async function verifyAssessorEndpoint(): Promise<void> {
         },
       },
     );
-    console.warn(
-      'Test 1 (Valid Payload, Valid API Key): PASSED',
-      response.status,
-    );
+    if (response.status === 201) {
+      process.stdout.write(
+        `Test 1 (Valid Payload, Valid API Key): PASSED (${response.status})\n`,
+      );
+    } else {
+      throw new Error(`Expected 201, got ${response.status}`);
+    }
   } catch (error) {
-    console.error(
-      'Test 1 (Valid Payload, Valid API Key): FAILED',
-      error.response?.status,
-      error.message,
-    );
+    allTestsPassed = false;
+    if (axios.isAxiosError(error)) {
+      process.stderr.write(
+        `Test 1 (Valid Payload, Valid API Key): FAILED\nStatus: ${error.response?.status}\nData: ${JSON.stringify(error.response?.data)}\n`,
+      );
+    } else {
+      process.stderr.write(
+        `Test 1 (Valid Payload, Valid API Key): FAILED\n${error}\n`,
+      );
+    }
   }
 
   // Test 2: Sends a POST to /v1/assessor with an invalid payload, asserts 400 Bad Request
@@ -45,29 +59,29 @@ async function verifyAssessorEndpoint(): Promise<void> {
       template: 'test',
       studentResponse: 'test',
     };
-    const response = await axios.post(
-      `${API_BASE_URL}/v1/assessor`,
-      invalidPayload,
-      {
-        headers: {
-          Authorization: `Bearer ${VALID_API_KEY}`,
-        },
+    await axios.post(`${API_BASE_URL}/v1/assessor`, invalidPayload, {
+      headers: {
+        Authorization: `Bearer ${VALID_API_KEY}`,
       },
-    );
-    console.warn(
-      'Test 2 (Invalid Payload): FAILED (Expected 400, got',
-      response.status,
-      ')',
+    });
+    allTestsPassed = false;
+    process.stderr.write(
+      'Test 2 (Invalid Payload): FAILED (Expected 400, but got success)\n',
     );
   } catch (error) {
-    if (error.response && error.response.status === 400) {
-      console.warn('Test 2 (Invalid Payload): PASSED', error.response.status);
-    } else {
-      console.error(
-        'Test 2 (Invalid Payload): FAILED',
-        error.response?.status,
-        error.message,
+    if (axios.isAxiosError(error) && error.response?.status === 400) {
+      process.stdout.write(
+        `Test 2 (Invalid Payload): PASSED (${error.response.status})\n`,
       );
+    } else {
+      allTestsPassed = false;
+      if (axios.isAxiosError(error)) {
+        process.stderr.write(
+          `Test 2 (Invalid Payload): FAILED\nStatus: ${error.response?.status}\nData: ${JSON.stringify(error.response?.data)}\n`,
+        );
+      } else {
+        process.stderr.write(`Test 2 (Invalid Payload): FAILED\n${error}\n`);
+      }
     }
   }
 
@@ -79,25 +93,34 @@ async function verifyAssessorEndpoint(): Promise<void> {
       template: 'test',
       studentResponse: 'test',
     };
-    const response = await axios.post(`${API_BASE_URL}/v1/assessor`, payload);
-    console.warn(
-      'Test 3 (No API Key): FAILED (Expected 401, got',
-      response.status,
-      ')',
+    await axios.post(`${API_BASE_URL}/v1/assessor`, payload);
+    allTestsPassed = false;
+    process.stderr.write(
+      'Test 3 (No API Key): FAILED (Expected 401, but got success)\n',
     );
   } catch (error) {
-    if (error.response && error.response.status === 401) {
-      console.warn('Test 3 (No API Key): PASSED', error.response.status);
-    } else {
-      console.error(
-        'Test 3 (No API Key): FAILED',
-        error.response?.status,
-        error.message,
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      process.stdout.write(
+        `Test 3 (No API Key): PASSED (${error.response.status})\n`,
       );
+    } else {
+      allTestsPassed = false;
+      if (axios.isAxiosError(error)) {
+        process.stderr.write(
+          `Test 3 (No API Key): FAILED\nStatus: ${error.response?.status}\nData: ${JSON.stringify(error.response?.data)}\n`,
+        );
+      } else {
+        process.stderr.write(`Test 3 (No API Key): FAILED\n${error}\n`);
+      }
     }
   }
 
-  console.warn('Assessor Endpoint Verification Complete.');
+  process.stdout.write('Assessor Endpoint Verification Complete.\n');
+
+  if (!allTestsPassed) {
+    process.stderr.write('One or more verification tests failed.\n');
+    process.exit(1);
+  }
 }
 
 verifyAssessorEndpoint();

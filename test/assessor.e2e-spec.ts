@@ -96,7 +96,12 @@ describe('AssessorController (e2e)', () => {
       .post('/v1/assessor')
       .set('Authorization', `Bearer ${validApiKey}`)
       .send(validPayload)
-      .expect(201);
+      .expect(201)
+      .then((res) => {
+        expect(res.body).toEqual({
+          message: 'Assessment created successfully',
+        });
+      });
 
     expect(createAssessmentSpy).toHaveBeenCalledTimes(1);
     expect(createAssessmentSpy).toHaveBeenCalledWith(validPayload);
