@@ -1,4 +1,5 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { z } from 'zod';
 
 import { User } from './user.interface';
 import { ConfigService, Config } from '../config/config.service';
@@ -20,29 +21,22 @@ export class ApiKeyService {
     }
   }
 
-  validate(apiKey: string): User | null {
-    if (!apiKey) {
-      this.logger.warn('API key is missing');
-      throw new UnauthorizedException('API key is missing');
-    }
-
-    if (apiKey.length < 10) {
-      this.logger.warn('API key is too short');
+  validate(apiKey: unknown): User | null {
+    const apiKeySchema = z
+      .string()
+      .min(10)
+      .regex(/^[a-zA-Z0-9_-]+$/);
+    const parsed = apiKeySchema.safeParse(apiKey);
+    if (!parsed.success) {
+      this.logger.warn('API key is missing or invalid');
       throw new UnauthorizedException('Invalid API key');
     }
-
-    if (!/^[a-zA-Z0-9_-]+$/.test(apiKey)) {
-      this.logger.warn('API key contains invalid characters');
-      throw new UnauthorizedException('Invalid API key');
-    }
-
-    const isValid = this.apiKeys.includes(apiKey);
-
+    const validKey = parsed.data;
+    const isValid = this.apiKeys.includes(validKey);
     if (isValid) {
       this.logger.log('API key authentication attempt successful');
-      return { apiKey };
+      return { apiKey: validKey };
     }
-
     this.logger.warn('Invalid API key');
     throw new UnauthorizedException('Invalid API key');
   }
