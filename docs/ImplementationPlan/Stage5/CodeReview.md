@@ -29,7 +29,7 @@ The following tasks from the `TODO.md` are not yet complete or require further a
 
 2.  **E2E Test Assertions**: The E2E tests in `test/assessor.e2e-spec.ts` use `expect(true).toBe(true)` as a placeholder assertion. This has been replaced with more meaningful assertions that check the response body and status code. (Verified complete)
 
-3.  **Smoke Test Script**: The `scripts/verify-assessor.ts` script uses `console.warn` for both success and failure messages. This has been changed to use `console.log` for success and `console.error` for failure to provide a clearer output. Additionally, the script now exits with a non-zero exit code on failure to properly signal issues in an automated environment. (Done)
+3.  **Smoke Test Script**: The `scripts/verify-assessor.ts` script uses `console.warn` for both success and failure messages. This has been changed to use `console.log` for success and `console.error` for failure to provide a clearer output. Additionally, the script now exits with a non-zero exit code on failure to properly signal issues in an automated environment. (Verified complete)
 
 ### Documentation
 
