@@ -1,6 +1,6 @@
 # File Validation TODO
 
-- [ ] Create a new git branch for this work:
+- [x] Create a new git branch for this work:
   ```bash
   git checkout -b FileValidation
   ```
@@ -15,41 +15,41 @@ This document outlines the tasks for implementing file size and type validation 
 
 #### Red Phase: Write Failing Tests for Environment Variables
 
-- [ ] Update `src/config/config.service.spec.ts` to include tests for the new environment variables:
+- [x] Update `src/config/config.service.spec.ts` to include tests for the new environment variables:
   - **MAX_IMAGE_UPLOAD_SIZE_MB**
-    - [ ] `ConfigService should load MAX_IMAGE_UPLOAD_SIZE_MB as a number`
+    - [x] `ConfigService should load MAX_IMAGE_UPLOAD_SIZE_MB as a number`
       - Set `MAX_IMAGE_UPLOAD_SIZE_MB` in `.env` to a valid number (e.g., `2`).
       - Verify `ConfigService.get('MAX_IMAGE_UPLOAD_SIZE_MB')` returns `2` (number).
-    - [ ] `ConfigService should use default MAX_IMAGE_UPLOAD_SIZE_MB if not set`
+    - [x] `ConfigService should use default MAX_IMAGE_UPLOAD_SIZE_MB if not set`
       - Unset `MAX_IMAGE_UPLOAD_SIZE_MB`.
       - Verify `ConfigService.get('MAX_IMAGE_UPLOAD_SIZE_MB')` returns `1` (default number).
-    - [ ] `ConfigService should reject invalid MAX_IMAGE_UPLOAD_SIZE_MB`
+    - [x] `ConfigService should reject invalid MAX_IMAGE_UPLOAD_SIZE_MB`
       - Set `MAX_IMAGE_UPLOAD_SIZE_MB` to a non-numeric string (e.g., `"abc"`).
       - Expect application startup to fail with a Zod validation error.
   - **ALLOWED_IMAGE_MIME_TYPES**
-    - [ ] `ConfigService should load ALLOWED_IMAGE_MIME_TYPES as an array of strings`
+    - [x] `ConfigService should load ALLOWED_IMAGE_MIME_TYPES as an array of strings`
       - Set `ALLOWED_IMAGE_MIME_TYPES` to `"image/png,image/jpeg"`.
       - Verify `ConfigService.get('ALLOWED_IMAGE_MIME_TYPES')` returns `['image/png', 'image/jpeg']`.
-    - [ ] `ConfigService should use default ALLOWED_IMAGE_MIME_TYPES if not set`
+    - [x] `ConfigService should use default ALLOWED_IMAGE_MIME_TYPES if not set`
       - Unset `ALLOWED_IMAGE_MIME_TYPES`.
       - Verify `ConfigService.get('ALLOWED_IMAGE_MIME_TYPES')` returns `['image/png']` (default array).
-    - [ ] `ConfigService should handle single ALLOWED_IMAGE_MIME_TYPES`
+    - [x] `ConfigService should handle single ALLOWED_IMAGE_MIME_TYPES`
       - Set `ALLOWED_IMAGE_MIME_TYPES` to `"image/gif"`.
       - Verify `ConfigService.get('ALLOWED_IMAGE_MIME_TYPES')` returns `['image/gif']`.
 
 #### Green Phase: Implement Environment Variables
 
-- [ ] Update the central Zod schema for environment variables in `src/config/config.service.ts` to include:
+- [x] Update the central Zod schema for environment variables in `src/config/config.service.ts` to include:
   - `MAX_IMAGE_UPLOAD_SIZE_MB`: A number representing the maximum image size in megabytes. Default to `1` (MB).
   - `ALLOWED_IMAGE_MIME_TYPES`: A comma-separated string of allowed image MIME types (e.g., `image/png,image/jpeg`). Default to `image/png`.
-- [ ] Add `MAX_IMAGE_UPLOAD_SIZE_MB=` and `ALLOWED_IMAGE_MIME_TYPES=` to the `.env.example` file with their default values.
-- [ ] Run the tests and ensure they all pass.
+- [x] Add `MAX_IMAGE_UPLOAD_SIZE_MB=` and `ALLOWED_IMAGE_MIME_TYPES=` to the `.env.example` file with their default values.
+- [x] Run the tests and ensure they all pass.
 
 #### Refactor & Commit
 
-- [ ] Review the code and test for clarity, consistency, and adherence to project standards.
-- [ ] Commit the changes with a clear message.
-- [ ] **Commit ID**:
+- [x] Review the code and test for clarity, consistency, and adherence to project standards.
+- [x] Commit the changes with a clear message.
+- [x] **Commit ID**: 9826492
 
 ---
 

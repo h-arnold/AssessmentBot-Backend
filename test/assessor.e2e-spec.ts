@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { json } from 'express';
 import * as request from 'supertest';
 
 import { AppModule } from './../src/app.module';
@@ -22,12 +23,15 @@ describe('AssessorController (e2e)', () => {
       imports: [AppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
-
+    app = moduleFixture.createNestApplication({ bodyParser: false });
     assessorService = moduleFixture.get<AssessorService>(AssessorService);
     configService = moduleFixture.get<ConfigService>(ConfigService);
     validApiKey = (configService.get('API_KEYS') as string[])[0];
+
+    const payloadLimit = configService.getGlobalPayloadLimit();
+    app.use(json({ limit: payloadLimit }));
+
+    await app.init();
   });
 
   afterEach(async () => {
@@ -105,5 +109,20 @@ describe('AssessorController (e2e)', () => {
 
     expect(createAssessmentSpy).toHaveBeenCalledTimes(1);
     expect(createAssessmentSpy).toHaveBeenCalledWith(validPayload);
+  });
+
+  it('POST /v1/assessor with payload exceeding global limit should return 413 Payload Too Large', async () => {
+    const largePayload = {
+      taskType: TaskType.TEXT,
+      reference: 'a'.repeat(6 * 1024 * 1024), // 6MB string
+      template: 'test',
+      studentResponse: 'test',
+    };
+
+    await request(app.getHttpServer())
+      .post('/v1/assessor')
+      .set('Authorization', `Bearer ${validApiKey}`)
+      .send(largePayload)
+      .expect(413);
   });
 });

@@ -247,6 +247,21 @@ describe('ConfigService', () => {
     });
   });
 
+  describe('getGlobalPayloadLimit', () => {
+    it('should calculate correctly for default MAX_IMAGE_UPLOAD_SIZE_MB', () => {
+      const configService = new ConfigService();
+      // Formula: ((1 * 1.33 * 3) + 1) = 4.99 -> 5MB
+      expect(configService.getGlobalPayloadLimit()).toBe('5mb');
+    });
+
+    it('should calculate correctly for a different MAX_IMAGE_UPLOAD_SIZE_MB', () => {
+      process.env.MAX_IMAGE_UPLOAD_SIZE_MB = '2';
+      const configService = new ConfigService();
+      // Formula: ((2 * 1.33 * 3) + 1) = 8.98 -> 9MB
+      expect(configService.getGlobalPayloadLimit()).toBe('9mb');
+    });
+  });
+
   describe('.env.example file validation', () => {
     const expectedRequiredVars = ['NODE_ENV', 'PORT', 'APP_NAME'];
 

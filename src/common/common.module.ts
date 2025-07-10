@@ -5,7 +5,7 @@ import { JsonParserUtil } from './json-parser.util';
 import { ZodValidationPipe } from './zod-validation.pipe';
 
 @Module({
-  providers: [HttpExceptionFilter, JsonParserUtil, ZodValidationPipe],
-  exports: [HttpExceptionFilter, JsonParserUtil, ZodValidationPipe],
+  providers: [HttpExceptionFilter, JsonParserUtil],
+  exports: [HttpExceptionFilter, JsonParserUtil],
 })
 export class CommonModule {}

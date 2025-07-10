@@ -59,4 +59,11 @@ export class ConfigService {
   get<T extends keyof Config>(key: T): Config[T] {
     return this.config[key];
   }
+
+  getGlobalPayloadLimit(): string {
+    const maxImageSizeMB = this.config.MAX_IMAGE_UPLOAD_SIZE_MB;
+    // Formula: ((MAX_IMAGE_UPLOAD_SIZE_MB * 1.33 * 3) + 1) MB
+    const limitInMB = Math.ceil(maxImageSizeMB * 1.33 * 3 + 1);
+    return `${limitInMB}mb`;
+  }
 }
