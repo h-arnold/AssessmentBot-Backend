@@ -18,6 +18,10 @@ Adhere to these principles in all contributions:
 - **Test-Driven Development (TDD)**: Write comprehensive tests for all new features and bug fixes. Use the existing testing structure.
 - **Documentation**: Maintain clear JSDoc comments for functions, classes, and modules. Keep the Swagger documentation up-to-date.
 
+## 1.1. Input Validation Approach (2025-07-10)
+
+**Note:** From now on, for all external inputs (e.g., API keys, user input, HTTP request data), broaden the input type in service and validation methods to `unknown` (or `string | undefined | null` as appropriate), and always perform runtime validation using Zod. This ensures robust test coverage and runtime safety, as TypeScript types are not enforced at runtime. Strict type checking remains enabled for development, but runtime validation is required for all boundary inputs.
+
 ## 2. Tech Stack & Key Libraries
 
 - **Runtime**: Node.js in a Docker container (`node:20-alpine`).
