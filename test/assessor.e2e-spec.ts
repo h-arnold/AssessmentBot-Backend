@@ -43,8 +43,10 @@ describe('AssessorController (e2e)', () => {
         template: 'test',
         studentResponse: 'test',
       })
-      .expect(401);
-    expect(true).toBe(true); // Added assertion
+      .expect(401)
+      .then((res) => {
+        expect(res.body.message).toBe('Unauthorized');
+      });
   });
 
   it('/v1/assessor (POST) should return 401 Unauthorized when an invalid API key is provided', async () => {
@@ -57,8 +59,10 @@ describe('AssessorController (e2e)', () => {
         template: 'test',
         studentResponse: 'test',
       })
-      .expect(401);
-    expect(true).toBe(true); // Added assertion
+      .expect(401)
+      .then((res) => {
+        expect(res.body.message).toBe('Invalid API key');
+      });
   });
 
   it('/v1/assessor (POST) should return 400 Bad Request for invalid DTO', async () => {
@@ -72,8 +76,10 @@ describe('AssessorController (e2e)', () => {
       .post('/v1/assessor')
       .set('Authorization', `Bearer ${validApiKey}`)
       .send(invalidPayload)
-      .expect(400);
-    expect(true).toBe(true); // Added assertion
+      .expect(400)
+      .then((res) => {
+        expect(res.body.message).toBe('Validation failed');
+      });
   });
 
   it('/v1/assessor (POST) should return 201 Created for valid DTO and call service', async () => {
