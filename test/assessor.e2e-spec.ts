@@ -119,10 +119,10 @@ describe('AssessorController (e2e)', () => {
       studentResponse: 'test',
     };
 
-    await request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .post('/v1/assessor')
       .set('Authorization', `Bearer ${validApiKey}`)
-      .send(largePayload)
-      .expect(413);
+      .send(largePayload);
+    expect(response.status).toBe(413);
   });
 });

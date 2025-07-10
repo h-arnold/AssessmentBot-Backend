@@ -65,32 +65,32 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 #### Red Phase: Write Failing Tests for Global Payload Limit
 
-- [ ] Update `src/config/config.service.spec.ts` to include tests for the `getGlobalPayloadLimit()` method:
-  - [ ] `getGlobalPayloadLimit should calculate correctly for default MAX_IMAGE_UPLOAD_SIZE_MB`
+- [x] Update `src/config/config.service.spec.ts` to include tests for the `getGlobalPayloadLimit()` method:
+  - [x] `getGlobalPayloadLimit should calculate correctly for default MAX_IMAGE_UPLOAD_SIZE_MB`
     - Set `MAX_IMAGE_UPLOAD_SIZE_MB` to `1`.
     - Verify `ConfigService.getGlobalPayloadLimit()` returns approximately `5MB` (accounting for base64 overhead and buffer).
-  - [ ] `getGlobalPayloadLimit should calculate correctly for a different MAX_IMAGE_UPLOAD_SIZE_MB`
+  - [x] `getGlobalPayloadLimit should calculate correctly for a different MAX_IMAGE_UPLOAD_SIZE_MB`
     - Set `MAX_IMAGE_UPLOAD_SIZE_MB` to `2`.
     - Verify `ConfigService.getGlobalPayloadLimit()` returns approximately `9MB`.
-- [ ] Update `test/assessor.e2e-spec.ts` to include an E2E test for the global payload limit:
-  - [ ] `POST /v1/assessor with payload exceeding global limit should return 413 Payload Too Large`
+- [x] Update `test/assessor.e2e-spec.ts` to include an E2E test for the global payload limit:
+  - [x] `POST /v1/assessor with payload exceeding global limit should return 413 Payload Too Large`
 
 #### Green Phase: Implement Global Payload Limit
 
-- [ ] In `src/config/config.service.ts`, add a helper method (e.g., `getGlobalPayloadLimit()`) that calculates the maximum allowed request body size.
+- [x] In `src/config/config.service.ts`, add a helper method (e.g., `getGlobalPayloadLimit()`) that calculates the maximum allowed request body size.
   - This method should use `MAX_IMAGE_UPLOAD_SIZE_MB` from the environment variables.
   - The calculation should account for base64 encoding overhead (approx. 33% increase) for three potential images, plus a buffer for other text data.
   - Formula: `((MAX_IMAGE_UPLOAD_SIZE_MB * 1.33 * 3) + 1) MB` (rounded up to the nearest MB for simplicity, e.g., 5MB for 1MB image size).
-- [ ] In `src/main.ts`, configure the Express body parser to use this calculated limit.
+- [x] In `src/main.ts`, configure the Express body parser to use this calculated limit.
   - Disable NestJS's default body parser: `bodyParser: false` in `NestFactory.create()` options.
   - Use `app.use(json({ limit: calculatedLimit }))` where `calculatedLimit` is obtained from `ConfigService.getGlobalPayloadLimit()`.
-- [ ] Run the tests and ensure they all pass.
+- [x] Run the tests and ensure they all pass.
 
 #### Refactor & Commit
 
-- [ ] Review the code and test for clarity, consistency, and adherence to project standards.
-- [ ] Commit the changes with a clear message.
-- [ ] **Commit ID**:
+- [x] Review the code and test for clarity, consistency, and adherence to project standards.
+- [x] Commit the changes with a clear message.
+- [x] **Commit ID**: 7048ebe
 
 ---
 
