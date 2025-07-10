@@ -1,11 +1,11 @@
 # LLMService Class Design
 
-This design document describes the `LLMService` interface and its expected usage within the LLM module.
+This design document describes the `LLMService` interface, its data structures, and its expected usage within the LLM module.
 
 ## 1. Objectives
 
 - Define an abstract interface for interacting with any LLM provider.
-- Standardise the request and response payloads.
+- Standardise and validate the structure of the response from the LLM.
 - Support dependency injection in NestJS.
 - Facilitate mocking for unit and integration tests.
 
@@ -20,28 +20,59 @@ src/
     types.ts
 ```
 
-## 3. LLMService Interface (`llm.service.interface.ts`)
+## 3. Response Data Structures (`types.ts`)
 
-### Responsibilities
+To ensure robustness, the output of the `LLMService` will be strictly validated. This is defined in `src/llm/types.ts`.
 
-- Declare methods for sending prompts and receiving responses.
-- Accept generic payloads representing either string messages or structured requests.
-- Return a Promise resolving to a structured response.
+```ts
+import { z } from 'zod';
+
+/**
+ * Defines the schema for a single assessment criterion.
+ * - `score`: An integer between 0 and 5.
+ * - `reasoning`: A non-empty string explaining the score.
+ */
+export const AssessmentCriterionSchema = z.object({
+  score: z.number().int().min(0).max(5),
+  reasoning: z.string().min(1),
+});
+
+/**
+ * Defines the schema for the complete LLM assessment response.
+ * It expects exactly three criteria: completeness, accuracy, and spag.
+ */
+export const LlmResponseSchema = z.object({
+  completeness: AssessmentCriterionSchema,
+  accuracy: AssessmentCriterionSchema,
+  spag: AssessmentCriterionSchema,
+});
+
+/**
+ * TypeScript type inferred from the LlmResponseSchema.
+ */
+export type LlmResponse = z.infer<typeof LlmResponseSchema>;
+```
+
+## 4. LLMService Interface (`llm.service.interface.ts`)
+
+The interface now returns a strictly typed and validated `LlmResponse`.
 
 ### Interface
 
 ```ts
+import { LlmResponse } from './types';
+
 export interface LLMService {
   /**
    * Send a payload to the LLM provider.
    * @param payload - Can be a rendered prompt string or an object with messages and attachments.
-   * @returns A Promise resolving to the LLM response payload.
+   * @returns A Promise resolving to a validated LLM response payload.
    */
-  send(payload: string | Record<string, any>): Promise<Record<string, any>>;
+  send(payload: string | Record<string, any>): Promise<LlmResponse>;
 }
 ```
 
-## 4. LlmModule (`llm.module.ts`)
+## 5. LlmModule (`llm.module.ts`)
 
 ```ts
 import { Module } from '@nestjs/common';
