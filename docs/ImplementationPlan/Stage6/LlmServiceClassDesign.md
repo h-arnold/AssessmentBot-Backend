@@ -62,8 +62,46 @@ import { GeminiService } from './gemini.service';
 export class LlmModule {}
 ```
 
-## 5. Testing
+## 5. Testing Strategy: Mocking the `LLMService`
 
-- Use a `MockLlmService` implementing `LLMService` for unit tests.
-- Inject the mock via `overrideProvider` in `TestingModule`.
-- Ensure deterministic responses for given inputs.
+As `LLMService` is an interface, it has no implementation to test directly. Instead, the testing strategy focuses on how to test _consumers_ of this interface (e.g., `AssessorService`) by providing a mock implementation. This ensures that consumer services can be tested in isolation, without making real network calls.
+
+### 5.1. Creating a Mock `LLMService`
+
+A mock service is created for use in NestJS testing modules. This mock can be a simple object or a class that implements the `LLMService` interface.
+
+```ts
+// In a test file, e.g., assessor.service.spec.ts
+
+const mockLlmService = {
+  send: jest.fn(), // Create a Jest mock function for the send method
+};
+```
+
+### 5.2. Injecting the Mock
+
+The mock is injected into the `TestingModule` using `overrideProvider`. This tells NestJS to use our mock implementation whenever `LLMService` is requested via dependency injection.
+
+```ts
+// In a test file, e.g., assessor.service.spec.ts
+
+const module: TestingModule = await Test.createTestingModule({
+  providers: [
+    AssessorService, // The service we are testing
+    {
+      provide: LLMService, // The token to override
+      useValue: mockLlmService, // Our mock implementation
+    },
+    // ... other providers like PromptFactory
+  ],
+}).compile();
+
+service = module.get<AssessorService>(AssessorService);
+```
+
+### 5.3. Test Cases for a Consumer (`AssessorService`)
+
+These test cases validate that the `AssessorService` correctly interacts with the `LLMService` interface.
+
+| Test Case | Setup & Mocks - **Should call `llmService.send` with the correct payload** | - `PromptFactory` is mocked to return a prompt object with a known `buildMessage()` result (e.g., a simple string `'test_payload'`).<br>- `mockLlmService.send.mockResolvedValue({ score: 5 })` - **Expected Outcome** - `llmService.send` is called exactly once. - `llmService.send` is called with the exact payload (`'test_payload'`). - The consumer service (e.g., `AssessorService`) returns the mocked response (`{ score: 5 }`). - |
+| **Should handle errors thrown by `llmService.send`** | - `PromptFactory` is mocked as above.<br>- `mockLlmService.send.mockRejectedValue(new Error('API Error'))` - The consumer service should catch the error. - It should log the error and potentially throw a new, more user-friendly exception (depending on the consumer's error handling strategy). - |
