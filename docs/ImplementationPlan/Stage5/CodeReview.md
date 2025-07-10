@@ -27,7 +27,7 @@ The following tasks from the `TODO.md` are not yet complete or require further a
 
 1.  **Stricter DTO Validation**: The `create-assessor.dto.ts` uses `z.discriminatedUnion` which is good, but the validation for the `IMAGE` task type could be more robust. The current implementation allows for a mix of `string` and `Buffer` types for the `reference`, `template`, and `studentResponse` fields. This could lead to unexpected behaviour. It is recommended to enforce that all three fields are of the same type. (Done in commit e736597)
 
-2.  **E2E Test Assertions**: The E2E tests in `test/assessor.e2e-spec.ts` use `expect(true).toBe(true)` as a placeholder assertion. This has been replaced with more meaningful assertions that check the response body and status code. (Done)
+2.  **E2E Test Assertions**: The E2E tests in `test/assessor.e2e-spec.ts` use `expect(true).toBe(true)` as a placeholder assertion. This has been replaced with more meaningful assertions that check the response body and status code. (Verified complete)
 
 3.  **Smoke Test Script**: The `scripts/verify-assessor.ts` script uses `console.warn` for both success and failure messages. This has been changed to use `console.log` for success and `console.error` for failure to provide a clearer output. Additionally, the script now exits with a non-zero exit code on failure to properly signal issues in an automated environment. (Done)
 
