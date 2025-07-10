@@ -16,6 +16,11 @@ const configSchema = z.object({
     .optional()
     .transform((val) => (val ? val.split(',').map((s) => s.trim()) : undefined))
     .pipe(z.array(z.string().regex(/^[a-zA-Z0-9_-]+$/)).optional()),
+  MAX_IMAGE_UPLOAD_SIZE_MB: z.coerce.number().int().min(0).default(1),
+  ALLOWED_IMAGE_MIME_TYPES: z
+    .string()
+    .default('image/png')
+    .transform((val) => val.split(',').map((s) => s.trim())),
 });
 
 // Infer the type from the schema
