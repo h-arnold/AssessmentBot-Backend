@@ -13,8 +13,8 @@ The following tasks from the `TODO.md` are not yet complete or require further a
 - [x] **DTO and Validation**:
   - [x] Add a specific test case for mixed types within the `IMAGE` task type (e.g., `reference` is a string, but `template` is a Buffer). (Verified complete)
   - [x] Add an explicit test for base64 strings in the `IMAGE` task type payload. (Verified complete)
-- [ ] **Verification & Smoke Testing**:
-  - [ ] Run `npm run verify:assessor` and ensure all tests pass. The script exists but there is no evidence of it being run.
+- [x] **Verification & Smoke Testing**:
+  - [x] Run `npm run verify:assessor` and ensure all tests pass. The script exists but there is no evidence of it being run. (Verified complete)
 - [ ] **Documentation**:
   - [ ] Update `docs/ImplementationPlan/Stage5/TestCases.md` with any new test cases discovered during implementation.
   - [ ] Ensure the `README.md` and `docs/api/API_Documentation.md` are consistent.
