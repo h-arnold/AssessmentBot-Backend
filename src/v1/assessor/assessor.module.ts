@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from 'src/config/config.module';
 
 import { AssessorController } from './assessor.controller';
 import { AssessorService } from './assessor.service';
@@ -8,6 +9,7 @@ import { AssessorService } from './assessor.service';
  * Provides the AssessorService and AssessorController.
  */
 @Module({
+  imports: [ConfigModule],
   controllers: [AssessorController],
   providers: [AssessorService],
   exports: [AssessorService],
