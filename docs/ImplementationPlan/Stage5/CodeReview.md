@@ -33,7 +33,7 @@ The following tasks from the `TODO.md` are not yet complete or require further a
 
 ### Documentation
 
-1.  **JSDoc Comments**: While JSDoc comments are present, they could be more detailed. For example, the `@returns` tag in `assessor.service.ts` could describe the shape of the returned object. This has been updated to provide a more detailed description of the returned object. (Done)
+1.  **JSDoc Comments**: While JSDoc comments are present, they could be more detailed. For example, the `@returns` tag in `assessor.service.ts` could describe the shape of the returned object. This has been updated to provide a more detailed description of the returned object. (Verified complete)
 
 2.  **Consistency**: There are minor inconsistencies between the `README.md` and `docs/api/API_Documentation.md` regarding the example payload. These have been aligned. (Done)
 
