@@ -15,8 +15,8 @@ const defaults = {
 };
 
 const mockConfigService = {
-  get: jest.fn((key) => {
-    return (defaults as Record<string, string>)[key];
+  get: jest.fn((key: string) => {
+    return defaults[key as keyof typeof defaults];
   }),
 };
 

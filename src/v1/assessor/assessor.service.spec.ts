@@ -2,7 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AssessorService } from './assessor.service';
 import { CreateAssessorDto, TaskType } from './dto/create-assessor.dto';
-import { ConfigModule, ConfigService } from '../../config/config.module';
+import { ConfigModule } from '../../config/config.module';
+import { ConfigService } from '../../config/config.service';
 import { GeminiService } from '../../llm/gemini.service';
 import { LlmModule } from '../../llm/llm.module';
 import { LLMService } from '../../llm/llm.service.interface';
@@ -26,11 +27,14 @@ describe('AssessorService', () => {
   });
 
   beforeEach(async () => {
+    const mockLlmService = { send: jest.fn() };
+    const mockPromptFactory = { create: jest.fn() };
     const mockConfigService = {
       get: jest.fn((key) => {
         return process.env[key] || '';
       }),
     };
+
     const module: TestingModule = await Test.createTestingModule({
       imports: [LlmModule, PromptModule, ConfigModule],
       providers: [
@@ -38,16 +42,16 @@ describe('AssessorService', () => {
         { provide: ConfigService, useValue: mockConfigService },
       ],
     })
-      .overrideProvider('LLMService')
-      .useValue({ send: jest.fn() })
+      .overrideProvider(LLMService)
+      .useValue(mockLlmService)
       .overrideProvider(PromptFactory)
-      .useValue({ create: jest.fn() })
+      .useValue(mockPromptFactory)
       .overrideProvider(GeminiService)
       .useValue({ send: jest.fn() })
       .compile();
 
     service = module.get<AssessorService>(AssessorService);
-    llmService = module.get<LLMService>('LLMService');
+    llmService = module.get<LLMService>(LLMService);
     promptFactory = module.get<PromptFactory>(PromptFactory);
   });
 

@@ -1,12 +1,4 @@
-import { GoogleGenerativeAI } from '@google/genai';
-import { ConfigService } from '@nestjs/config';
-import { Test, TestingModule } from '@nestjs/testing';
-import { ZodError } from 'zod';
-
-import { GeminiService } from './gemini.service';
-import { LLMService } from './llm.service.interface';
-
-// Mock the @google/genai library
+// Mock the @google/generative-ai library
 const mockGenerateContent = jest.fn();
 const mockGetGenerativeModel = jest.fn(() => ({
   generateContent: mockGenerateContent,
@@ -18,9 +10,17 @@ const mockGoogleGenerativeAI = jest
     getGenerativeModel: mockGetGenerativeModel,
   }));
 
-jest.mock('@google/genai', () => ({
+jest.mock('@google/generative-ai', () => ({
   GoogleGenerativeAI: mockGoogleGenerativeAI,
 }));
+
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Test, TestingModule } from '@nestjs/testing';
+import { ZodError } from 'zod';
+
+import { GeminiService } from './gemini.service';
+import { LLMService } from './llm.service.interface';
+import { ConfigService } from '../config/config.service';
 
 describe('GeminiService', () => {
   let service: GeminiService;

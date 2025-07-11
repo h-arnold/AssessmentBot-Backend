@@ -1,10 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { jsonrepair } from 'jsonrepair';
+import { ZodError } from 'zod';
 
 import { LLMService } from './llm.service.interface';
 import { LlmResponse, LlmResponseSchema } from './types';
+import { ConfigService } from '../config/config.service';
 
 @Injectable()
 export class GeminiService implements LLMService {
@@ -12,7 +13,7 @@ export class GeminiService implements LLMService {
   private readonly logger = new Logger(GeminiService.name);
 
   constructor(private readonly configService: ConfigService) {
-    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
+    const apiKey = this.configService.get('GEMINI_API_KEY');
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY is not set in environment');
     }
@@ -28,8 +29,8 @@ export class GeminiService implements LLMService {
         },
   ): Promise<LlmResponse> {
     const modelName = this.isMultimodal(payload)
-      ? 'gemini-pro-vision'
-      : 'gemini-pro';
+      ? 'gemini-2.5-flash'
+      : 'gemini-2.0-flash-lite';
     const contents = this.buildRequest(payload);
     try {
       // Use getGenerativeModel instead of models.generateContent
@@ -44,6 +45,10 @@ export class GeminiService implements LLMService {
         'Error communicating with or validating response from Gemini API',
         error,
       );
+      // Re-throw ZodError to maintain specific error types for validation failures
+      if (error instanceof ZodError) {
+        throw error;
+      }
       throw new Error(
         'Failed to get a valid and structured response from the LLM.',
       );
