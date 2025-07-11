@@ -20,11 +20,13 @@ import { ZodError } from 'zod';
 
 import { GeminiService } from './gemini.service';
 import { LLMService } from './llm.service.interface';
+import { JsonParserUtil } from '../common/json-parser.util';
 import { ConfigService } from '../config/config.service';
 
 describe('GeminiService', () => {
   let service: GeminiService;
   let configService: ConfigService;
+  let jsonParserUtil: JsonParserUtil;
 
   beforeAll(() => {
     process.env.GEMINI_API_KEY = 'test-key';
@@ -50,11 +52,20 @@ describe('GeminiService', () => {
             }),
           },
         },
+        {
+          provide: JsonParserUtil,
+          useValue: {
+            parse: jest.fn((jsonString: string) => {
+              return JSON.parse(jsonString);
+            }),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<GeminiService>(GeminiService);
     configService = module.get<ConfigService>(ConfigService);
+    jsonParserUtil = module.get<JsonParserUtil>(JsonParserUtil);
   });
 
   it('should be defined', () => {
@@ -62,7 +73,7 @@ describe('GeminiService', () => {
   });
 
   it('should initialise the SDK correctly', () => {
-    const service = new GeminiService(configService);
+    const service = new GeminiService(configService, jsonParserUtil);
     expect(mockGoogleGenerativeAI).toHaveBeenCalledWith('test-api-key');
   });
 
@@ -112,15 +123,24 @@ describe('GeminiService', () => {
   });
 
   it('should handle malformed JSON and still return a valid response', async () => {
+    const malformedJson =
+      '{"completeness": {"score": 5, "reasoning": "Perfect"},, "accuracy": {"score": 4, "reasoning": "Good"}, "spag": {"score": 3, "reasoning": "Okay"}}';
+    const validJson =
+      '{"completeness": {"score": 5, "reasoning": "Perfect"}, "accuracy": {"score": 4, "reasoning": "Good"}, "spag": {"score": 3, "reasoning": "Okay"}}';
+
     mockGenerateContent.mockResolvedValue({
       response: {
-        text: () =>
-          '{"completeness": {"score": 5, "reasoning": "Perfect"},, "accuracy": {"score": 4, "reasoning": "Good"}, "spag": {"score": 3, "reasoning": "Okay"}}',
+        text: () => malformedJson,
       },
     });
 
+    // Mock jsonParserUtil.parse to simulate jsonrepair fixing the malformed JSON
+    const mockJsonParserUtilParse = jsonParserUtil.parse as jest.Mock;
+    mockJsonParserUtilParse.mockReturnValueOnce(JSON.parse(validJson));
+
     const response = await service.send('test prompt');
 
+    expect(mockJsonParserUtilParse).toHaveBeenCalledWith(malformedJson);
     expect(response).toEqual({
       completeness: { score: 5, reasoning: 'Perfect' },
       accuracy: { score: 4, reasoning: 'Good' },

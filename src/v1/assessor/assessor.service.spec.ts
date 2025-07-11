@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AssessorService } from './assessor.service';
 import { CreateAssessorDto, TaskType } from './dto/create-assessor.dto';
+import { JsonParserUtil } from '../../common/json-parser.util';
 import { ConfigModule } from '../../config/config.module';
 import { ConfigService } from '../../config/config.service';
 import { GeminiService } from '../../llm/gemini.service';
@@ -25,10 +26,10 @@ describe('AssessorService', () => {
     process.env.APP_NAME = 'AssessmentBot-Backend';
     process.env.APP_VERSION = 'test-version';
   });
-
   beforeEach(async () => {
     const mockLlmService = { send: jest.fn() };
     const mockPromptFactory = { create: jest.fn() };
+    const mockJsonParserUtil = { parse: jest.fn() };
     const mockConfigService = {
       get: jest.fn((key) => {
         return process.env[key] || '';
@@ -48,6 +49,8 @@ describe('AssessorService', () => {
       .useValue(mockPromptFactory)
       .overrideProvider(GeminiService)
       .useValue({ send: jest.fn() })
+      .overrideProvider(JsonParserUtil)
+      .useValue(mockJsonParserUtil)
       .compile();
 
     service = module.get<AssessorService>(AssessorService);

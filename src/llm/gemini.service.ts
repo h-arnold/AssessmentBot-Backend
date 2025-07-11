@@ -1,10 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Injectable, Logger } from '@nestjs/common';
-import { jsonrepair } from 'jsonrepair';
 import { ZodError } from 'zod';
 
 import { LLMService } from './llm.service.interface';
 import { LlmResponse, LlmResponseSchema } from './types';
+import { JsonParserUtil } from '../common/json-parser.util';
 import { ConfigService } from '../config/config.service';
 
 @Injectable()
@@ -12,7 +12,10 @@ export class GeminiService implements LLMService {
   private readonly client: GoogleGenerativeAI;
   private readonly logger = new Logger(GeminiService.name);
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly jsonParserUtil: JsonParserUtil,
+  ) {
     const apiKey = this.configService.get('GEMINI_API_KEY');
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY is not set in environment');
@@ -37,8 +40,7 @@ export class GeminiService implements LLMService {
       const model = this.client.getGenerativeModel({ model: modelName });
       const result = await model.generateContent(contents);
       const responseText = result.response.text?.() ?? '';
-      const repairedJson = jsonrepair(responseText);
-      const parsedJson = JSON.parse(repairedJson);
+      const parsedJson = this.jsonParserUtil.parse(responseText);
       return LlmResponseSchema.parse(parsedJson);
     } catch (error) {
       this.logger.error(
