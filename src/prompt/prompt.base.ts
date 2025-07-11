@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
-import * as path from 'path';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import * as mustache from 'mustache';
 import { z } from 'zod';
@@ -25,14 +26,16 @@ export abstract class Prompt {
   }
 
   protected async readMarkdown(name: string): Promise<string> {
-    // Note: Path resolves from the project root, targeting the 'docs' folder directly.
-    // This avoids issues with build processes not copying assets.
-    const filePath = path.resolve(
-      process.cwd(),
-      'docs/ImplementationPlan/Stage6/Prompts',
-      name,
+    // Only allow reading from the Prompts directory
+    const baseDir = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '../../../docs/ImplementationPlan/Stage6/Prompts',
     );
-    return fs.readFile(filePath, 'utf-8');
+    const resolvedPath = path.resolve(baseDir, name);
+    if (!resolvedPath.startsWith(baseDir)) {
+      throw new Error('Unauthorised file path');
+    }
+    return await fs.readFile(resolvedPath, { encoding: 'utf-8' });
   }
 
   protected render(template: string, data: Record<string, string>): string {

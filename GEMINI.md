@@ -69,4 +69,10 @@ While the project's `TODO.md` files may be structured with distinct "Red Phase" 
 
 ### 5.2. Working with TODOs
 
-\*\*
+When provided, work sequentially through the `TODO.md` file.
+
+Complete each step in order. **IMPORTANT**: You must complete each step in the TODO list _fully_ before moving on to the next. If you are unable to do so, stop and ask the user for clarification or assistance.
+
+Once you have _fully_ completed a step, check off the step in the `TODO.md` file and update it. It is critical you do this to enable everyone to track the progress of the project accurately.
+
+Where you encounter an issue that will may impact future steps (i.e. anything more substantial than syntax or linting errors), you must document this in the TODO file, in the space provided for you. Ensure you provide detailed commentary on the issue, including your reasoning and the solutions used to inform future work.

@@ -1,25 +1,20 @@
 import { Injectable } from '@nestjs/common';
 
 import { CreateAssessorDto } from './dto/create-assessor.dto';
+import { LLMService } from '../../llm/llm.service.interface';
+import { LlmResponse } from '../../llm/types';
+import { PromptFactory } from '../../prompt/prompt.factory';
 
-/**
- * Service responsible for handling assessment-related operations.
- */
 @Injectable()
 export class AssessorService {
-  /**
-   * Creates a new assessment based on the provided data.
-   * @param createAssessorDto The data transfer object containing assessment details.
-   * @returns A promise that resolves to an object with a message indicating the result.
-   * @example
-   * {
-   *   message: 'Assessment created successfully'
-   * }
-   */
-  async createAssessment(
-    createAssessorDto: CreateAssessorDto,
-  ): Promise<{ message: string }> {
-    // Placeholder for actual assessment logic
-    return { message: 'Assessment created successfully' };
+  constructor(
+    private readonly llmService: LLMService,
+    private readonly promptFactory: PromptFactory,
+  ) {}
+
+  async createAssessment(dto: CreateAssessorDto): Promise<LlmResponse> {
+    const prompt = this.promptFactory.create(dto);
+    const message = await prompt.buildMessage();
+    return this.llmService.send(message);
   }
 }

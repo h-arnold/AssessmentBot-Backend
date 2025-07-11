@@ -2,16 +2,30 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AssessorService } from './assessor.service';
 import { CreateAssessorDto, TaskType } from './dto/create-assessor.dto';
+import { LlmModule } from '../../llm/llm.module';
+import { LLMService } from '../../llm/llm.service.interface';
+import { PromptFactory } from '../../prompt/prompt.factory';
+import { PromptModule } from '../../prompt/prompt.module';
 
 describe('AssessorService', () => {
   let service: AssessorService;
+  let llmService: LLMService;
+  let promptFactory: PromptFactory;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [LlmModule, PromptModule],
       providers: [AssessorService],
-    }).compile();
+    })
+      .overrideProvider('LLMService')
+      .useValue({ send: jest.fn() })
+      .overrideProvider(PromptFactory)
+      .useValue({ create: jest.fn() })
+      .compile();
 
     service = module.get<AssessorService>(AssessorService);
+    llmService = module.get<LLMService>('LLMService');
+    promptFactory = module.get<PromptFactory>(PromptFactory);
   });
 
   it('should be defined', () => {
@@ -19,37 +33,26 @@ describe('AssessorService', () => {
   });
 
   describe('createAssessment', () => {
-    it('should exist on the service', () => {
-      expect(service.createAssessment).toBeDefined();
-    });
-
-    it('should accept an argument that conforms to CreateAssessorDto type and return a placeholder response', async () => {
-      const validPayload: CreateAssessorDto = {
-        taskType: TaskType.TEXT,
-        reference: 'some reference',
-        template: 'some template',
-        studentResponse: 'some student response',
-      };
-
-      const result = await service.createAssessment(validPayload);
-      expect(result).toEqual({ message: 'Assessment created successfully' });
-    });
-
-    it('should propagate errors from internal processes', async () => {
-      jest.spyOn(service, 'createAssessment').mockImplementationOnce(() => {
-        return Promise.reject(new Error('Internal service error'));
-      });
-
-      const payload: CreateAssessorDto = {
+    it('should call the prompt factory and llm service', async () => {
+      const dto: CreateAssessorDto = {
         taskType: TaskType.TEXT,
         reference: 'ref',
+        studentResponse: 'stud',
         template: 'temp',
-        studentResponse: 'resp',
       };
 
-      await expect(service.createAssessment(payload)).rejects.toThrow(
-        'Internal service error',
-      );
+      const mockPrompt = {
+        buildMessage: jest.fn().mockResolvedValue('prompt message'),
+      };
+      (promptFactory.create as jest.Mock).mockReturnValue(mockPrompt);
+      (llmService.send as jest.Mock).mockResolvedValue({ score: 5 });
+
+      const result = await service.createAssessment(dto);
+
+      expect(promptFactory.create).toHaveBeenCalledWith(dto);
+      expect(mockPrompt.buildMessage).toHaveBeenCalled();
+      expect(llmService.send).toHaveBeenCalledWith('prompt message');
+      expect(result).toEqual({ score: 5 });
     });
   });
 });

@@ -175,29 +175,30 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 **Objective**: Implement a factory to encapsulate the creation logic for different prompt instances.
 
-- [ ] **Review Design**: Read the "PromptFactory" sections in `PromptClassDesign.md` and `TestCases.md`.
+- [x] **Review Design**: Read the "PromptFactory" sections in `PromptClassDesign.md` and `TestCases.md`.
 
 ##### Red Phase: Write Failing Tests for `PromptFactory`
 
-- [ ] Create `src/prompt/prompt.factory.spec.ts`.
-- [ ] Write tests that assert:
-  - [ ] The factory returns a `TextPrompt` instance when `taskType` is `'TEXT'`.
-  - [ ] The factory returns a `TablePrompt` instance when `taskType` is `'TABLE'`.
-  - [ ] The factory returns an `ImagePrompt` instance when `taskType` is `'IMAGE'`.
-  - [ ] The factory correctly passes the DTO data to the created prompt's constructor.
-  - [ ] The factory throws an `Error` for an unsupported `taskType`.
+- [x] Create `src/prompt/prompt.factory.spec.ts`.
+- [x] Write tests that assert:
+  - [x] The factory returns a `TextPrompt` instance when `taskType` is `'TEXT'`.
+  - [x] The factory returns a `TablePrompt` instance when `taskType` is `'TABLE'`.
+  - [x] The factory returns an `ImagePrompt` instance when `taskType` is `'IMAGE'`.
+  - [x] The factory correctly passes the DTO data to the created prompt's constructor.
+  - [x] The factory throws an `Error` for an unsupported `taskType`.
 
 ##### Green Phase: Implement `PromptFactory`
 
-- [ ] Create `src/prompt/prompt.factory.ts`.
-- [ ] Implement the `PromptFactory` class with a `create(dto: CreateAssessorDto)` method.
-- [ ] Use a `switch` statement on `dto.taskType` to instantiate and return the correct prompt subclass.
-- [ ] Run the factory tests and ensure they pass.
+- [x] Create `src/prompt/prompt.factory.ts`.
+- [x] Implement the `PromptFactory` class with a `create(dto: CreateAssessorDto)` method.
+- [x] Use a `switch` statement on `dto.taskType` to instantiate and return the correct prompt subclass.
+- [x] Run the factory tests and ensure they pass.
 
 ##### Refactor & Commit
 
-- [ ] Review the factory implementation and tests.
-- [ ] Commit the changes (e.g., `feat(prompt): implement prompt factory`).
+- [x] Review the factory implementation and tests.
+- [x] Commit the changes (e.g., `feat(prompt): implement prompt factory`). (commit: ccd85c9)
+- [ ] Note any issues or changes that might affect future steps below.
 
 ---
 
@@ -213,21 +214,21 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 ##### Red Phase: Write Failing Integration Tests
 
-- [ ] Create `src/llm/llm.module.spec.ts`. Write a test to ensure the `LlmModule` can be created and that it correctly provides the `LLMService`.
-- [ ] Create `src/prompt/prompt.module.spec.ts`. Write a test to ensure the `PromptModule` can be created and that it correctly provides the `PromptFactory`.
-- [ ] Update `src/v1/assessor/assessor.service.spec.ts`:
-  - [ ] Modify the `TestingModule` to import the new (mocked) `LlmModule` and `PromptModule`.
-  - [ ] Refactor existing tests for `AssessorService` to reflect its new dependencies (`PromptFactory` and `LLMService`) instead of its old implementation details. The tests should now focus on the interaction between the service and its dependencies (e.g., "does it call `promptFactory.create`?", "does it call `llmService.send`?").
+- [x] Create `src/llm/llm.module.spec.ts`. Write a test to ensure the `LlmModule` can be created and that it correctly provides the `LLMService`.
+- [x] Create `src/prompt/prompt.module.spec.ts`. Write a test to ensure the `PromptModule` can be created and that it correctly provides the `PromptFactory`.
+- [x] Update `src/v1/assessor/assessor.service.spec.ts`:
+  - [x] Modify the `TestingModule` to import the new (mocked) `LlmModule` and `PromptModule`.
+  - [x] Refactor existing tests for `AssessorService` to reflect its new dependencies (`PromptFactory` and `LLMService`) instead of its old implementation details. The tests should now focus on the interaction between the service and its dependencies (e.g., "does it call `promptFactory.create`?", "does it call `llmService.send`?").
 
 ##### Green Phase: Implement and Integrate Modules
 
-- [ ] Create `src/llm/llm.module.ts`. Define the module to provide `LLMService` (using `GeminiService` as the implementation) and export it.
-- [ ] Create `src/prompt/prompt.module.ts`. Define the module to provide and export the `PromptFactory`.
-- [ ] Create `src/v1/assessor/assessor.module.ts` if it doesn't exist. Import `LlmModule` and `PromptModule`.
-- [ ] Refactor `src/v1/assessor/assessor.service.ts`:
-  - [ ] Inject `PromptFactory` and `LLMService` into the constructor.
-  - [ ] Remove the old, hard-coded prompt generation and `HttpService` logic.
-  - [ ] In the `createAssessment` method:
+- [x] Create `src/llm/llm.module.ts`. Define the module to provide `LLMService` (using `GeminiService` as the implementation) and export it.
+- [x] Create `src/prompt/prompt.module.ts`. Define the module to provide and export the `PromptFactory`.
+- [x] Create `src/v1/assessor/assessor.module.ts` if it doesn't exist. Import `LlmModule` and `PromptModule`.
+- [x] Refactor `src/v1/assessor/assessor.service.ts`:
+  - [x] Inject `PromptFactory` and `LLMService` into the constructor.
+  - [x] Remove the old, hard-coded prompt generation and `HttpService` logic.
+  - [x] In the `createAssessment` method:
     1.  Use the `promptFactory` to `create` a prompt instance from the DTO.
     2.  Call `buildMessage()` on the created prompt instance.
     3.  Pass the result to `llmService.send()`.
@@ -237,7 +238,8 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 ##### Refactor & Commit
 
 - [ ] Review the module definitions and the refactored `AssessorService`.
-- [ ] Commit the changes (e.g., `refactor(assessor): integrate prompt and llm modules`).
+- [ ] Commit the changes (e.g., `refactor(assessor): integrate prompt and llm modules`). (commit: ccd85c9)
+- [ ] Note any issues or changes that might affect future steps below.
 
 ---
 
@@ -250,3 +252,4 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 - [ ] Update `README.md` and any other relevant documentation (e.g., `docs/api/API_Documentation.md`) to reflect the new architecture and dependencies (`@google/genai`, `mustache`).
 - [ ] Review and merge the `Stage6` branch into the main development branch.
 - [ ] Delete the `Stage6` feature branch after successful merge.
+- [ ] Note any issues or changes that might affect future steps below.
