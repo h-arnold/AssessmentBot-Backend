@@ -188,4 +188,22 @@ describe('ImageValidationPipe', () => {
       );
     });
   });
+
+  describe('Security Edge Cases', () => {
+    it('should reject a base64 image string longer than 10MB', async () => {
+      const hugeBase64 =
+        'data:image/png;base64,' + 'A'.repeat(10 * 1024 * 1024 + 1);
+      await expect(pipe.transform(hugeBase64)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should reject crafted input that could cause ReDoS in the old regex', async () => {
+      // This input would have caused catastrophic backtracking in the old regex
+      const malicious = 'data:a;base64,' + 'a;base64,'.repeat(10000);
+      await expect(pipe.transform(malicious)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+  });
 });
