@@ -210,7 +210,7 @@ src
 - `auth`: This module handles all authentication concerns. It contains the Passport.js `ApiKeyStrategy` for validating API keys and the `ApiKeyGuard` to protect endpoints, keeping security logic isolated.
 - `prompt`: Provides a flexible, object-oriented abstraction for generating prompts tailored to different assessment types. Sub-classes are created for specific prompt types.
 - `llm`: This module abstracts the interaction with Large Language Models. It features an abstract `LlmService` class, allowing the application to easily swap out different LLM providers (like OpenAI, Anthropic, etc.) by creating new concrete implementations. This is a direct application of the Open/Closed Principle from SOLID.
-- `config`: Manages environment variables using `@nestjs/config`. This ensures that all configuration is validated and centrally accessible in a type-safe manner.
+- `config`: Manages environment variables using a custom ConfigModule and ConfigService (see `src/config`). All configuration is validated centrally using Zod schemas and is accessible in a type-safe manner. Do not use @nestjs/config directly outside the config module.
 - `common`: A module for shared, reusable components that don't belong to a specific feature. This includes custom `pipes` (for Zod validation) and `utils` (like the resilient JSON parser).
 
 ## Testing Structure

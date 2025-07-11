@@ -50,7 +50,7 @@ The `HttpService` is replaced with the `GoogleGenerativeAI` client from the SDK.
 
 ```ts
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigService } from '../config/config.service';
 import {
   GoogleGenerativeAI,
   GenerateContentRequest,
@@ -134,7 +134,7 @@ The `HttpModule` is no longer needed.
 
 ```ts
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule } from '../config/config.module';
 import { LLMService } from './llm.service.interface';
 import { GeminiService } from './gemini.service';
 

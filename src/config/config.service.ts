@@ -27,6 +27,21 @@ const configSchema = z.object({
 // Infer the type from the schema
 export type Config = z.infer<typeof configSchema>;
 
+/**
+ * ConfigService
+ *
+ * This service acts as the single source of truth for all environment configuration in the application.
+ * It loads environment variables from both process.env and .env files, then validates and transforms them using Zod schemas.
+ *
+ * Architectural reasoning:
+ * - Centralises configuration access and validation, ensuring all config is type-safe and robustly validated at startup.
+ * - Uses Zod for schema-based validation, catching misconfigurations early and providing clear error messages.
+ * - Avoids direct usage of @nestjs/config's ConfigService outside this module, preventing fragmentation and spaghetti code.
+ * - All consumers should inject and use this service only, never @nestjs/config directly.
+ * - This approach makes configuration easy to mock in tests and ensures consistent behaviour across environments.
+ *
+ * Maintainers: If you need to add new environment variables, update the Zod schema here and document the expected types/defaults.
+ */
 @Injectable()
 export class ConfigService {
   private readonly config: Config;

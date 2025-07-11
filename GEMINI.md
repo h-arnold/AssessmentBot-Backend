@@ -48,7 +48,7 @@ Adhere to these principles in all contributions:
   - `src/v1/assessor`: Version 1 of the core assessment logic.
   - `src/auth`: Authentication strategies and guards.
   - `src/common`: Shared utilities, filters, and pipes.
-  - `src/config`: Environment variable management (`@nestjs/config`).
+  - `src/config`: Environment variable management via a custom ConfigModule and ConfigService. All configuration is validated with Zod schemas. Do not use @nestjs/config directly outside the config module.
   - `src/llm`: Abstractions for interacting with Large Language Models.
   - `src/prompt`: Logic for generating prompts for the LLM.
 - `test/`: End-to-end tests.
