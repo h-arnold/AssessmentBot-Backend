@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AssessorService } from './assessor.service';
 import { CreateAssessorDto, TaskType } from './dto/create-assessor.dto';
-import { ConfigModule } from '../../config/config.module';
+import { ConfigModule, ConfigService } from '../../config/config.module';
 import { GeminiService } from '../../llm/gemini.service';
 import { LlmModule } from '../../llm/llm.module';
 import { LLMService } from '../../llm/llm.service.interface';
@@ -26,9 +26,17 @@ describe('AssessorService', () => {
   });
 
   beforeEach(async () => {
+    const mockConfigService = {
+      get: jest.fn((key) => {
+        return process.env[key] || '';
+      }),
+    };
     const module: TestingModule = await Test.createTestingModule({
       imports: [LlmModule, PromptModule, ConfigModule],
-      providers: [AssessorService],
+      providers: [
+        AssessorService,
+        { provide: ConfigService, useValue: mockConfigService },
+      ],
     })
       .overrideProvider('LLMService')
       .useValue({ send: jest.fn() })

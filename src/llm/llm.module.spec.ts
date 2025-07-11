@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { LlmModule } from './llm.module';
 import { LLMService } from './llm.service.interface';
+import { ConfigModule } from '../config/config.module';
 import { ConfigService } from '../config/config.service';
 
 const defaults = {
@@ -23,16 +24,20 @@ describe('LlmModule', () => {
   it('should compile the module', async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [LlmModule],
-      providers: [{ provide: ConfigService, useValue: mockConfigService }],
-    }).compile();
+    })
+      .overrideProvider(ConfigService)
+      .useValue(mockConfigService)
+      .compile();
     expect(module).toBeDefined();
   });
 
   it('should provide the LLMService', async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [LlmModule],
-      providers: [{ provide: ConfigService, useValue: mockConfigService }],
-    }).compile();
+    })
+      .overrideProvider(ConfigService)
+      .useValue(mockConfigService)
+      .compile();
     const configService = module.get(ConfigService);
     expect(configService).toBeDefined();
     const llmService = module.get(LLMService);
