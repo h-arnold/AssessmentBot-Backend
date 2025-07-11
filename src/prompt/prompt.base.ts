@@ -1,6 +1,6 @@
-
 import * as fs from 'fs/promises';
 import * as path from 'path';
+
 import * as mustache from 'mustache';
 import { z } from 'zod';
 
@@ -18,7 +18,7 @@ export abstract class Prompt {
   protected emptyTask: string;
 
   constructor(inputs: unknown) {
-    const parsed = PromptInputSchema.parse(inputs);
+    const parsed: PromptInput = PromptInputSchema.parse(inputs);
     this.referenceTask = parsed.referenceTask;
     this.studentTask = parsed.studentTask;
     this.emptyTask = parsed.emptyTask;

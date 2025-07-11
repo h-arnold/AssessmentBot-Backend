@@ -102,9 +102,13 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 **Objective**: Implement a factory pattern for creating different types of prompts (`Text`, `Table`, `Image`) based on a modular, test-driven design.
 
+- [ ] **Review Design**: Read `docs/ImplementationPlan/Stage6/PromptClassDesign.md` for the overall architecture and `docs/ImplementationPlan/Stage6/TestCases.md` for specific test requirements.
+
 #### 3.1. Prompt Base Class
 
 **Objective**: Create an abstract base class for all prompts that handles common logic like input validation and template loading.
+
+- [ ] **Review Design**: Read the "Prompt Base Class" sections in `PromptClassDesign.md` and `TestCases.md`.
 
 ##### Red Phase: Write Failing Tests for `Prompt` Base Class
 
@@ -138,6 +142,8 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 **Objective**: Implement the concrete prompt classes for Text, Table, and Image tasks.
 
+- [ ] **Review Design**: Read the "Subclasses" sections in `PromptClassDesign.md` and the relevant sections in `TestCases.md`.
+
 ##### Red Phase: Write Failing Tests for Subclasses
 
 - [ ] Create `src/prompt/text.prompt.spec.ts`. Write tests to:
@@ -169,6 +175,8 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 **Objective**: Implement a factory to encapsulate the creation logic for different prompt instances.
 
+- [ ] **Review Design**: Read the "PromptFactory" sections in `PromptClassDesign.md` and `TestCases.md`.
+
 ##### Red Phase: Write Failing Tests for `PromptFactory`
 
 - [ ] Create `src/prompt/prompt.factory.spec.ts`.
@@ -196,6 +204,8 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 ### 4. Module Integration
 
 **Objective**: Integrate the new `LlmModule` and `PromptModule` into the application and refactor `AssessorService` to use them.
+
+- [ ] **Review Design**: Read `LlmServiceClassDesign.md` and `PromptClassDesign.md` for module structure and `TestCases.md` for consumer test cases (`AssessorService`).
 
 #### 4.1. Create and Integrate Modules
 
