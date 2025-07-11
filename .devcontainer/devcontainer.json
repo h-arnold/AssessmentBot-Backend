@@ -10,7 +10,7 @@
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
   // Install project dependencies and then install the Gemini CLI globally
-  "postCreateCommand": "npm install && npm install -g @google/gemini-cli",
+  "postCreateCommand": "npm install && npm run build && npm install -g @google/gemini-cli",
   "customizations": {
     "vscode": {
       "settings": {

@@ -1,7 +1,3 @@
----
-applyTo: '**'
----
-
 # Gemini Code-Assist Instructions
 
 This document provides guidance for interacting with the Assessment Bot backend codebase.
@@ -12,15 +8,11 @@ This document provides guidance for interacting with the Assessment Bot backend 
 
 Adhere to these principles in all contributions:
 
-- **Security First**: Prioritise security. Validate all inputs with Zod, sanitise outputs, and manage secrets via environment variables.
+- **Security First**: Prioritise security. Validate all inputs with Zod, sanitise outputs, and manage secrets via environment variables. Type safety is strictly enforced.
 - **Statelessness**: The application is stateless. Do not store session information or user data on the server.
 - **Modularity & OOP**: Follow SOLID principles and NestJS module conventions. Keep components focused and reusable. Avoid God Objects.
 - **Test-Driven Development (TDD)**: Write comprehensive tests for all new features and bug fixes. Use the existing testing structure.
 - **Documentation**: Maintain clear JSDoc comments for functions, classes, and modules. Keep the Swagger documentation up-to-date.
-
-## 1.1. Input Validation Approach (2025-07-10)
-
-**Note:** From now on, for all external inputs (e.g., API keys, user input, HTTP request data), broaden the input type in service and validation methods to `unknown` (or `string | undefined | null` as appropriate), and always perform runtime validation using Zod. This ensures robust test coverage and runtime safety, as TypeScript types are not enforced at runtime. Strict type checking remains enabled for development, but runtime validation is required for all boundary inputs.
 
 ## 2. Tech Stack & Key Libraries
 
@@ -49,11 +41,22 @@ Adhere to these principles in all contributions:
    - Before committing, ensure all code passes linting checks.
    - Husky hooks are configured to run `lint-staged` automatically on commit. Ensure your changes can pass these checks.
 
-## 4. Agent Workflow
+## 4. Codebase Structure Overview
+
+- `src/`: Main application source code.
+  - `src/v1/assessor`: Version 1 of the core assessment logic.
+  - `src/auth`: Authentication strategies and guards.
+  - `src/common`: Shared utilities, filters, and pipes.
+  - `src/config`: Environment variable management (`@nestjs/config`).
+  - `src/llm`: Abstractions for interacting with Large Language Models.
+  - `src/prompt`: Logic for generating prompts for the LLM.
+- `test/`: End-to-end tests.
+
+## 5. Agent Workflow
 
 To ensure a methodical and traceable development process, the agent _must_ adhere to the following workflow:
 
-### 4.1. TDD Workflow: A Hybrid Approach
+### 5.1. TDD Workflow: A Hybrid Approach
 
 While the project's `TODO.md` files may be structured with distinct "Red Phase" (all tests fail) and "Green Phase" (all tests pass) sections for organisational clarity, the agent will employ a hybrid TDD workflow:
 
@@ -64,22 +67,12 @@ While the project's `TODO.md` files may be structured with distinct "Red Phase" 
 
 2. **Macro-Verification (End-of-Stage Check)**: After completing all the micro-cycles for a given stage or major feature, the agent will run the _entire_ test suite. This ensures that changes made in later micro-cycles have not inadvertently broken functionality that was implemented and tested in earlier cycles.
 
-### 4.2. Commits and Documentation
+### 5.2. Working with TODOs
 
-1. **Regular Commits**: After completing each logical sub-step (typically after each successful "Green" phase in a micro-cycle), commit the changes. Commit messages should be clear, concise, and follow Conventional Commits guidelines.
-2. **TODO List Updates**: Immediately after completing a sub-step, update the relevant TODO list (e.g., `docs/developer/Implementation Plan/Stage 1/TODO.md`) to:
-   - Mark the step as complete (`[X]`).
-   - Add any relevant notes or explanations.
-   - Append the **short commit ID** of the commit that addresses that item (e.g., `[X] Task completed (commit: abcdef1)`).
-3. **Issue Logging**: If a blocker or significant issue is encountered that prevents immediate progress on a TODO item, document it clearly in the TODO list with a "Blocker" note and a brief explanation (e.g., `[ ] Task blocked: (Blocker: brief explanation)`).
+When provided, work sequentially through the `TODO.md` file.
 
-## 5. Codebase Structure Overview
+Complete each step in order. **IMPORTANT**: You must complete each step in the TODO list _fully_ before moving on to the next. If you are unable to do so, stop and ask the user for clarification or assistance.
 
-- `src/`: Main application source code.
-  - `src/v1/assessor`: Version 1 of the core assessment logic.
-  - `src/auth`: Authentication strategies and guards.
-  - `src/common`: Shared utilities, filters, and pipes.
-  - `src/config`: Environment variable management (`@nestjs/config`).
-  - `src/llm`: Abstractions for interacting with Large Language Models.
-  - `src/prompt`: Logic for generating prompts for the LLM.
-- `test/`: End-to-end tests.
+Once you have _fully_ completed a step, check off the step in the `TODO.md` file and update it. It is critical you do this to enable everyone to track the progress of the project accurately.
+
+Where you encounter an issue that will may impact future steps (i.e. anything more substantial than syntax or linting errors), you must document this in the TODO file, in the space provided for you. Ensure you provide detailed commentary on the issue, including your reasoning and the solutions used to inform future work.

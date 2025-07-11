@@ -8,7 +8,7 @@ This document provides guidance for interacting with the Assessment Bot backend 
 
 Adhere to these principles in all contributions:
 
-- **Security First**: Prioritise security. Validate all inputs with Zod, sanitise outputs, and manage secrets via environment variables.
+- **Security First**: Prioritise security. Validate all inputs with Zod, sanitise outputs, and manage secrets via environment variables. Type safety is strictly enforced.
 - **Statelessness**: The application is stateless. Do not store session information or user data on the server.
 - **Modularity & OOP**: Follow SOLID principles and NestJS module conventions. Keep components focused and reusable. Avoid God Objects.
 - **Test-Driven Development (TDD)**: Write comprehensive tests for all new features and bug fixes. Use the existing testing structure.

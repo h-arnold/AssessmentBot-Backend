@@ -12,6 +12,15 @@ describe('AssessorService', () => {
   let llmService: LLMService;
   let promptFactory: PromptFactory;
 
+  beforeAll(() => {
+    process.env.GEMINI_API_KEY = 'test-key';
+    process.env.NODE_ENV = 'test';
+    process.env.PORT = '3000';
+    process.env.API_KEYS = 'test-api-key';
+    process.env.MAX_IMAGE_UPLOAD_SIZE_MB = '5';
+    process.env.ALLOWED_IMAGE_MIME_TYPES = 'image/png,image/jpeg';
+  });
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [LlmModule, PromptModule],

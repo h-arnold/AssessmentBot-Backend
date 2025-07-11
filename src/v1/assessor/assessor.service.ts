@@ -5,6 +5,17 @@ import { LLMService } from '../../llm/llm.service.interface';
 import { LlmResponse } from '../../llm/types';
 import { PromptFactory } from '../../prompt/prompt.factory';
 
+function isMultimodalPayload(
+  msg: unknown
+): msg is { messages: { content: string }[]; images: { mimeType: string; data: string }[] } {
+  return (
+    typeof msg === 'object' &&
+    msg !== null &&
+    'messages' in msg &&
+    'images' in msg
+  );
+}
+
 @Injectable()
 export class AssessorService {
   constructor(
@@ -15,6 +26,9 @@ export class AssessorService {
   async createAssessment(dto: CreateAssessorDto): Promise<LlmResponse> {
     const prompt = this.promptFactory.create(dto);
     const message = await prompt.buildMessage();
-    return this.llmService.send(message);
+    if (dto.taskType === 'IMAGE' && isMultimodalPayload(message)) {
+      return this.llmService.send(message);
+    }
+    return this.llmService.send(message as string);
   }
 }

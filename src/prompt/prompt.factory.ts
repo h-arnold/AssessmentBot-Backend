@@ -38,7 +38,7 @@ export class PromptFactory {
         return new ImagePrompt(imageInputs, dto.images);
       }
       default:
-        throw new Error(`Unsupported task type: ${dto.taskType}`);
+        throw new Error(`Unsupported task type: ${String((dto as Record<string, unknown>).taskType)}`);
     }
   }
 }

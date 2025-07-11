@@ -11,12 +11,12 @@ import { ApiKeyGuard } from 'src/auth/api-key.guard';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import { ZodValidationPipe } from 'src/common/zod-validation.pipe';
 import { ConfigService } from 'src/config/config.service';
-
 import { AssessorService } from './assessor.service';
 import {
   CreateAssessorDto,
   createAssessorDtoSchema,
 } from './dto/create-assessor.dto';
+import { LlmResponse } from '../../llm/types';
 
 /**
  * Controller for handling assessor-related API requests.
@@ -39,7 +39,7 @@ export class AssessorController {
   async create(
     @Body(new ZodValidationPipe(createAssessorDtoSchema))
     createAssessorDto: CreateAssessorDto,
-  ): Promise<{ message: string }> {
+  ): Promise<LlmResponse> {
     // If taskType is IMAGE, validate image fields using ImageValidationPipe
     if (createAssessorDto.taskType === 'IMAGE') {
       const imagePipe = new ImageValidationPipe(this.configService);
