@@ -255,3 +255,19 @@ The testing strategy follows the classic testing pyramid model:
 - **Location**: In the root `test/` directory.
 - **Purpose**: To test the entire application from the outside in. It starts the full NestJS application and sends real HTTP requests to its endpoints using a library like `supertest`.
 - **Scope**: Validates the full request/response lifecycle, including authentication, request validation (DTOs/Pipes), controller logic, service execution, and the final HTTP response format and status code. These tests are the most comprehensive but also the slowest to run.
+
+## Environment Variables
+
+The following environment variables control image upload validation:
+
+- `MAX_IMAGE_UPLOAD_SIZE_MB`: Sets the maximum allowed image size (in megabytes) for uploads. Default is `1` MB. Increase this value to allow larger images.
+- `ALLOWED_IMAGE_MIME_TYPES`: Comma-separated list of allowed image MIME types (e.g., `image/png,image/jpeg`). Default is `image/png`. Only images matching these types will be accepted by the `/v1/assessor` endpoint when `taskType` is `IMAGE`.
+
+To configure these, edit your `.env` file:
+
+```env
+MAX_IMAGE_UPLOAD_SIZE_MB=1
+ALLOWED_IMAGE_MIME_TYPES=image/png
+```
+
+These variables are validated at runtime using Zod and can be changed to suit your deployment requirements. If an uploaded image exceeds the size limit or is of a disallowed type, the API will return a `400 Bad Request` error with a descriptive message.

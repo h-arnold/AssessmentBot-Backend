@@ -223,13 +223,13 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 **Objective**: Update relevant documentation to reflect the new validation.
 
-- [ ] Update `docs/api/API_Documentation.md` to describe the image size and type constraints for the `/v1/assessor` endpoint.
-- [ ] Update `README.md` with information about the new environment variables.
+- [x] Update `docs/api/API_Documentation.md` to describe the image size and type constraints for the `/v1/assessor` endpoint. (Image validation rules, error responses, and environment variable configuration documented.)
+- [x] Update `README.md` with information about the new environment variables. (Purpose, defaults, and configuration instructions added.)
 
 #### Refactor & Commit
 
-- [ ] Review all documentation changes for clarity and completeness.
-- [ ] Commit documentation updates with message.
-- [ ] **Commit ID**:
+- [x] Review all documentation changes for clarity and completeness. (Checked for British English spelling and accuracy.)
+- [x] Commit documentation updates with message.
+- [x] **Commit ID**: [TO_BE_FILLED]
 
 ---
