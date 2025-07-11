@@ -61,7 +61,7 @@ describe('PromptFactory', () => {
   it('should throw an error for an unsupported taskType', () => {
     const dto = {
       taskType: 'INVALID',
-    } as CreateAssessorDto;
+    } as unknown as CreateAssessorDto;
     expect(() => factory.create(dto)).toThrow('Unsupported task type: INVALID');
   });
 });

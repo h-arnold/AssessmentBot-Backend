@@ -1,18 +1,20 @@
 module.exports = {
-  moduleFileExtensions: [
-    "js",
-    "json",
-    "ts"
-  ],
-  rootDir: "test",
-  testEnvironment: "node",
-  
+  moduleFileExtensions: ['js', 'json', 'ts'],
+  rootDir: 'test',
+  testEnvironment: 'node',
   transform: {
-    "^.+\.(t|j)s$": "ts-jest"
+    '^.+\\.(t|j)s$': [
+      'ts-jest',
+      {
+        useESM: true,
+        tsconfig: '../tsconfig.json',
+      },
+    ],
   },
+  extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
-    "^src/(.*)$": "<rootDir>/../src/$1"
+    '^src/(.*)$': '<rootDir>/../src/$1',
   },
-  testRegex: ".+\.e2e-spec\.ts$",
-  setupFiles: ["<rootDir>/setup-e2e.ts"]
+  testRegex: '.+\\.e2e-spec\\.ts$',
+  setupFiles: ['<rootDir>/setup-e2e.ts'],
 };

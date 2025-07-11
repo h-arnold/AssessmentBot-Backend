@@ -1,9 +1,10 @@
 import * as fs from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
 import * as mustache from 'mustache';
 import { z } from 'zod';
+
+import { getCurrentDirname } from '../common/file-utils';
 
 export const PromptInputSchema = z.object({
   referenceTask: z.string(),
@@ -30,8 +31,10 @@ export abstract class Prompt {
     if (name.includes('..') || !name.endsWith('.md')) {
       throw new Error('Invalid markdown filename');
     }
+
+    // TODO: Update this path to get a production-ready path.
     const baseDir = path.resolve(
-      path.dirname(fileURLToPath(import.meta.url)),
+      getCurrentDirname(),
       '../../../docs/ImplementationPlan/Stage6/Prompts',
     );
     const resolvedPath = path.resolve(baseDir, name);

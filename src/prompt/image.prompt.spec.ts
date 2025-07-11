@@ -50,7 +50,7 @@ describe('ImagePrompt', () => {
     const images = [
       { path: 'ref.png', mimeType: 'image/gif' }, // Not allowed by default
     ];
-    const prompt = new ImagePrompt(inputs, images);
+    const prompt = new TestImagePrompt(inputs, images);
     await expect(prompt.readImageFile('ref.png', 'image/gif')).rejects.toThrow(
       'Disallowed image MIME type',
     );
@@ -65,7 +65,7 @@ describe('ImagePrompt', () => {
     const images = [
       { path: 'ref.png', mimeType: undefined as unknown as string },
     ];
-    const prompt = new ImagePrompt(inputs, images);
+    const prompt = new TestImagePrompt(inputs, images);
     await expect(
       prompt.readImageFile('ref.png', undefined as unknown as string),
     ).rejects.toThrow('Disallowed image MIME type');
@@ -78,7 +78,7 @@ describe('ImagePrompt', () => {
       emptyTask: 'Empty text',
     };
     const images = [{ path: '../ref.png', mimeType: 'image/png' }];
-    const prompt = new ImagePrompt(inputs, images);
+    const prompt = new TestImagePrompt(inputs, images);
     await expect(
       prompt.readImageFile('../ref.png', 'image/png'),
     ).rejects.toThrow('Invalid image filename');
@@ -92,7 +92,7 @@ describe('ImagePrompt', () => {
       emptyTask: 'Empty text',
     };
     const images = [{ path: 'ref.png', mimeType: 'image/jpeg' }];
-    const prompt = new ImagePrompt(inputs, images);
+    const prompt = new TestImagePrompt(inputs, images);
     // Mock fs.readFile to resolve
     (fs.readFile as jest.Mock).mockResolvedValueOnce('base64data');
     await expect(prompt.readImageFile('ref.png', 'image/jpeg')).resolves.toBe(

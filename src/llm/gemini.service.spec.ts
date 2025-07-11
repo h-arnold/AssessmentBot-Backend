@@ -1,3 +1,4 @@
+import { GoogleGenAI } from '@google/genai';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ZodError } from 'zod';
@@ -10,10 +11,9 @@ const mockGenerateContent = jest.fn();
 const mockGetGenerativeModel = jest.fn(() => ({
   generateContent: mockGenerateContent,
 }));
-const { GoogleGenerativeAI } = jest.requireActual('@google/genai');
 
 jest.mock('@google/genai', () => ({
-  GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
+  GoogleGenAI: jest.fn().mockImplementation(() => ({
     getGenerativeModel: mockGetGenerativeModel,
   })),
 }));
@@ -21,6 +21,15 @@ jest.mock('@google/genai', () => ({
 describe('GeminiService', () => {
   let service: GeminiService;
   let configService: ConfigService;
+
+  beforeAll(() => {
+    process.env.GEMINI_API_KEY = 'test-key';
+    process.env.NODE_ENV = 'test';
+    process.env.PORT = '3000';
+    process.env.API_KEYS = 'test-api-key';
+    process.env.MAX_IMAGE_UPLOAD_SIZE_MB = '5';
+    process.env.ALLOWED_IMAGE_MIME_TYPES = 'image/png,image/jpeg';
+  });
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -43,7 +52,7 @@ describe('GeminiService', () => {
   it('should initialise the SDK correctly', () => {
     jest.spyOn(configService, 'get').mockReturnValue('test-api-key');
     const service = new GeminiService(configService);
-    expect(GoogleGenerativeAI).toHaveBeenCalledWith('test-api-key');
+    expect(GoogleGenAI).toHaveBeenCalledWith({ apiKey: 'test-api-key' });
   });
 
   it('should send a text payload and return a valid, structured response', async () => {

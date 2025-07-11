@@ -1,8 +1,8 @@
 import * as fs from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
 import { Prompt, PromptInput } from './prompt.base';
+import { getCurrentDirname } from '../common/file-utils';
 
 export class ImagePrompt extends Prompt {
   private readonly images: { path: string; mimeType: string }[];
@@ -50,7 +50,7 @@ export class ImagePrompt extends Prompt {
       throw new Error('Disallowed image MIME type');
     }
     const baseDir = path.resolve(
-      path.dirname(fileURLToPath(import.meta.url)),
+      getCurrentDirname(),
       '../../../docs/ImplementationPlan/Stage6/Prompts',
     );
     const resolvedPath = path.resolve(baseDir, imagePath);
