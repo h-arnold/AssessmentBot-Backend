@@ -123,8 +123,8 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 - [ ] Implement the abstract `Prompt` class:
   - [ ] The constructor should accept `inputs: unknown`, parse it with the schema, and assign the validated properties.
   - [ ] Implement the `protected async readMarkdown(name: string)` method to read template files. Note: The path should be resolved relative to the project root, targeting `docs/ImplementationPlan/Stage6/Prompts/`.
-  - [ ] Implement the `protected render(template: string, data: Record<string, any>)` method using `mustache`.
-  - [ ] Define the `public abstract buildMessage(): Promise<string | Record<string, any>>` method.
+  - [ ] Implement the `protected render(template: string, data: Record<string, string>)` method using `mustache`.
+  - [ ] Define the `public abstract buildMessage(): Promise<string | object>` method.
 - [ ] Run the tests and ensure they all pass.
 
 ##### Refactor & Commit
