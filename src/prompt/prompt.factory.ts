@@ -1,11 +1,13 @@
-
 import { Injectable } from '@nestjs/common';
 
-import { CreateAssessorDto } from '../v1/assessor/dto/create-assessor.dto';
 import { ImagePrompt } from './image.prompt';
 import { Prompt } from './prompt.base';
 import { TablePrompt } from './table.prompt';
 import { TextPrompt } from './text.prompt';
+import {
+  CreateAssessorDto,
+  TaskType,
+} from '../v1/assessor/dto/create-assessor.dto';
 
 @Injectable()
 export class PromptFactory {
@@ -17,15 +19,21 @@ export class PromptFactory {
     };
 
     switch (dto.taskType) {
-      case 'TEXT':
+      case TaskType.TEXT:
         return new TextPrompt(inputs);
-      case 'TABLE':
+      case TaskType.TABLE:
         return new TablePrompt(inputs);
-      case 'IMAGE': {
+      case TaskType.IMAGE: {
         const imageInputs = {
-          referenceTask: Buffer.isBuffer(dto.reference) ? dto.reference.toString() : dto.reference,
-          studentTask: Buffer.isBuffer(dto.studentResponse) ? dto.studentResponse.toString() : dto.studentResponse,
-          emptyTask: Buffer.isBuffer(dto.template) ? dto.template.toString() : dto.template,
+          referenceTask: Buffer.isBuffer(dto.reference)
+            ? dto.reference.toString()
+            : dto.reference,
+          studentTask: Buffer.isBuffer(dto.studentResponse)
+            ? dto.studentResponse.toString()
+            : dto.studentResponse,
+          emptyTask: Buffer.isBuffer(dto.template)
+            ? dto.template.toString()
+            : dto.template,
         };
         return new ImagePrompt(imageInputs, dto.images);
       }

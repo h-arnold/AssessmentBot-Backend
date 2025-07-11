@@ -1,10 +1,13 @@
-
 import { Test, TestingModule } from '@nestjs/testing';
-import { CreateAssessorDto, TaskType } from '../v1/assessor/dto/create-assessor.dto';
+
 import { ImagePrompt } from './image.prompt';
 import { PromptFactory } from './prompt.factory';
 import { TablePrompt } from './table.prompt';
 import { TextPrompt } from './text.prompt';
+import {
+  CreateAssessorDto,
+  TaskType,
+} from '../v1/assessor/dto/create-assessor.dto';
 
 describe('PromptFactory', () => {
   let factory: PromptFactory;
@@ -56,9 +59,9 @@ describe('PromptFactory', () => {
   });
 
   it('should throw an error for an unsupported taskType', () => {
-    const dto: any = {
+    const dto = {
       taskType: 'INVALID',
-    };
+    } as CreateAssessorDto;
     expect(() => factory.create(dto)).toThrow('Unsupported task type: INVALID');
   });
 });
