@@ -100,22 +100,143 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 ### 3. Prompt Generation System
 
-**Objective**: Implement a factory pattern for creating different types of prompts (`Text`, `Table`, `Image`).
+**Objective**: Implement a factory pattern for creating different types of prompts (`Text`, `Table`, `Image`) based on a modular, test-driven design.
 
-_This section remains unchanged. Follow the Red/Green/Refactor cycles for the Prompt Base Class, PromptFactory, and concrete Prompt subclasses as previously outlined._
+#### 3.1. Prompt Base Class
+
+**Objective**: Create an abstract base class for all prompts that handles common logic like input validation and template loading.
+
+##### Red Phase: Write Failing Tests for `Prompt` Base Class
+
+- [ ] Create a new directory `src/prompt/`.
+- [ ] Create the test file `src/prompt/prompt.base.spec.ts`.
+- [ ] Following `docs/ImplementationPlan/Stage6/TestCases.md`, write tests for the `Prompt` base class constructor and its Zod validation schema that assert:
+  - [ ] A valid input object (with `referenceTask`, `studentTask`, `emptyTask`) is parsed successfully.
+  - [ ] A `ZodError` is thrown if the `referenceTask` property is missing or not a string.
+  - [ ] A `ZodError` is thrown if the `studentTask` property is missing or not a string.
+  - [ ] A `ZodError` is thrown if the `emptyTask` property is missing or not a string.
+
+##### Green Phase: Implement the `Prompt` Base Class
+
+- [ ] Create the file `src/prompt/prompt.base.ts`.
+- [ ] Implement the `PromptInputSchema` using Zod to validate the constructor inputs.
+- [ ] Implement the abstract `Prompt` class:
+  - [ ] The constructor should accept `inputs: unknown`, parse it with the schema, and assign the validated properties.
+  - [ ] Implement the `protected async readMarkdown(name: string)` method to read template files. Note: The path should be resolved relative to the project root, targeting `docs/ImplementationPlan/Stage6/Prompts/`.
+  - [ ] Implement the `protected render(template: string, data: Record<string, any>)` method using `mustache`.
+  - [ ] Define the `public abstract buildMessage(): Promise<string | Record<string, any>>` method.
+- [ ] Run the tests and ensure they all pass.
+
+##### Refactor & Commit
+
+- [ ] Review the base class and test code for clarity, correctness, and adherence to the design.
+- [ ] Commit the changes (e.g., `feat(prompt): create abstract prompt base class`).
+
+---
+
+#### 3.2. Concrete Prompt Subclasses
+
+**Objective**: Implement the concrete prompt classes for Text, Table, and Image tasks.
+
+##### Red Phase: Write Failing Tests for Subclasses
+
+- [ ] Create `src/prompt/text.prompt.spec.ts`. Write tests to:
+  - [ ] Verify that `buildMessage` reads the correct template (`textPrompt.md`).
+  - [ ] Verify that `buildMessage` correctly renders the template with the provided task data.
+- [ ] Create `src/prompt/table.prompt.spec.ts`. Write tests to:
+  - [ ] Verify that `buildMessage` reads the correct template (`tablePrompt.md`).
+  - [ ] Verify that `buildMessage` correctly renders the template with the provided task data.
+- [ ] Create `src/prompt/image.prompt.spec.ts`. Write tests to:
+  - [ ] Verify the constructor correctly handles image data alongside text data.
+  - [ ] Verify that `buildMessage` reads the correct template (`imagePrompt.md`).
+  - [ ] Verify that `buildMessage` returns a structured object containing the rendered prompt text and correctly formatted image data (base64 string and mime type).
+
+##### Green Phase: Implement Subclasses
+
+- [ ] Create `src/prompt/text.prompt.ts`. Implement the `TextPrompt` class, extending `Prompt` and implementing `buildMessage`.
+- [ ] Create `src/prompt/table.prompt.ts`. Implement the `TablePrompt` class, extending `Prompt` and implementing `buildMessage`.
+- [ ] Create `src/prompt/image.prompt.ts`. Implement the `ImagePrompt` class, extending `Prompt` with its own constructor to accept image data and implementing `buildMessage`.
+- [ ] Run all subclass tests and ensure they pass.
+
+##### Refactor & Commit
+
+- [ ] Review all three subclass implementations and their tests.
+- [ ] Commit the changes (e.g., `feat(prompt): implement concrete prompt subclasses`).
+
+---
+
+#### 3.3. Prompt Factory
+
+**Objective**: Implement a factory to encapsulate the creation logic for different prompt instances.
+
+##### Red Phase: Write Failing Tests for `PromptFactory`
+
+- [ ] Create `src/prompt/prompt.factory.spec.ts`.
+- [ ] Write tests that assert:
+  - [ ] The factory returns a `TextPrompt` instance when `taskType` is `'TEXT'`.
+  - [ ] The factory returns a `TablePrompt` instance when `taskType` is `'TABLE'`.
+  - [ ] The factory returns an `ImagePrompt` instance when `taskType` is `'IMAGE'`.
+  - [ ] The factory correctly passes the DTO data to the created prompt's constructor.
+  - [ ] The factory throws an `Error` for an unsupported `taskType`.
+
+##### Green Phase: Implement `PromptFactory`
+
+- [ ] Create `src/prompt/prompt.factory.ts`.
+- [ ] Implement the `PromptFactory` class with a `create(dto: CreateAssessorDto)` method.
+- [ ] Use a `switch` statement on `dto.taskType` to instantiate and return the correct prompt subclass.
+- [ ] Run the factory tests and ensure they pass.
+
+##### Refactor & Commit
+
+- [ ] Review the factory implementation and tests.
+- [ ] Commit the changes (e.g., `feat(prompt): implement prompt factory`).
 
 ---
 
 ### 4. Module Integration
 
-**Objective**: Integrate the new `LlmModule` and `PromptModule` into the application and refactor `AssessorService`.
+**Objective**: Integrate the new `LlmModule` and `PromptModule` into the application and refactor `AssessorService` to use them.
 
-_This section remains unchanged. Follow the Red/Green/Refactor cycles for module integration and the `AssessorService` refactor as previously outlined._
+#### 4.1. Create and Integrate Modules
+
+**Objective**: Define the `LlmModule` and `PromptModule` and integrate them into the main application structure.
+
+##### Red Phase: Write Failing Integration Tests
+
+- [ ] Create `src/llm/llm.module.spec.ts`. Write a test to ensure the `LlmModule` can be created and that it correctly provides the `LLMService`.
+- [ ] Create `src/prompt/prompt.module.spec.ts`. Write a test to ensure the `PromptModule` can be created and that it correctly provides the `PromptFactory`.
+- [ ] Update `src/v1/assessor/assessor.service.spec.ts`:
+  - [ ] Modify the `TestingModule` to import the new (mocked) `LlmModule` and `PromptModule`.
+  - [ ] Refactor existing tests for `AssessorService` to reflect its new dependencies (`PromptFactory` and `LLMService`) instead of its old implementation details. The tests should now focus on the interaction between the service and its dependencies (e.g., "does it call `promptFactory.create`?", "does it call `llmService.send`?").
+
+##### Green Phase: Implement and Integrate Modules
+
+- [ ] Create `src/llm/llm.module.ts`. Define the module to provide `LLMService` (using `GeminiService` as the implementation) and export it.
+- [ ] Create `src/prompt/prompt.module.ts`. Define the module to provide and export the `PromptFactory`.
+- [ ] Create `src/v1/assessor/assessor.module.ts` if it doesn't exist. Import `LlmModule` and `PromptModule`.
+- [ ] Refactor `src/v1/assessor/assessor.service.ts`:
+  - [ ] Inject `PromptFactory` and `LLMService` into the constructor.
+  - [ ] Remove the old, hard-coded prompt generation and `HttpService` logic.
+  - [ ] In the `createAssessment` method:
+    1.  Use the `promptFactory` to `create` a prompt instance from the DTO.
+    2.  Call `buildMessage()` on the created prompt instance.
+    3.  Pass the result to `llmService.send()`.
+    4.  Return the validated response from the `llmService`.
+- [ ] Run all tests (`assessor.service.spec.ts`, module specs) and ensure they pass.
+
+##### Refactor & Commit
+
+- [ ] Review the module definitions and the refactored `AssessorService`.
+- [ ] Commit the changes (e.g., `refactor(assessor): integrate prompt and llm modules`).
 
 ---
 
 ### 5. Final Steps
 
-- [ ] Manually test the endpoint to ensure the end-to-end flow works as expected.
-- [ ] Update relevant documentation (`README.md`, API docs).
-- [ ] Open a Pull Request from the `Stage6` branch to the main branch.
+**Objective**: Ensure the new implementation is fully functional and documented.
+
+- [ ] Run the full E2E test suite (`npm run test:e2e`) to ensure the refactoring has not introduced any regressions.
+- [ ] Manually test the `/v1/assessor` endpoint using a tool like Postman or cURL with text, table, and image payloads to confirm the end-to-end flow works as expected.
+- [ ] Update `README.md` and any other relevant documentation (e.g., `docs/api/API_Documentation.md`) to reflect the new architecture and dependencies (`@google/genai`, `mustache`).
+- [ ] Review and merge the `Stage6` branch into the main development branch.
+- [ ] Delete the `Stage6` feature branch after successful merge.
