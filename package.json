@@ -80,50 +80,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.36.0"
   },
-  "jest": {
-    "preset": "ts-jest/presets/default-esm",
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": [
-        "ts-jest",
-        {
-          "useESM": true,
-          "tsconfig": {
-            "module": "ES2022",
-            "target": "ES2022",
-            "lib": [
-              "ES2022"
-            ],
-            "moduleResolution": "node",
-            "allowSyntheticDefaultImports": true,
-            "esModuleInterop": true,
-            "experimentalDecorators": true,
-            "emitDecoratorMetadata": true
-          }
-        }
-      ]
-    },
-    "transformIgnorePatterns": [
-      "node_modules/(?!(.*\\.mjs$))"
-    ],
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "moduleNameMapper": {
-      "src/(.*)": "<rootDir>/$1"
-    },
-    "extensionsToTreatAsEsm": [
-      ".ts"
-    ]
-  },
+  "homepage": "https://github.com/h-arnold/AssessmentBot-Backend#readme",
   "lint-staged": {
     "*.ts": "eslint",
     "*.{js,ts,json,md}": "prettier --write"
@@ -134,6 +91,5 @@
   },
   "bugs": {
     "url": "https://github.com/h-arnold/AssessmentBot-Backend/issues"
-  },
-  "homepage": "https://github.com/h-arnold/AssessmentBot-Backend#readme"
+  }
 }
