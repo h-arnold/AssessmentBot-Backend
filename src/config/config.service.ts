@@ -21,6 +21,7 @@ const configSchema = z.object({
     .string()
     .default('image/png')
     .transform((val) => val.split(',').map((s) => s.trim())),
+  GEMINI_API_KEY: z.string().min(1),
 });
 
 // Infer the type from the schema

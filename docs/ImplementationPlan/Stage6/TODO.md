@@ -1,6 +1,6 @@
 # Stage 6: LLM and Prompt Abstraction TODO
 
-- [ ] Create a new git branch for this work:
+- [x] Create a new git branch for this work:
   ```bash
   git checkout -b Stage6
   ```
@@ -13,13 +13,13 @@ This document outlines the tasks for refactoring the application to use a flexib
 
 **Objective**: Prepare the environment by installing necessary libraries.
 
-- [ ] Install required npm packages:
+- [x] Install required npm packages:
   ```bash
   npm install @google/genai mustache jsonrepair zod
   npm install -D @types/mustache
   ```
-- [ ] Add `GEMINI_API_KEY=` to the `.env.example` file.
-- [ ] Update the central Zod schema for environment variables in the `ConfigModule` to include validation for `GEMINI_API_KEY`.
+- [x] Add `GEMINI_API_KEY=` to the `.env.example` file.
+- [x] Update the central Zod schema for environment variables in the `ConfigModule` to include validation for `GEMINI_API_KEY`.
 
 ---
 
@@ -33,27 +33,27 @@ This document outlines the tasks for refactoring the application to use a flexib
 
 ##### Red Phase: Write Failing Tests for Schemas
 
-- [ ] Create a new directory `src/llm/`.
-- [ ] Create the test file `src/llm/types.spec.ts`.
-- [ ] Write tests for the `LlmResponseSchema` that assert:
-  - [ ] A valid payload with all criteria (`completeness`, `accuracy`, `spag`), correct scores (0-5), and non-empty reasoning passes validation.
-  - [ ] A payload with a missing criterion (e.g., `spag`) is rejected.
-  - [ ] A payload with an invalid score (e.g., `6` or `-1`) is rejected.
-  - [ ] A payload with a non-integer score is rejected.
-  - [ ] A payload with empty `reasoning` is rejected.
-  - [ ] A payload with a missing `score` or `reasoning` field is rejected.
+- [x] Create a new directory `src/llm/`.
+- [x] Create the test file `src/llm/types.spec.ts`.
+- [x] Write tests for the `LlmResponseSchema` that assert:
+  - [x] A valid payload with all criteria (`completeness`, `accuracy`, `spag`), correct scores (0-5), and non-empty reasoning passes validation.
+  - [x] A payload with a missing criterion (e.g., `spag`) is rejected.
+  - [x] A payload with an invalid score (e.g., `6` or `-1`) is rejected.
+  - [x] A payload with a non-integer score is rejected.
+  - [x] A payload with empty `reasoning` is rejected.
+  - [x] A payload with a missing `score` or `reasoning` field is rejected.
 
 ##### Green Phase: Implement the Zod Schemas
 
-- [ ] Create the file `src/llm/types.ts`.
-- [ ] Implement the `AssessmentCriterionSchema` and `LlmResponseSchema` using Zod, as defined in `docs/ImplementationPlan/Stage6/LlmServiceClassDesign.md`.
-- [ ] Export the inferred `LlmResponse` type.
-- [ ] Run the tests and ensure they all pass.
+- [x] Create the file `src/llm/types.ts`.
+- [x] Implement the `AssessmentCriterionSchema` and `LlmResponseSchema` using Zod, as defined in `docs/ImplementationPlan/Stage6/LlmServiceClassDesign.md`.
+- [x] Export the inferred `LlmResponse` type.
+- [x] Run the tests and ensure they all pass.
 
 ##### Refactor & Commit
 
-- [ ] Review the schema and test code.
-- [ ] Commit the changes (e.g., `feat(llm): add zod schemas for llm response`).
+- [x] Review the schema and test code.
+- [x] Commit the changes (e.g., `feat(llm): add zod schemas for llm response`). (commit: 3565952)
 
 ---
 
@@ -63,20 +63,20 @@ This document outlines the tasks for refactoring the application to use a flexib
 
 ##### Red Phase: Write Failing Tests for `GeminiService`
 
-- [ ] Create the test file `src/llm/gemini.service.spec.ts`.
-- [ ] Following `docs/ImplementationPlan/Stage6/TestCases.md`, write tests that assert:
-  - [ ] **Initialisation**: The service correctly initialises the `@google/genai` SDK.
-  - [ ] **Payload Handling**: The correct model is used and the request is built correctly for both text and multimodal payloads.
-  - [ ] **Response Handling & Validation**:
-    - [ ] The service successfully parses, validates, and returns a response that conforms to the `LlmResponseSchema`.
-    - [ ] The service can repair a malformed JSON string and then successfully validate it.
-    - [ ] The service throws a `ZodError` if the repaired JSON is structurally invalid (e.g., missing `accuracy` criterion or score is out of range).
-    - [ ] The service logs and throws a user-friendly error when the underlying SDK call fails.
+- [x] Create the test file `src/llm/gemini.service.spec.ts`.
+- [x] Following `docs/ImplementationPlan/Stage6/TestCases.md`, write tests that assert:
+  - [x] **Initialisation**: The service correctly initialises the `@google/genai` SDK.
+  - [x] **Payload Handling**: The correct model is used and the request is built correctly for both text and multimodal payloads.
+  - [x] **Response Handling & Validation**:
+    - [x] The service successfully parses, validates, and returns a response that conforms to the `LlmResponseSchema`.
+    - [x] The service can repair a malformed JSON string and then successfully validate it.
+    - [x] The service throws a `ZodError` if the repaired JSON is structurally invalid (e.g., missing `accuracy` criterion or score is out of range).
+    - [x] The service logs and throws a user-friendly error when the underlying SDK call fails.
 
 ##### Green Phase: Implement `LLMService` and `GeminiService`
 
-- [ ] Create `src/llm/llm.service.interface.ts` and define the `LLMService` interface, ensuring the `send` method returns a `Promise<LlmResponse>`.
-- [ ] Create `src/llm/gemini.service.ts`.
+- [x] Create `src/llm/llm.service.interface.ts` and define the `LLMService` interface, ensuring the `send` method returns a `Promise<LlmResponse>`.
+- [x] Create `src/llm/gemini.service.ts`.
 - [ ] Implement the `GeminiService` class.
   - [ ] In the `send` method, after repairing and parsing the JSON, use `LlmResponseSchema.parse()` to validate the object before returning it.
 - [ ] Run the tests and ensure they all pass.
