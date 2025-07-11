@@ -253,3 +253,13 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 - [ ] Review and merge the `Stage6` branch into the main development branch.
 - [ ] Delete the `Stage6` feature branch after successful merge.
 - [ ] Note any issues or changes that might affect future steps below.
+
+## Issues/Notes for Future Steps
+
+- Several config/auth module tests still fail due to environment variable validation. These are unrelated to the assessor/prompt/LLM integration and should be addressed separately if global config test coverage is required.
+- All main integration and service tests for assessor, prompt, and LLM modules now pass.
+- No usage of `any` type remains; all casts use `unknown` or proper type guards.
+- ESM and import order issues resolved.
+- Next steps: proceed to E2E and manual endpoint testing as per Stage 6 TODO.
+
+---

@@ -7,6 +7,10 @@ class TestPrompt extends Prompt {
   public async buildMessage(): Promise<string | object> {
     return 'test message';
   }
+  // Expose protected readMarkdown for testing
+  public async testReadMarkdown(name: string): Promise<string> {
+    return this.readMarkdown(name);
+  }
 }
 
 describe('Prompt Base Class', (): void => {
@@ -60,6 +64,22 @@ describe('Prompt Base Class', (): void => {
     it('should throw a ZodError via the constructor with invalid input', (): void => {
       const invalidInput = { ...validInput, studentTask: false };
       expect(() => new TestPrompt(invalidInput)).toThrow(ZodError);
+    });
+  });
+
+  describe('readMarkdown', () => {
+    it('should reject filenames with path traversal', async () => {
+      const prompt = new TestPrompt(validInput);
+      await expect(prompt.testReadMarkdown('../template.md')).rejects.toThrow(
+        'Invalid markdown filename',
+      );
+    });
+
+    it('should reject filenames that do not end with .md', async () => {
+      const prompt = new TestPrompt(validInput);
+      await expect(prompt.testReadMarkdown('template.txt')).rejects.toThrow(
+        'Invalid markdown filename',
+      );
     });
   });
 });

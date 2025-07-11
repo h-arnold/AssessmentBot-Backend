@@ -26,7 +26,10 @@ export abstract class Prompt {
   }
 
   protected async readMarkdown(name: string): Promise<string> {
-    // Only allow reading from the Prompts directory
+    // Security: Only allow reading from the Prompts directory, and block path traversal
+    if (name.includes('..') || !name.endsWith('.md')) {
+      throw new Error('Invalid markdown filename');
+    }
     const baseDir = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
       '../../../docs/ImplementationPlan/Stage6/Prompts',
@@ -35,6 +38,8 @@ export abstract class Prompt {
     if (!resolvedPath.startsWith(baseDir)) {
       throw new Error('Unauthorised file path');
     }
+    // Security: Path is validated above, safe to read
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     return await fs.readFile(resolvedPath, { encoding: 'utf-8' });
   }
 

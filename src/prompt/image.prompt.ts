@@ -35,8 +35,20 @@ export class ImagePrompt extends Prompt {
     };
   }
 
-  async readImageFile(imagePath: string): Promise<string> {
-    // Only allow reading from the Prompts directory
+  async readImageFile(imagePath: string, mimeType?: string): Promise<string> {
+    // Security: Only allow reading from the Prompts directory, and block path traversal
+    if (imagePath.includes('..')) {
+      throw new Error('Invalid image filename');
+    }
+    // Get allowed MIME types from environment
+    const allowedMimeTypes = (
+      process.env.ALLOWED_IMAGE_MIME_TYPES || 'image/png'
+    )
+      .split(',')
+      .map((type) => type.trim().toLowerCase());
+    if (!mimeType || !allowedMimeTypes.includes(mimeType.toLowerCase())) {
+      throw new Error('Disallowed image MIME type');
+    }
     const baseDir = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
       '../../../docs/ImplementationPlan/Stage6/Prompts',
@@ -45,6 +57,8 @@ export class ImagePrompt extends Prompt {
     if (!resolvedPath.startsWith(baseDir)) {
       throw new Error('Unauthorised file path');
     }
+    // Security: Path is validated above, safe to read
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     return await fs.readFile(resolvedPath, { encoding: 'base64' });
   }
 }

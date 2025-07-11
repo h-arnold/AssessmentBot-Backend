@@ -11,6 +11,7 @@ import { ApiKeyGuard } from 'src/auth/api-key.guard';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import { ZodValidationPipe } from 'src/common/zod-validation.pipe';
 import { ConfigService } from 'src/config/config.service';
+
 import { AssessorService } from './assessor.service';
 import {
   CreateAssessorDto,
