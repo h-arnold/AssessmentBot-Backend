@@ -57,7 +57,7 @@ describe('GeminiService', () => {
     const response = await service.send('test prompt');
 
     expect(mockGetGenerativeModel).toHaveBeenCalledWith({
-      model: 'gemini-pro',
+      model: 'gemini-2.0-flash-lite',
     });
     expect(response).toEqual({
       completeness: { score: 5, reasoning: 'Perfect' },
@@ -82,7 +82,7 @@ describe('GeminiService', () => {
     const response = await service.send(payload);
 
     expect(mockGetGenerativeModel).toHaveBeenCalledWith({
-      model: 'gemini-pro-vision',
+      model: 'gemini-2.5-flash',
     });
     expect(response).toEqual({
       completeness: { score: 5, reasoning: 'Perfect' },

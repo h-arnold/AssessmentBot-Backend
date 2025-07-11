@@ -54,6 +54,11 @@ This document outlines the tasks for refactoring the application to use a flexib
 
 - [x] Review the schema and test code.
 - [x] Commit the changes (e.g., `feat(llm): add zod schemas for llm response`). (commit: 3565952)
+  - [ ] Note any issues or changes that might affect future steps.
+
+#### Issues and Solutions Log
+
+_(Use this space to document any challenges, workarounds, or key decisions made during this section.)_
 
 ---
 
@@ -77,14 +82,19 @@ This document outlines the tasks for refactoring the application to use a flexib
 
 - [x] Create `src/llm/llm.service.interface.ts` and define the `LLMService` interface, ensuring the `send` method returns a `Promise<LlmResponse>`.
 - [x] Create `src/llm/gemini.service.ts`.
-- [ ] Implement the `GeminiService` class.
-  - [ ] In the `send` method, after repairing and parsing the JSON, use `LlmResponseSchema.parse()` to validate the object before returning it.
-- [ ] Run the tests and ensure they all pass.
+- [x] Implement the `GeminiService` class.
+  - [x] In the `send` method, after repairing and parsing the JSON, use `LlmResponseSchema.parse()` to validate the object before returning it.
+- [x] Run the tests and ensure they all pass.
 
 ##### Refactor & Commit
 
-- [ ] Review the service and test code.
-- [ ] Commit the changes (e.g., `feat(llm): implement GeminiService with response validation`).
+- [x] Review the service and test code.
+- [x] Commit the changes (e.g., `feat(llm): implement GeminiService with response validation`). (commit: 287bb32)
+  - [ ] Note any issues or changes that might affect future steps.
+
+#### Issues and Solutions Log
+
+_(Use this space to document any challenges, workarounds, or key decisions made during this section.)_
 
 ---
 
