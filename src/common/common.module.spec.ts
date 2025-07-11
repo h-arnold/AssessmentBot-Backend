@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { z } from 'zod';
 
-import { CommonModule } from './common.module';
 import { HttpExceptionFilter } from './http-exception.filter';
 import { JsonParserUtil } from './json-parser.util';
 import { ZodValidationPipe } from './zod-validation.pipe';

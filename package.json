@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "assessmentbot-backend",
   "version": "0.0.1",
   "description": "The backend for Assessment Bot, which provides LLM services.",
@@ -31,7 +32,9 @@
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/throttler": "^6.4.0",
     "dotenv": "^17.1.0",
+    "file-type": "^21.0.0",
     "jsonrepair": "^3.12.0",
+    "mime-detect": "^1.3.0",
     "passport": "^0.7.0",
     "passport-http-bearer": "^1.0.1",
     "reflect-metadata": "^0.2.2",

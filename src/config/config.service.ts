@@ -16,6 +16,11 @@ const configSchema = z.object({
     .optional()
     .transform((val) => (val ? val.split(',').map((s) => s.trim()) : undefined))
     .pipe(z.array(z.string().regex(/^[a-zA-Z0-9_-]+$/)).optional()),
+  MAX_IMAGE_UPLOAD_SIZE_MB: z.coerce.number().int().min(0).default(1),
+  ALLOWED_IMAGE_MIME_TYPES: z
+    .string()
+    .default('image/png')
+    .transform((val) => val.split(',').map((s) => s.trim())),
 });
 
 // Infer the type from the schema
@@ -53,5 +58,12 @@ export class ConfigService {
 
   get<T extends keyof Config>(key: T): Config[T] {
     return this.config[key];
+  }
+
+  getGlobalPayloadLimit(): string {
+    const maxImageSizeMB = this.config.MAX_IMAGE_UPLOAD_SIZE_MB;
+    // Formula: ((MAX_IMAGE_UPLOAD_SIZE_MB * 1.33 * 3) + 1) MB
+    const limitInMB = Math.ceil(maxImageSizeMB * 1.33 * 3 + 1);
+    return `${limitInMB}mb`;
   }
 }

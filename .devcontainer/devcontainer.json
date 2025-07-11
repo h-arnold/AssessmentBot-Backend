@@ -29,8 +29,9 @@
         "nestjs.nestjs-files",
         "Orta.vscode-jest",
         "streetsidesoftware.code-spell-checker",
-        "mermaidchart.vscode-mermaid-chart"
-        ,"GitHub.vscode-pull-request-github"
+        "mermaidchart.vscode-mermaid-chart",
+        "GitHub.vscode-pull-request-github",
+        "GitHub.copilot-chat"
       ]
     }
   },

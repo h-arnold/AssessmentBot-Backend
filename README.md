@@ -10,7 +10,7 @@ It will start initially as a monolithic application that will be run in a minima
 
 1. **Security**: Always prioritise security in your code. Validate inputs, sanitise outputs, and handle sensitive data with care. This includes using environment variables for configuration and secrets, and ensuring that any user-generated content is properly escaped to prevent XSS attacks.
    - Use structured logging for all authentication attempts and errors, leveraging NestJS's built-in Logger or a compatible logging library. Ensure logs include enough detail (e.g., IP address, timestamp, reason for failure) to support external tools like fail2ban for automated blocking of malicious IPs.
-2. **Emphemerality**: Design the system to be stateless. Assessment Bot pritorises privacy above all else. No student PII is should even be sent to the backend. Maintaining statelessness ensures that any inadvertant data leaks persist only as long as the request is being processed.
+2. **Ephemerality**: Design the system to be stateless. Assessment Bot prioritises privacy above all else. No student PII is should even be sent to the backend. Maintaining statelessness ensures that any inadvertent data leaks persist only as long as the request is being processed.
 3. **Performance**: Write efficient code that minimises resource usage. Use asynchronous programming patterns to handle I/O operations without blocking the event loop.
 4. **Use well-maintained libraries**: Avoid reinventing the wheel. Use well-maintained libraries and frameworks that are widely adopted in the Node.js ecosystem. This includes libraries for routing, database access, and validation.
 5. **Modularity**: Structure the code in a modular way to promote reusability and maintainability. Use TypeScript interfaces and types to define clear contracts for modules.
@@ -255,3 +255,19 @@ The testing strategy follows the classic testing pyramid model:
 - **Location**: In the root `test/` directory.
 - **Purpose**: To test the entire application from the outside in. It starts the full NestJS application and sends real HTTP requests to its endpoints using a library like `supertest`.
 - **Scope**: Validates the full request/response lifecycle, including authentication, request validation (DTOs/Pipes), controller logic, service execution, and the final HTTP response format and status code. These tests are the most comprehensive but also the slowest to run.
+
+## Environment Variables
+
+The following environment variables control image upload validation:
+
+- `MAX_IMAGE_UPLOAD_SIZE_MB`: Sets the maximum allowed image size (in megabytes) for uploads. Default is `1` MB. Increase this value to allow larger images.
+- `ALLOWED_IMAGE_MIME_TYPES`: Comma-separated list of allowed image MIME types (e.g., `image/png,image/jpeg`). Default is `image/png`. Only images matching these types will be accepted by the `/v1/assessor` endpoint when `taskType` is `IMAGE`.
+
+To configure these, edit your `.env` file:
+
+```env
+MAX_IMAGE_UPLOAD_SIZE_MB=1
+ALLOWED_IMAGE_MIME_TYPES=image/png
+```
+
+These variables are validated at runtime using Zod and can be changed to suit your deployment requirements. If an uploaded image exceeds the size limit or is of a disallowed type, the API will return a `400 Bad Request` error with a descriptive message.

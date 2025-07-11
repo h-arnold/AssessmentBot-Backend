@@ -205,6 +205,61 @@ describe('ConfigService', () => {
       expect(typeof configService.get('PORT')).toBe('number');
       expect(configService.get('PORT')).toBe(3001);
     });
+
+    it('ConfigService should load MAX_IMAGE_UPLOAD_SIZE_MB as a number', () => {
+      process.env.MAX_IMAGE_UPLOAD_SIZE_MB = '2';
+      const configService = new ConfigService();
+      expect(configService.get('MAX_IMAGE_UPLOAD_SIZE_MB')).toBe(2);
+    });
+
+    it('ConfigService should use default MAX_IMAGE_UPLOAD_SIZE_MB if not set', () => {
+      const configService = new ConfigService();
+      expect(configService.get('MAX_IMAGE_UPLOAD_SIZE_MB')).toBe(1);
+    });
+
+    it('ConfigService should reject invalid MAX_IMAGE_UPLOAD_SIZE_MB', () => {
+      process.env.MAX_IMAGE_UPLOAD_SIZE_MB = 'abc';
+      expect(() => new ConfigService()).toThrow();
+    });
+
+    it('ConfigService should load ALLOWED_IMAGE_MIME_TYPES as an array of strings', () => {
+      process.env.ALLOWED_IMAGE_MIME_TYPES = 'image/png,image/jpeg';
+      const configService = new ConfigService();
+      expect(configService.get('ALLOWED_IMAGE_MIME_TYPES')).toEqual([
+        'image/png',
+        'image/jpeg',
+      ]);
+    });
+
+    it('ConfigService should use default ALLOWED_IMAGE_MIME_TYPES if not set', () => {
+      const configService = new ConfigService();
+      expect(configService.get('ALLOWED_IMAGE_MIME_TYPES')).toEqual([
+        'image/png',
+      ]);
+    });
+
+    it('ConfigService should handle single ALLOWED_IMAGE_MIME_TYPES', () => {
+      process.env.ALLOWED_IMAGE_MIME_TYPES = 'image/gif';
+      const configService = new ConfigService();
+      expect(configService.get('ALLOWED_IMAGE_MIME_TYPES')).toEqual([
+        'image/gif',
+      ]);
+    });
+  });
+
+  describe('getGlobalPayloadLimit', () => {
+    it('should calculate correctly for default MAX_IMAGE_UPLOAD_SIZE_MB', () => {
+      const configService = new ConfigService();
+      // Formula: ((1 * 1.33 * 3) + 1) = 4.99 -> 5MB
+      expect(configService.getGlobalPayloadLimit()).toBe('5mb');
+    });
+
+    it('should calculate correctly for a different MAX_IMAGE_UPLOAD_SIZE_MB', () => {
+      process.env.MAX_IMAGE_UPLOAD_SIZE_MB = '2';
+      const configService = new ConfigService();
+      // Formula: ((2 * 1.33 * 3) + 1) = 8.98 -> 9MB
+      expect(configService.getGlobalPayloadLimit()).toBe('9mb');
+    });
   });
 
   describe('.env.example file validation', () => {

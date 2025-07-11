@@ -43,6 +43,21 @@ This endpoint is responsible for initiating an assessment. It accepts a JSON pay
   - `template`: (Required) The template or instructions for the assessment. Can be a string (for TEXT/TABLE) or a base64 encoded string/Buffer (for IMAGE).
   - `studentResponse`: (Required) The student's response to be assessed. Can be a string (for TEXT/TABLE) or a base64 encoded string/Buffer (for IMAGE).
 
+  **Image Validation**
+
+  When `taskType` is `IMAGE`, the following validation rules apply to the `reference`, `template`, and `studentResponse` fields:
+  - **Maximum Image Size:**
+    - The maximum allowed image size is configured via the `MAX_IMAGE_UPLOAD_SIZE_MB` environment variable (default: 1 MB).
+    - Any image exceeding this size will be rejected with a `400 Bad Request` error.
+  - **Allowed Image MIME Types:**
+    - Only images with MIME types listed in the `ALLOWED_IMAGE_MIME_TYPES` environment variable (comma-separated, default: `image/png`) are accepted.
+    - Disallowed types (e.g., GIF, BMP) will be rejected with a `400 Bad Request` error.
+  - **Supported Formats:**
+    - Images may be provided as Buffers or base64-encoded strings (with or without a data URI prefix).
+    - The pipe will infer the MIME type and size, and reject invalid or malformed images.
+  - **Error Responses:**
+    - `400 Bad Request`: Returned if the image is too large, of a disallowed type, or malformed. Error messages will indicate the reason (e.g., "Image exceeds maximum size", "Disallowed MIME type").
+
   **Example (`TEXT` task):**
 
   ```json
