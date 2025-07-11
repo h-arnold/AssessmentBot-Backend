@@ -7,6 +7,7 @@ import { ConfigModule } from '../config/config.module';
 @Module({
   imports: [ConfigModule],
   providers: [
+    GeminiService,
     {
       provide: LLMService,
       useClass: GeminiService,

@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AssessorService } from './assessor.service';
 import { CreateAssessorDto, TaskType } from './dto/create-assessor.dto';
+import { ConfigModule } from '../../config/config.module';
+import { GeminiService } from '../../llm/gemini.service';
 import { LlmModule } from '../../llm/llm.module';
 import { LLMService } from '../../llm/llm.service.interface';
 import { PromptFactory } from '../../prompt/prompt.factory';
@@ -19,17 +21,21 @@ describe('AssessorService', () => {
     process.env.API_KEYS = 'test-api-key';
     process.env.MAX_IMAGE_UPLOAD_SIZE_MB = '5';
     process.env.ALLOWED_IMAGE_MIME_TYPES = 'image/png,image/jpeg';
+    process.env.APP_NAME = 'AssessmentBot-Backend';
+    process.env.APP_VERSION = 'test-version';
   });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [LlmModule, PromptModule],
+      imports: [LlmModule, PromptModule, ConfigModule],
       providers: [AssessorService],
     })
       .overrideProvider('LLMService')
       .useValue({ send: jest.fn() })
       .overrideProvider(PromptFactory)
       .useValue({ create: jest.fn() })
+      .overrideProvider(GeminiService)
+      .useValue({ send: jest.fn() })
       .compile();
 
     service = module.get<AssessorService>(AssessorService);

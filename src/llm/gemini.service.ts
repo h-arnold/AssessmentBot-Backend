@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { jsonrepair } from 'jsonrepair';
@@ -8,12 +8,15 @@ import { LlmResponse, LlmResponseSchema } from './types';
 
 @Injectable()
 export class GeminiService implements LLMService {
-  private readonly client: GoogleGenAI;
+  private readonly client: GoogleGenerativeAI;
   private readonly logger = new Logger(GeminiService.name);
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
-    this.client = new GoogleGenAI({ apiKey });
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY is not set in environment');
+    }
+    this.client = new GoogleGenerativeAI(apiKey);
   }
 
   public async send(
@@ -29,11 +32,10 @@ export class GeminiService implements LLMService {
       : 'gemini-pro';
     const contents = this.buildRequest(payload);
     try {
-      const result = await this.client.models.generateContent({
-        model: modelName,
-        contents,
-      });
-      const responseText = result.text ?? '';
+      // Use getGenerativeModel instead of models.generateContent
+      const model = this.client.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(contents);
+      const responseText = result.response.text?.() ?? '';
       const repairedJson = jsonrepair(responseText);
       const parsedJson = JSON.parse(repairedJson);
       return LlmResponseSchema.parse(parsedJson);
@@ -42,7 +44,9 @@ export class GeminiService implements LLMService {
         'Error communicating with or validating response from Gemini API',
         error,
       );
-      throw error;
+      throw new Error(
+        'Failed to get a valid and structured response from the LLM.',
+      );
     }
   }
 
@@ -54,7 +58,9 @@ export class GeminiService implements LLMService {
           images: { mimeType: string; data: string }[];
         },
   ): boolean {
-    return typeof payload === 'object' && payload !== null && 'images' in payload;
+    return (
+      typeof payload === 'object' && payload !== null && 'images' in payload
+    );
   }
 
   private buildRequest(
@@ -70,7 +76,9 @@ export class GeminiService implements LLMService {
     }
     const { messages, images } = payload;
     const textPart = messages[0].content;
-    const imageParts = images.map(img => ({ inlineData: { mimeType: img.mimeType, data: img.data } }));
+    const imageParts = images.map((img) => ({
+      inlineData: { mimeType: img.mimeType, data: img.data },
+    }));
     return [textPart, ...imageParts];
   }
 }

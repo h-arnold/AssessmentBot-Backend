@@ -21,7 +21,7 @@ describe('TablePrompt', () => {
 
     expect(fs.readFile).toHaveBeenCalledWith(
       expect.stringContaining('tablePrompt.md'),
-      'utf-8',
+      expect.objectContaining({ encoding: 'utf-8' }),
     );
     expect(message).toBe(
       'Reference:\n| Ref Header |\n|---|\n| Ref Cell |\n\nStudent:\n| Stud Header |\n|---|\n| Stud Cell |\n\nEmpty:\n| Empty Header |\n|---|\n| Empty Cell |',

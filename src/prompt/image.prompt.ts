@@ -23,7 +23,7 @@ export class ImagePrompt extends Prompt {
     });
 
     const imagePromises = this.images.map(async (image) => {
-      const data = await this.readImageFile(image.path);
+      const data = await this.readImageFile(image.path, image.mimeType);
       return { data, mimeType: image.mimeType };
     });
 
@@ -49,16 +49,16 @@ export class ImagePrompt extends Prompt {
     if (!mimeType || !allowedMimeTypes.includes(mimeType.toLowerCase())) {
       throw new Error('Disallowed image MIME type');
     }
-    const baseDir = path.resolve(
+    const baseDir = path.join(
       getCurrentDirname(),
       '../../../docs/ImplementationPlan/Stage6/Prompts',
     );
-    const resolvedPath = path.resolve(baseDir, imagePath);
-    if (!resolvedPath.startsWith(baseDir)) {
+    const relativePath = path.join(baseDir, imagePath);
+    if (!relativePath.startsWith(baseDir)) {
       throw new Error('Unauthorised file path');
     }
     // Security: Path is validated above, safe to read
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    return await fs.readFile(resolvedPath, { encoding: 'base64' });
+    return await fs.readFile(imagePath, { encoding: 'base64' });
   }
 }

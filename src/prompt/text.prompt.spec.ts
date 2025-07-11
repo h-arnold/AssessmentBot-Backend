@@ -21,7 +21,7 @@ describe('TextPrompt', () => {
 
     expect(fs.readFile).toHaveBeenCalledWith(
       expect.stringContaining('textPrompt.md'),
-      'utf-8',
+      expect.objectContaining({ encoding: 'utf-8' }),
     );
     expect(message).toBe(
       'Reference: Reference text, Student: Student text, Empty: Empty text',
