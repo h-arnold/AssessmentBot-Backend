@@ -1,6 +1,6 @@
+import * as fs from 'fs/promises';
 
 import { ImagePrompt } from './image.prompt';
-import * as fs from 'fs/promises';
 
 jest.mock('fs/promises');
 

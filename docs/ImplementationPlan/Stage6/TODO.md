@@ -102,39 +102,39 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 **Objective**: Implement a factory pattern for creating different types of prompts (`Text`, `Table`, `Image`) based on a modular, test-driven design.
 
-- [ ] **Review Design**: Read `docs/ImplementationPlan/Stage6/PromptClassDesign.md` for the overall architecture and `docs/ImplementationPlan/Stage6/TestCases.md` for specific test requirements.
+- [x] **Review Design**: Read `docs/ImplementationPlan/Stage6/PromptClassDesign.md` for the overall architecture and `docs/ImplementationPlan/Stage6/TestCases.md` for specific test requirements.
 
 #### 3.1. Prompt Base Class
 
 **Objective**: Create an abstract base class for all prompts that handles common logic like input validation and template loading.
 
-- [ ] **Review Design**: Read the "Prompt Base Class" sections in `PromptClassDesign.md` and `TestCases.md`.
+- [x] **Review Design**: Read the "Prompt Base Class" sections in `PromptClassDesign.md` and `TestCases.md`.
 
 ##### Red Phase: Write Failing Tests for `Prompt` Base Class
 
-- [ ] Create a new directory `src/prompt/`.
-- [ ] Create the test file `src/prompt/prompt.base.spec.ts`.
-- [ ] Following `docs/ImplementationPlan/Stage6/TestCases.md`, write tests for the `Prompt` base class constructor and its Zod validation schema that assert:
-  - [ ] A valid input object (with `referenceTask`, `studentTask`, `emptyTask`) is parsed successfully.
-  - [ ] A `ZodError` is thrown if the `referenceTask` property is missing or not a string.
-  - [ ] A `ZodError` is thrown if the `studentTask` property is missing or not a string.
-  - [ ] A `ZodError` is thrown if the `emptyTask` property is missing or not a string.
+- [x] Create a new directory `src/prompt/`.
+- [x] Create the test file `src/prompt/prompt.base.spec.ts`.
+- [x] Following `docs/ImplementationPlan/Stage6/TestCases.md`, write tests for the `Prompt` base class constructor and its Zod validation schema that assert:
+  - [x] A valid input object (with `referenceTask`, `studentTask`, `emptyTask`) is parsed successfully.
+  - [x] A `ZodError` is thrown if the `referenceTask` property is missing or not a string.
+  - [x] A `ZodError` is thrown if the `studentTask` property is missing or not a string.
+  - [x] A `ZodError` is thrown if the `emptyTask` property is missing or not a string.
 
 ##### Green Phase: Implement the `Prompt` Base Class
 
-- [ ] Create the file `src/prompt/prompt.base.ts`.
-- [ ] Implement the `PromptInputSchema` using Zod to validate the constructor inputs.
-- [ ] Implement the abstract `Prompt` class:
-  - [ ] The constructor should accept `inputs: unknown`, parse it with the schema, and assign the validated properties.
-  - [ ] Implement the `protected async readMarkdown(name: string)` method to read template files. Note: The path should be resolved relative to the project root, targeting `docs/ImplementationPlan/Stage6/Prompts/`.
-  - [ ] Implement the `protected render(template: string, data: Record<string, string>)` method using `mustache`.
-  - [ ] Define the `public abstract buildMessage(): Promise<string | object>` method.
-- [ ] Run the tests and ensure they all pass.
+- [x] Create the file `src/prompt/prompt.base.ts`.
+- [x] Implement the `PromptInputSchema` using Zod to validate the constructor inputs.
+- [x] Implement the abstract `Prompt` class:
+  - [x] The constructor should accept `inputs: unknown`, parse it with the schema, and assign the validated properties.
+  - [x] Implement the `protected async readMarkdown(name: string)` method to read template files. Note: The path should be resolved relative to the project root, targeting `docs/ImplementationPlan/Stage6/Prompts/`.
+  - [x] Implement the `protected render(template: string, data: Record<string, string>)` method using `mustache`.
+  - [x] Define the `public abstract buildMessage(): Promise<string | object>` method.
+- [x] Run the tests and ensure they all pass.
 
 ##### Refactor & Commit
 
-- [ ] Review the base class and test code for clarity, correctness, and adherence to the design.
-- [ ] Commit the changes (e.g., `feat(prompt): create abstract prompt base class`).
+- [x] Review the base class and test code for clarity, correctness, and adherence to the design.
+- [x] Commit the changes (e.g., `feat(prompt): create abstract prompt base class`). (commit: 04450a3)
 
 ---
 

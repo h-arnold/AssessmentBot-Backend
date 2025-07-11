@@ -1,7 +1,6 @@
-
+import * as fs from 'fs/promises';
 
 import { TablePrompt } from './table.prompt';
-import * as fs from 'fs/promises';
 
 jest.mock('fs/promises');
 
@@ -13,7 +12,8 @@ describe('TablePrompt', () => {
       emptyTask: '| Empty Header |\n|---|\n| Empty Cell |',
     };
 
-    const template = 'Reference:\n{{{referenceTask}}}\n\nStudent:\n{{{studentTask}}}\n\nEmpty:\n{{{emptyTask}}}';
+    const template =
+      'Reference:\n{{{referenceTask}}}\n\nStudent:\n{{{studentTask}}}\n\nEmpty:\n{{{emptyTask}}}';
     (fs.readFile as jest.Mock).mockResolvedValue(template);
 
     const prompt = new TablePrompt(inputs);
@@ -28,4 +28,3 @@ describe('TablePrompt', () => {
     );
   });
 });
-

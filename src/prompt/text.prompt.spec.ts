@@ -1,6 +1,6 @@
+import * as fs from 'fs/promises';
 
 import { TextPrompt } from './text.prompt';
-import * as fs from 'fs/promises';
 
 jest.mock('fs/promises');
 
@@ -12,7 +12,8 @@ describe('TextPrompt', () => {
       emptyTask: 'Empty text',
     };
 
-    const template = 'Reference: {{{referenceTask}}}, Student: {{{studentTask}}}, Empty: {{{emptyTask}}}';
+    const template =
+      'Reference: {{{referenceTask}}}, Student: {{{studentTask}}}, Empty: {{{emptyTask}}}';
     (fs.readFile as jest.Mock).mockResolvedValue(template);
 
     const prompt = new TextPrompt(inputs);
@@ -22,6 +23,8 @@ describe('TextPrompt', () => {
       expect.stringContaining('textPrompt.md'),
       'utf-8',
     );
-    expect(message).toBe('Reference: Reference text, Student: Student text, Empty: Empty text');
+    expect(message).toBe(
+      'Reference: Reference text, Student: Student text, Empty: Empty text',
+    );
   });
 });
