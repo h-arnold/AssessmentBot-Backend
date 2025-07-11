@@ -23,6 +23,27 @@ import { LlmResponse } from '../../llm/types';
  * Controller for handling assessor-related API requests.
  */
 
+/**
+ * Controller responsible for handling assessor-related operations.
+ *
+ * @remarks
+ * This controller is part of the v1 API and is protected by the `ApiKeyGuard`.
+ * It provides endpoints for creating assessments and validating input data.
+ *
+ * @constructor
+ * @param assessorService - Service responsible for assessment-related business logic.
+ * @param configService - Service for accessing application configuration settings.
+ *
+ * @method create
+ * Handles the creation of a new assessment.
+ *
+ * @param createAssessorDto - The data transfer object containing assessment details.
+ * @returns A promise that resolves to the result of the assessment creation.
+ *
+ * @remarks
+ * If the `taskType` is `IMAGE`, additional validation is performed on image-related fields
+ * (`reference`, `template`, and `studentResponse`) using the `ImageValidationPipe`.
+ */
 @Controller('v1/assessor')
 @UseGuards(ApiKeyGuard)
 export class AssessorController {

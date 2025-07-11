@@ -21,6 +21,17 @@ const mockConfigService = {
   }),
 };
 
+/**
+ * A mock implementation of a JSON parser utility for testing purposes.
+ *
+ * This mock object contains a `parse` method that simulates the behavior of
+ * parsing a JSON string into a JavaScript object. The `parse` method is
+ * implemented using Jest's `fn` to allow tracking calls and providing custom
+ * behavior during tests.
+ *
+ * @property parse - A Jest mock function that takes a JSON string as input
+ * and returns the parsed JavaScript object.
+ */
 const mockJsonParserUtil = {
   parse: jest.fn((jsonString: string) => {
     return JSON.parse(jsonString);

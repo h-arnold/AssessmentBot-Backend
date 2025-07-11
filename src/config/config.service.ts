@@ -6,6 +6,33 @@ import * as dotenv from 'dotenv';
 import { z } from 'zod';
 
 // Define the Zod schema for environment variables
+/**
+ * Defines the schema for application configuration using Zod.
+ *
+ * This schema validates and transforms environment variables to ensure
+ * they meet the expected format and constraints. It includes the following properties:
+ *
+ * - `NODE_ENV`: Specifies the environment in which the application is running.
+ *   Must be one of 'development', 'production', or 'test'.
+ *
+ * - `PORT`: The port number on which the application will run.
+ *   Must be an integer between 1 and 65535. Defaults to 3000.
+ *
+ * - `APP_NAME`: The name of the application. Defaults to 'AssessmentBot-Backend'.
+ *
+ * - `APP_VERSION`: The version of the application. Optional.
+ *
+ * - `API_KEYS`: A comma-separated list of API keys. Transformed into an array of strings
+ *   that match the regex /^[a-zA-Z0-9_-]+$/. Optional.
+ *
+ * - `MAX_IMAGE_UPLOAD_SIZE_MB`: The maximum allowed size for image uploads in megabytes.
+ *   Must be a non-negative integer. Defaults to 1.
+ *
+ * - `ALLOWED_IMAGE_MIME_TYPES`: A comma-separated list of allowed image MIME types.
+ *   Defaults to 'image/png'. Transformed into an array of strings.
+ *
+ * - `GEMINI_API_KEY`: The API key for Gemini integration. Must be a non-empty string.
+ */
 const configSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),

@@ -1,3 +1,20 @@
+/**
+ * Factory class responsible for creating instances of different types of prompts
+ * based on the provided task type and input data.
+ *
+ * @class PromptFactory
+ * @method create
+ * @param {CreateAssessorDto} dto - Data Transfer Object containing the task type and input data
+ * for creating a prompt.
+ * @returns {Prompt} - An instance of a specific prompt type (TextPrompt, TablePrompt, or ImagePrompt)
+ * based on the task type provided in the DTO.
+ * @throws {Error} - Throws an error if the task type is unsupported.
+ *
+ * The factory supports the following task types:
+ * - `TaskType.TEXT`: Creates a `TextPrompt` instance.
+ * - `TaskType.TABLE`: Creates a `TablePrompt` instance.
+ * - `TaskType.IMAGE`: Creates an `ImagePrompt` instance, converting buffer inputs to strings if necessary.
+ */
 import { Injectable } from '@nestjs/common';
 
 import { ImagePrompt } from './image.prompt';
@@ -38,7 +55,9 @@ export class PromptFactory {
         return new ImagePrompt(imageInputs, dto.images);
       }
       default:
-        throw new Error(`Unsupported task type: ${String((dto as Record<string, unknown>).taskType)}`);
+        throw new Error(
+          `Unsupported task type: ${String((dto as Record<string, unknown>).taskType)}`,
+        );
     }
   }
 }

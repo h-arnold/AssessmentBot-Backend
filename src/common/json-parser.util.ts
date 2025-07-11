@@ -1,6 +1,19 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { jsonrepair } from 'jsonrepair';
 
+/**
+ * Utility class for parsing and repairing JSON strings.
+ * This class attempts to repair malformed JSON strings using the `jsonrepair` library
+ * and then parses them into JavaScript objects.
+ *
+ * @example
+ * ```typescript
+ * const jsonParser = new JsonParserUtil();
+ * const parsedObject = jsonParser.parse('{"key": "value"}');
+ * ```
+ *
+ * @throws {BadRequestException} Thrown when the provided JSON string is irreparable or malformed.
+ */
 @Injectable()
 export class JsonParserUtil {
   private readonly logger = new Logger(JsonParserUtil.name);

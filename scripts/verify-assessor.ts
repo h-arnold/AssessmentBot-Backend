@@ -1,3 +1,23 @@
+/**
+ * Verifies the `/v1/assessor` endpoint by performing a series of tests:
+ *
+ * 1. **Valid Payload, Valid API Key**: Sends a POST request with a valid JSON payload and a valid API key.
+ *    - Asserts that the response status is `201 Created`.
+ *
+ * 2. **Invalid Payload**: Sends a POST request with an invalid JSON payload.
+ *    - Asserts that the response status is `400 Bad Request`.
+ *
+ * 3. **No API Key**: Sends a POST request without an `Authorization` header.
+ *    - Asserts that the response status is `401 Unauthorized`.
+ *
+ * The function outputs the results of each test to the console and exits the process with a non-zero status code
+ * if any test fails.
+ *
+ * @async
+ * @function verifyAssessorEndpoint
+ * @returns {Promise<void>} Resolves when all tests are completed.
+ * @throws Exits the process with a status code of `1` if any test fails.
+ */
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:3000'; // Assuming default NestJS port
