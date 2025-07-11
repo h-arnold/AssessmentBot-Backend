@@ -142,32 +142,32 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 **Objective**: Implement the concrete prompt classes for Text, Table, and Image tasks.
 
-- [ ] **Review Design**: Read the "Subclasses" sections in `PromptClassDesign.md` and the relevant sections in `TestCases.md`.
+- [x] **Review Design**: Read the "Subclasses" sections in `PromptClassDesign.md` and the relevant sections in `TestCases.md`.
 
 ##### Red Phase: Write Failing Tests for Subclasses
 
-- [ ] Create `src/prompt/text.prompt.spec.ts`. Write tests to:
-  - [ ] Verify that `buildMessage` reads the correct template (`textPrompt.md`).
-  - [ ] Verify that `buildMessage` correctly renders the template with the provided task data.
-- [ ] Create `src/prompt/table.prompt.spec.ts`. Write tests to:
-  - [ ] Verify that `buildMessage` reads the correct template (`tablePrompt.md`).
-  - [ ] Verify that `buildMessage` correctly renders the template with the provided task data.
-- [ ] Create `src/prompt/image.prompt.spec.ts`. Write tests to:
-  - [ ] Verify the constructor correctly handles image data alongside text data.
-  - [ ] Verify that `buildMessage` reads the correct template (`imagePrompt.md`).
-  - [ ] Verify that `buildMessage` returns a structured object containing the rendered prompt text and correctly formatted image data (base64 string and mime type).
+- [x] Create `src/prompt/text.prompt.spec.ts`. Write tests to:
+  - [x] Verify that `buildMessage` reads the correct template (`textPrompt.md`).
+  - [x] Verify that `buildMessage` correctly renders the template with the provided task data.
+- [x] Create `src/prompt/table.prompt.spec.ts`. Write tests to:
+  - [x] Verify that `buildMessage` reads the correct template (`tablePrompt.md`).
+  - [x] Verify that `buildMessage` correctly renders the template with the provided task data.
+- [x] Create `src/prompt/image.prompt.spec.ts`. Write tests to:
+  - [x] Verify the constructor correctly handles image data alongside text data.
+  - [x] Verify that `buildMessage` reads the correct template (`imagePrompt.md`).
+  - [x] Verify that `buildMessage` returns a structured object containing the rendered prompt text and correctly formatted image data (base64 string and mime type).
 
 ##### Green Phase: Implement Subclasses
 
-- [ ] Create `src/prompt/text.prompt.ts`. Implement the `TextPrompt` class, extending `Prompt` and implementing `buildMessage`.
-- [ ] Create `src/prompt/table.prompt.ts`. Implement the `TablePrompt` class, extending `Prompt` and implementing `buildMessage`.
-- [ ] Create `src/prompt/image.prompt.ts`. Implement the `ImagePrompt` class, extending `Prompt` with its own constructor to accept image data and implementing `buildMessage`.
-- [ ] Run all subclass tests and ensure they pass.
+- [x] Create `src/prompt/text.prompt.ts`. Implement the `TextPrompt` class, extending `Prompt` and implementing `buildMessage`.
+- [x] Create `src/prompt/table.prompt.ts`. Implement the `TablePrompt` class, extending `Prompt` and implementing `buildMessage`.
+- [x] Create `src/prompt/image.prompt.ts`. Implement the `ImagePrompt` class, extending `Prompt` with its own constructor to accept image data and implementing `buildMessage`.
+- [x] Run all subclass tests and ensure they pass.
 
 ##### Refactor & Commit
 
-- [ ] Review all three subclass implementations and their tests.
-- [ ] Commit the changes (e.g., `feat(prompt): implement concrete prompt subclasses`).
+- [x] Review all three subclass implementations and their tests.
+- [x] Commit the changes (e.g., `feat(prompt): implement concrete prompt subclasses`). (commit: 3e421de)
 
 ---
 

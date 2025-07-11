@@ -6,9 +6,9 @@ import { Prompt, PromptInput } from './prompt.base';
 export class ImagePrompt extends Prompt {
   private readonly images: { path: string; mimeType: string }[];
 
-  constructor(inputs: PromptInput, images: { path: string; mimeType: string }[]) {
+  constructor(inputs: PromptInput, images?: { path: string; mimeType: string }[]) {
     super(inputs);
-    this.images = images;
+    this.images = images || [];
   }
 
   public async buildMessage(): Promise<object> {

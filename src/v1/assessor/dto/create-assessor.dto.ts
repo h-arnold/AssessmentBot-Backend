@@ -73,6 +73,10 @@ export const createAssessorDtoSchema = z
          * @example "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
          */
         studentResponse: z.union([z.string().min(1), z.instanceof(Buffer)]),
+        /**
+         * An array of image objects, each with a path and mimeType.
+         */
+        images: z.array(z.object({ path: z.string(), mimeType: z.string() })).optional(),
       })
       .strict(),
   ])
