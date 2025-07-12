@@ -63,11 +63,12 @@ describe('AssessorController (e2e)', () => {
         template: validPngBase64,
         studentResponse: validPngBase64,
       };
-      await request(app.getHttpServer())
+      const res = await request(app.getHttpServer())
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${validApiKey}`)
         .send(payload)
         .expect(201);
+      expect(res.status).toBe(201);
     });
 
     it('should accept a valid JPEG base64 image', async () => {
@@ -77,11 +78,12 @@ describe('AssessorController (e2e)', () => {
         template: validJpegBase64,
         studentResponse: validJpegBase64,
       };
-      await request(app.getHttpServer())
+      const res = await request(app.getHttpServer())
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${validApiKey}`)
         .send(payload)
         .expect(201);
+      expect(res.status).toBe(201);
     });
 
     it('should reject a GIF base64 image (disallowed type)', async () => {

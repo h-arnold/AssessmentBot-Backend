@@ -16,5 +16,5 @@ module.exports = {
     '^src/(.*)$': '<rootDir>/../src/$1',
   },
   testRegex: '.+\\.e2e-spec\\.ts$',
-  setupFiles: ['<rootDir>/setup-e2e.ts'],
+  setupFiles: ['<rootDir>/../jest.setup.ts'],
 };

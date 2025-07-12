@@ -40,6 +40,7 @@ export class GeminiService implements LLMService {
       const model = this.client.getGenerativeModel({ model: modelName });
       const result = await model.generateContent(contents);
       const responseText = result.response.text?.() ?? '';
+      this.logger.debug(`Raw response from Gemini: ${responseText}`);
       const parsedJson = this.jsonParserUtil.parse(responseText);
       return LlmResponseSchema.parse(parsedJson);
     } catch (error) {
