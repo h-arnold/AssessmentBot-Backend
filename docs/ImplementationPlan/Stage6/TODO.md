@@ -239,7 +239,8 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 - [ ] Review the module definitions and the refactored `AssessorService`.
 - [ ] Commit the changes (e.g., `refactor(assessor): integrate prompt and llm modules`). (commit: ccd85c9)
-- [ ] Note any issues or changes that might affect future steps below.
+- [x] Note any issues or changes that might affect future steps below.
+  - The `assessor.service.spec.ts` is missing a test case for handling multimodal payloads from the `prompt.buildMessage()` method. The current tests only cover the string payload scenario.
 
 ---
 
@@ -247,12 +248,14 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 **Objective**: Ensure the new implementation is fully functional and documented.
 
-- [ ] Run the full E2E test suite (`npm run test:e2e`) to ensure the refactoring has not introduced any regressions.
+- [x] Run the full E2E test suite (`npm run test:e2e`) to ensure the refactoring has not introduced any regressions.
 - [ ] Manually test the `/v1/assessor` endpoint using a tool like Postman or cURL with text, table, and image payloads to confirm the end-to-end flow works as expected.
-- [ ] Update `README.md` and any other relevant documentation (e.g., `docs/api/API_Documentation.md`) to reflect the new architecture and dependencies (`@google/genai`, `mustache`).
+- [x] Update `README.md` and any other relevant documentation (e.g., `docs/api/API_Documentation.md`) to reflect the new architecture and dependencies (`@google/genai`, `mustache`).
 - [ ] Review and merge the `Stage6` branch into the main development branch.
 - [ ] Delete the `Stage6` feature branch after successful merge.
-- [ ] Note any issues or changes that might affect future steps below.
+- [x] Note any issues or changes that might affect future steps below.
+  - The E2E tests were failing due to a combination of issues, including an incorrect `tsconfig.json` path, a type error in the `ZodValidationPipe`, missing environment variables, and an incorrect test structure. These issues have all been resolved.
+  - The `README.md` and `docs/api/API_Documentation.md` files have been updated to reflect the new dependencies and the new response format of the `/v1/assessor` endpoint.
 
 ## Issues/Notes for Future Steps
 

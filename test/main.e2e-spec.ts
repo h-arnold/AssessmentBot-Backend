@@ -11,6 +11,7 @@ describe('Global Setup and E2E Tests', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
+    process.env.GEMINI_API_KEY = 'test-key';
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [TestAppModule], // Use TestAppModule here
     }).compile();
@@ -18,7 +19,7 @@ describe('Global Setup and E2E Tests', () => {
     app = moduleFixture.createNestApplication();
     // Register global pipes and filters explicitly for the test application
     app.useGlobalFilters(new HttpExceptionFilter());
-    app.useGlobalPipes(new ZodValidationPipe(null)); // Pass null as schema for global pipe
+    app.useGlobalPipes(new ZodValidationPipe()); // Pass null as schema for global pipe
     await app.init();
   });
 

@@ -16,6 +16,7 @@ describe('Authentication E2E Tests', () => {
   const INVALID_API_KEY = 'invalid_key';
 
   beforeEach(async () => {
+    process.env.GEMINI_API_KEY = 'test-key';
     // Set environment variables for API keys before module compilation
     process.env.API_KEYS = `${VALID_API_KEY},${ANOTHER_VALID_API_KEY}`;
     process.env.NODE_ENV = 'test';
@@ -27,7 +28,7 @@ describe('Authentication E2E Tests', () => {
 
     app = moduleFixture.createNestApplication();
     app.useGlobalFilters(new HttpExceptionFilter());
-    app.useGlobalPipes(new ZodValidationPipe(null));
+    app.useGlobalPipes(new ZodValidationPipe());
     await app.init();
 
     configService = moduleFixture.get<ConfigService>(ConfigService);

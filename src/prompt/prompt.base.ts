@@ -1,5 +1,5 @@
 import * as fs from 'fs/promises';
-import path from 'path';
+import * as path from 'path';
 
 import * as mustache from 'mustache';
 import { z } from 'zod';
@@ -74,8 +74,8 @@ export abstract class Prompt {
 
     // TODO: Update this path to get a production-ready path.
     const baseDir = path.resolve(
-      getCurrentDirname(),
-      '../../../docs/ImplementationPlan/Stage6/Prompts',
+      process.cwd(),
+      'docs/ImplementationPlan/Stage6/Prompts',
     );
     const resolvedPath = path.resolve(baseDir, name);
     if (!resolvedPath.startsWith(baseDir)) {

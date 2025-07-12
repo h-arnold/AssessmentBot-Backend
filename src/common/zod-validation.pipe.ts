@@ -41,7 +41,7 @@ import { ZodTypeAny, ZodError } from 'zod';
 export class ZodValidationPipe implements PipeTransform {
   private readonly logger = new Logger(ZodValidationPipe.name);
 
-  constructor(private schema: ZodTypeAny) {}
+  constructor(private schema?: ZodTypeAny) {}
 
   transform(value: unknown, metadata: ArgumentMetadata): unknown {
     try {

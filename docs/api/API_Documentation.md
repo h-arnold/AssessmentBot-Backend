@@ -73,7 +73,18 @@ This endpoint is responsible for initiating an assessment. It accepts a JSON pay
 
   ```json
   {
-    "message": "Assessment created successfully"
+    "completeness": {
+      "score": 5,
+      "reasoning": "The response is complete and addresses all aspects of the prompt."
+    },
+    "accuracy": {
+      "score": 4,
+      "reasoning": "The response is mostly accurate, but contains a minor factual error."
+    },
+    "spag": {
+      "score": 3,
+      "reasoning": "The response contains several spelling and grammar errors."
+    }
   }
   ```
 

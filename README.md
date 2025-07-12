@@ -53,6 +53,7 @@ To get the Assessment Bot backend up and running, follow these steps:
     ```bash
     cp .env.example .env
     # Open .env in your editor and configure as needed
+    GEMINI_API_KEY=your_gemini_api_key
     ```
 
 ## Stack
