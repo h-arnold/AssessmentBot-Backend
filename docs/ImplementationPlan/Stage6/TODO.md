@@ -263,6 +263,29 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 - All main integration and service tests for assessor, prompt, and LLM modules now pass.
 - No usage of `any` type remains; all casts use `unknown` or proper type guards.
 - ESM and import order issues resolved.
-- Next steps: proceed to E2E and manual endpoint testing as per Stage 6 TODO.
+- **Live E2E Test Debugging Summary (July 12, 2025):**
+  - **Objective:** Get the live E2E test (`test/assessor-live.e2e-spec.ts`) to pass, verifying end-to-end communication with the Gemini API.
+  - **Achieved:**
+    - Successfully configured the live E2E test environment.
+    - Resolved initial `401 Unauthorized` errors by correctly setting the `Authorization` header and ensuring `.test.env` was loaded via `jest.setup.ts`.
+    - Resolved `API_KEY_INVALID` error from Google by confirming and using a valid paid Gemini API key.
+    - Corrected `taskType` enum values (`text` to `TEXT`) and DTO keys (`referenceTask` to `reference`, etc.) in `test/e2e/data/textTask.json` and `tableTask.json`.
+    - Implemented a custom `TestLogger` (`test/test-logger.ts`) to enable full logging visibility during E2E tests.
+    - Updated `Prompt` classes (`prompt.base.ts`, `text.prompt.ts`, `table.prompt.ts`, `image.prompt.ts`) to support separate system and user messages.
+    - Updated `GeminiService` (`src/llm/gemini.service.ts`) to send system instructions and user messages separately to the Gemini API, and to correctly format the user message as a `text` object.
+    - Updated `AssessorService` (`src/v1/assessor/assessor.service.ts`) to pass the new prompt structure to the `LLMService`.
+    - Fixed linting errors in `src/llm/gemini.service.ts` and `test/assessor.e2e-spec.ts`.
+  - **Challenges & Solutions:**
+    - **Initial `401 Unauthorized`:** Caused by incorrect API key usage (using Gemini key for app auth) and environment variable loading issues. Resolved by using the correct `x-api-key` header (later changed to `Authorization: Bearer`) and ensuring `.test.env` was loaded via `jest.setup.ts`.
+    - **`API_KEY_INVALID` from Google:** The provided Gemini API key was invalid. Resolved by obtaining and configuring a valid paid API key.
+    - **Logging Suppression:** NestJS logger suppressed debug output in tests. Resolved by implementing a custom `TestLogger` that uses `console.log` for all levels.
+    - **Zod Validation Errors (400 Bad Request):**
+      - `Invalid discriminator value`: `taskType` in JSON was lowercase (`text`) instead of uppercase (`TEXT`). Corrected in `textTask.json`.
+      - `Unrecognized key(s)`: JSON keys (`referenceTask`, etc.) did not match DTO (`reference`, etc.). Corrected in `textTask.json` and `tableTask.json`.
+    - **Gemini API Conversational Response:** The model returned conversational text instead of JSON, indicating a prompt structure issue. Initial attempt to simplify the prompt was reverted. The final solution involved separating the prompt into system and user messages and explicitly wrapping the user message in a `text` object for the Gemini API.
+  - **Current Status:** The live E2E test for text tasks is now passing, indicating successful end-to-end communication and correct data processing. The prompt structure now correctly separates system and user messages, and the `json-parser.util.ts` is effectively trimming the LLM's response.
 
----
+- All main integration and service tests for assessor, prompt, and LLM modules now pass.
+- No usage of `any` type remains; all casts use `unknown` or proper type guards.
+- ESM and import order issues resolved.
+- Next steps: proceed to E2E and manual endpoint testing as per Stage 6 TODO.
