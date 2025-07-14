@@ -74,40 +74,57 @@ describe('AssessorController (e2e)', () => {
 
   describe('Task Type Tests', () => {
     it('should process a valid TEXT task', async () => {
+      console.info('--- TEXT TASK INPUT ---');
+      console.info(textTask);
       const res = await request(app.getHttpServer())
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${validApiKey}`)
         .send(textTask)
         .expect(201);
+      console.info('--- TEXT TASK RESPONSE ---');
+      console.info(res.body);
       expect(res.status).toBe(201);
       expect(res.body).toHaveProperty('completeness');
       expect(res.body).toHaveProperty('accuracy');
       expect(res.body).toHaveProperty('spag');
-    });
+    }, 30000); // Increase timeout for live API call
 
     it('should process a valid TABLE task', async () => {
+      console.info('--- TABLE TASK INPUT ---');
+      console.info(tableTask);
       const res = await request(app.getHttpServer())
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${validApiKey}`)
         .send(tableTask)
         .expect(201);
+      console.info('--- TABLE TASK RESPONSE ---');
+      console.info(res.body);
       expect(res.status).toBe(201);
       expect(res.body).toHaveProperty('completeness');
       expect(res.body).toHaveProperty('accuracy');
       expect(res.body).toHaveProperty('spag');
-    });
+    }, 30000); // Increase timeout for live API call
 
     it('should process a valid IMAGE task', async () => {
+      console.info('--- IMAGE TASK INPUT ---');
+      console.info({
+        taskType: imageTask.taskType,
+        reference: `length: ${imageTask.reference.length}`,
+        template: `length: ${imageTask.template.length}`,
+        studentResponse: `length: ${imageTask.studentResponse.length}`,
+      });
       const res = await request(app.getHttpServer())
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${validApiKey}`)
         .send(imageTask)
         .expect(201);
+      console.info('--- IMAGE TASK RESPONSE ---');
+      console.info(res.body);
       expect(res.status).toBe(201);
       expect(res.body).toHaveProperty('completeness');
       expect(res.body).toHaveProperty('accuracy');
       expect(res.body).toHaveProperty('spag');
-    });
+    }, 30000); // Increase timeout for live API call
   });
 
   describe('Auth and Validation', () => {

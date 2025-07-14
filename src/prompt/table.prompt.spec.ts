@@ -3,19 +3,16 @@ import path from 'path';
 
 import { TablePrompt } from './table.prompt';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const tableTask = require(path.join(
-  process.cwd(),
-  'test/data/tableTask.json',
-));
+const tableTask = require(path.join(process.cwd(), 'test/data/tableTask.json'));
 
 jest.mock('fs/promises');
 
 describe('TablePrompt', () => {
   it('should build the final prompt object correctly', async () => {
     const inputs = {
-      referenceTask: tableTask.referenceTask,
-      studentTask: tableTask.studentTask,
-      emptyTask: tableTask.templateTask,
+      referenceTask: tableTask.reference,
+      studentTask: tableTask.studentResponse,
+      emptyTask: tableTask.template,
     };
 
     const systemTemplate = 'System prompt';
@@ -35,6 +32,12 @@ describe('TablePrompt', () => {
     const prompt = new TablePrompt(inputs);
     const message = await prompt.buildMessage();
 
+    // Log the rendered user message for debugging
+
+    console.info('--- Rendered TablePrompt User Message ---');
+
+    console.info(message.user);
+
     expect(fs.readFile).toHaveBeenCalledWith(
       expect.stringContaining('table.system.prompt.md'),
       expect.objectContaining({ encoding: 'utf-8' }),
@@ -46,7 +49,7 @@ describe('TablePrompt', () => {
 
     expect(message).toEqual({
       system: 'System prompt',
-      user: `Reference:\n${tableTask.referenceTask}\n\nStudent:\n${tableTask.studentTask}\n\nEmpty:\n${tableTask.templateTask}`,
+      user: `Reference:\n${tableTask.reference}\n\nStudent:\n${tableTask.studentResponse}\n\nEmpty:\n${tableTask.template}`,
     });
   });
 });

@@ -141,11 +141,5 @@ export abstract class Prompt {
     return renderedContent;
   }
 
-  /**
-   * Builds the user message content as an array of Parts.
-   * Subclasses must implement this to provide specific message structures.
-   */
-  protected abstract buildUserMessageParts(): Promise<Part[]>;
-
   public abstract buildMessage(): Promise<LlmPayload>;
 }
