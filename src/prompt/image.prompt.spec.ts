@@ -20,10 +20,20 @@ describe('ImagePrompt', () => {
 
     const template =
       'Prompt: {{{referenceTask}}} and {{{studentTask}}} and {{{emptyTask}}}';
-    (fs.readFile as jest.Mock)
-      .mockResolvedValueOnce(template) // For the prompt template
-      .mockResolvedValueOnce('base64data') // For the reference image
-      .mockResolvedValueOnce('base64data'); // For the student image
+    (fs.readFile as jest.Mock).mockImplementation(
+      (filePath: string, options: { encoding: string }) => {
+        if (
+          filePath.includes('src/prompt/templates/image.prompt.md') &&
+          options.encoding === 'utf-8'
+        ) {
+          return Promise.resolve(template);
+        }
+        if (filePath.endsWith('.png') && options.encoding === 'base64') {
+          return Promise.resolve('base64data');
+        }
+        return Promise.reject(new Error('File not found'));
+      },
+    );
 
     const prompt = new ImagePrompt(inputs, images);
     const message = (await prompt.buildMessage()) as ImagePromptPayload;

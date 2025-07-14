@@ -4,7 +4,7 @@
 
 {{{referenceTask}}}
 
-## Empty Task
+## Template Task
 
 ### This task would score 0 across all criteria
 

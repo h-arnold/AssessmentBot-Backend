@@ -5,9 +5,11 @@ jest.mock('fs/promises', () => ({
 import * as fs from 'fs/promises';
 import path from 'path';
 
+import { Logger } from '@nestjs/common';
 import * as mustache from 'mustache';
 
 import { TextPrompt } from './text.prompt';
+import { isSystemUserMessage } from '../common/utils/type-guards';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const textTask = require(path.join(process.cwd(), 'test/data/textTask.json'));
 
@@ -58,8 +60,12 @@ describe('TextPrompt', () => {
 
     // Log the rendered user message for debugging
     console.info('--- Rendered TextPrompt User Message ---');
-    console.info(message.user);
-
+    if (!isSystemUserMessage(message)) {
+      throw new Error('Prompt did not return expected object shape');
+    }
+    const logger = new Logger('TextPromptTest');
+    logger.debug(`Actual message.system: ${message.system}`);
+    logger.debug(`Actual message.user: ${message.user}`);
     expect(message.system).toBe(systemTemplate);
     // Render expected user message using Mustache
     const expectedUser = mustache.render(userTemplate, {

@@ -2,16 +2,16 @@
 
 ### This task would score 5 across all criteria
 
-{referenceTask}
+{{{referenceTask}}}
 
-## Empty Task
+## Template Task
 
 ### This task would score 0 across all criteria
 
-{emptyTask}
+{{{emptyTask}}}
 
 ## Student Task
 
 ### This is the task you are assessing
 
-{studentTask}
+{{{studentTask}}}

@@ -2,11 +2,11 @@
 
 ## Step 1:
 
-Identify what the student is being asked to do by looking at the reference task and empty task. Explain it in no more than 2 sentences.
+Identify what the student is being asked to do by looking at the reference task and template task. Explain it in no more than 2 sentences.
 
 ## Step 2:
 
-Identify the aspects of the work that the student has completed by comparing the difference between the student's slide and the empty task. Anything present in the empty task was not completed by the student.
+Identify the aspects of the work that the student has completed by comparing the difference between the student's slide and the template task. Anything present in the template task was not completed by the student.
 
 ## Step 3:
 
@@ -146,6 +146,5 @@ Output your scores and reasoning using the following JSON structure:
 
 _IMPORTANT_
 
-- Assess only the content that differs from the empty slide. The empty slide contains the template that students will write on.
+- Assess only the content that differs from the template slide. The template slide contains the template that students will write on.
 - Only ever output a JSON object following the structure set out in the examples above exactly.
-- If you are missing content needed to make a decision, say so! Don't make things up!

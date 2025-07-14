@@ -97,51 +97,55 @@ export class GeminiService implements LLMService {
   private buildContents(payload: LlmPayload): (string | Part)[] {
     if (this.isMultimodal(payload)) {
       const { images, messages } = payload;
-      // Use first message for text part, fallback to generic text if missing
       const textPrompt =
         messages && messages.length > 0 ? messages[0].content : '';
-
-      // Build image parts: support both inline and URI images
-      const imageParts = images
-        .map((img) => {
-          // URI-based image (uploaded)
-          if (
-            typeof img === 'object' &&
-            'uri' in img &&
-            typeof img.uri === 'string' &&
-            typeof img.mimeType === 'string'
-          ) {
-            return {
-              fileData: {
-                uri: img.uri,
-                mimeType: img.mimeType,
-              },
-            };
-          }
-          // Inline base64 image
-          if (
-            typeof img === 'object' &&
-            'data' in img &&
-            typeof img.data === 'string' &&
-            typeof img.mimeType === 'string'
-          ) {
-            return {
-              inlineData: {
-                mimeType: img.mimeType,
-                data: img.data,
-              },
-            };
-          }
-          // Fallback: skip invalid image
-          return undefined;
-        })
-        .filter(Boolean) as Part[];
-
-      // Return user content array: [text, ...images]
+      const imageParts = this.mapImageParts(images);
       return [textPrompt, ...imageParts];
     }
 
     // Handle string payload
     return [payload as string];
+  }
+
+  /**
+   * Helper to map image payloads to Gemini API parts, ensuring the prompt follows the correct structure.
+   */
+  private mapImageParts(
+    images: Array<{ mimeType: string; data?: string; uri?: string }>,
+  ): Part[] {
+    return images
+      .map((img) => {
+        // URI-based image (uploaded)
+        if (
+          typeof img === 'object' &&
+          'uri' in img &&
+          typeof img.uri === 'string' &&
+          typeof img.mimeType === 'string'
+        ) {
+          return {
+            fileData: {
+              uri: img.uri,
+              mimeType: img.mimeType,
+            },
+          };
+        }
+        // Inline base64 image
+        if (
+          typeof img === 'object' &&
+          'data' in img &&
+          typeof img.data === 'string' &&
+          typeof img.mimeType === 'string'
+        ) {
+          return {
+            inlineData: {
+              mimeType: img.mimeType,
+              data: img.data,
+            },
+          };
+        }
+        // Fallback: skip invalid image
+        return undefined;
+      })
+      .filter(Boolean) as Part[];
   }
 }

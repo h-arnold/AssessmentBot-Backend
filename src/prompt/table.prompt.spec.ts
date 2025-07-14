@@ -8,6 +8,7 @@ import path from 'path';
 import * as mustache from 'mustache';
 
 import { TablePrompt } from './table.prompt';
+import { isSystemUserMessage } from '../common/utils/type-guards';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const tableTask = require(path.join(process.cwd(), 'test/data/tableTask.json'));
 
@@ -58,8 +59,10 @@ describe('TablePrompt', () => {
 
     // Log the rendered user message for debugging
     console.info('--- Rendered TablePrompt User Message ---');
+    if (!isSystemUserMessage(message)) {
+      throw new Error('Prompt did not return expected object shape');
+    }
     console.info(message.user);
-
     expect(message.system).toBe(systemTemplate);
     // Render expected user message using Mustache
     const expectedUser = mustache.render(userTemplate, {
