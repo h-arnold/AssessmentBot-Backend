@@ -8,6 +8,12 @@ class TestPrompt extends Prompt {
   public async buildMessage(): Promise<LlmPayload> {
     return 'test message';
   }
+  // Stub implementation to satisfy abstract base class
+  protected async buildUserMessageParts(): Promise<
+    import('@google/generative-ai').Part[]
+  > {
+    return [];
+  }
   // Expose protected readMarkdown for testing
   public async testReadMarkdown(name: string): Promise<string> {
     return this.readMarkdown(name);

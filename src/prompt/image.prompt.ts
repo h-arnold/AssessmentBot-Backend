@@ -6,6 +6,12 @@ import { getCurrentDirname } from '../common/file-utils';
 import { ImagePromptPayload } from '../llm/llm.service.interface';
 
 export class ImagePrompt extends Prompt {
+  protected async buildUserMessageParts(): Promise<
+    import('@google/generative-ai').Part[]
+  > {
+    // For image prompts, this could return an empty array or a basic structure
+    return [];
+  }
   private readonly images: { path: string; mimeType: string }[];
 
   constructor(
