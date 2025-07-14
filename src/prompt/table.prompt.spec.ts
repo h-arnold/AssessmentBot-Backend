@@ -1,15 +1,21 @@
 import * as fs from 'fs/promises';
+import path from 'path';
 
 import { TablePrompt } from './table.prompt';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const tableTask = require(path.join(
+  process.cwd(),
+  'test/data/tableTask.json',
+));
 
 jest.mock('fs/promises');
 
 describe('TablePrompt', () => {
   it('should build the final prompt object correctly', async () => {
     const inputs = {
-      referenceTask: '| Ref Header |\n---|\n| Ref Cell |',
-      studentTask: '| Stud Header |\n---|\n| Stud Cell |',
-      emptyTask: '| Empty Header |\n---|\n| Empty Cell |',
+      referenceTask: tableTask.referenceTask,
+      studentTask: tableTask.studentTask,
+      emptyTask: tableTask.templateTask,
     };
 
     const systemTemplate = 'System prompt';
@@ -40,7 +46,7 @@ describe('TablePrompt', () => {
 
     expect(message).toEqual({
       system: 'System prompt',
-      user: 'Reference:\n| Ref Header |\n---|\n| Ref Cell |\n\nStudent:\n| Stud Header |\n---|\n| Stud Cell |\n\nEmpty:\n| Empty Header |\n---|\n| Empty Cell |',
+      user: `Reference:\n${tableTask.referenceTask}\n\nStudent:\n${tableTask.studentTask}\n\nEmpty:\n${tableTask.templateTask}`,
     });
   });
 });

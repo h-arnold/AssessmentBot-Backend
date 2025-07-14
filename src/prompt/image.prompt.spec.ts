@@ -13,8 +13,8 @@ describe('ImagePrompt', () => {
       emptyTask: 'Empty text',
     };
     const images = [
-      { path: 'path/to/ref.png', mimeType: 'image/png' },
-      { path: 'path/to/stud.png', mimeType: 'image/png' },
+      { path: 'referenceTask.png', mimeType: 'image/png' },
+      { path: 'studentTask.png', mimeType: 'image/png' },
     ];
 
     const template = 'Prompt: {{{referenceTask}}} and {{{studentTask}}}';
@@ -32,11 +32,11 @@ describe('ImagePrompt', () => {
       { encoding: 'utf-8' },
     );
     expect(fs.readFile).toHaveBeenCalledWith(
-      expect.stringContaining('ref.png'),
+      expect.stringContaining('referenceTask.png'),
       { encoding: 'base64' },
     );
     expect(fs.readFile).toHaveBeenCalledWith(
-      expect.stringContaining('stud.png'),
+      expect.stringContaining('studentTask.png'),
       { encoding: 'base64' },
     );
 

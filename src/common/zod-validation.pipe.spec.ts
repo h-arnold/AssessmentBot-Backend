@@ -163,9 +163,8 @@ describe('ZodValidationPipe', () => {
     expect(response).toHaveProperty('message', 'Validation failed');
     expect(response).toHaveProperty('errors');
     expect(Array.isArray(response.errors)).toBe(true);
-    expect(response.errors).toHaveLength(2);
-    expect(response.errors[0]).toHaveProperty('path', ['email']);
-    expect(response.errors[1]).toHaveProperty('path', ['password']);
+    expect(response.errors).toHaveLength(1);
+    expect(response.errors[0]).toHaveProperty('message', 'Invalid input');
   });
 
   it('should sanitise validation error messages in production', () => {

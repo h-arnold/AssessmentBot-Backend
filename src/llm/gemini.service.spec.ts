@@ -16,12 +16,15 @@ jest.mock('@google/generative-ai', () => ({
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Test, TestingModule } from '@nestjs/testing';
+import path from 'path';
 import { ZodError } from 'zod';
 
 import { GeminiService } from './gemini.service';
 import { LLMService } from './llm.service.interface';
 import { JsonParserUtil } from '../common/json-parser.util';
 import { ConfigService } from '../config/config.service';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const textTask = require(path.join(process.cwd(), 'test/data/textTask.json'));
 
 describe('GeminiService', () => {
   let service: GeminiService;
@@ -85,7 +88,7 @@ describe('GeminiService', () => {
       },
     });
 
-    const response = await service.send('test prompt');
+    const response = await service.send(textTask.studentTask);
 
     expect(mockGetGenerativeModel).toHaveBeenCalledWith({
       model: 'gemini-2.0-flash-lite',
@@ -160,7 +163,7 @@ describe('GeminiService', () => {
     mockGenerateContent.mockResolvedValue({
       response: {
         text: () =>
-          '{"completeness": {"score": 99, "reasoning": "Invalid Score"}}',
+          '{"completeness": {"score": 99, "reasoning": "Invalid Score"}, "accuracy": {"score": 4, "reasoning": "Good"}, "spag": {"score": 3, "reasoning": "Okay"}}',
       },
     });
 

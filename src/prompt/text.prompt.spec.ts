@@ -1,15 +1,18 @@
 import * as fs from 'fs/promises';
+import path from 'path';
 
 import { TextPrompt } from './text.prompt';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const textTask = require(path.join(process.cwd(), 'test/data/textTask.json'));
 
 jest.mock('fs/promises');
 
 describe('TextPrompt', () => {
   it('should build the final prompt object correctly', async () => {
     const inputs = {
-      referenceTask: 'Reference text',
-      studentTask: 'Student text',
-      emptyTask: 'Empty text',
+      referenceTask: textTask.referenceTask,
+      studentTask: textTask.studentTask,
+      emptyTask: textTask.templateTask,
     };
 
     const systemTemplate = 'System prompt';
@@ -40,7 +43,7 @@ describe('TextPrompt', () => {
 
     expect(message).toEqual({
       system: 'System prompt',
-      user: 'Reference: Reference text, Student: Student text, Empty: Empty text',
+      user: `Reference: ${textTask.referenceTask}, Student: ${textTask.studentTask}, Empty: ${textTask.templateTask}`,
     });
   });
 });

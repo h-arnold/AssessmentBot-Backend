@@ -85,7 +85,7 @@ export class ImagePrompt extends Prompt {
     }
     const baseDir = path.join(
       getCurrentDirname(),
-      '../../../docs/ImplementationPlan/Stage6/Prompts',
+      '../../../docs/ImplementationPlan/Stage6/ExampleData/ImageTasks',
     );
     const relativePath = path.join(baseDir, imagePath);
     if (!relativePath.startsWith(baseDir)) {
@@ -93,6 +93,6 @@ export class ImagePrompt extends Prompt {
     }
     // Security: Path is validated above, safe to read
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    return await fs.readFile(imagePath, { encoding: 'base64' });
+    return await fs.readFile(relativePath, { encoding: 'base64' });
   }
 }
