@@ -53,8 +53,7 @@ describe('JsonParserUtil', () => {
     const irreparableJson = 'this is not json';
     expect(() => util.parse(irreparableJson)).toThrow(BadRequestException);
     expect(errorSpy).toHaveBeenCalledWith(
-      `JSON parsing failed for input: ${irreparableJson}`,
-      expect.any(Error),
+      `JSON parsing failed: No JSON object found in input: ${irreparableJson}`,
     );
   });
 

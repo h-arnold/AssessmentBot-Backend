@@ -163,8 +163,16 @@ describe('ZodValidationPipe', () => {
     expect(response).toHaveProperty('message', 'Validation failed');
     expect(response).toHaveProperty('errors');
     expect(Array.isArray(response.errors)).toBe(true);
-    expect(response.errors).toHaveLength(1);
-    expect(response.errors[0]).toHaveProperty('message', 'Invalid input');
+    expect(response.errors).toHaveLength(2);
+    expect(response.errors[0]).toHaveProperty('message', 'Invalid email');
+    expect(response.errors[1]).toHaveProperty(
+      'message',
+      'String must contain at least 8 character(s)',
+    );
+    expect(response.errors[1]).toHaveProperty(
+      'message',
+      'String must contain at least 8 character(s)',
+    );
   });
 
   it('should sanitise validation error messages in production', () => {
