@@ -17,4 +17,5 @@ module.exports = {
   },
   testRegex: '.+\\.e2e-spec\\.ts$',
   setupFiles: ['<rootDir>/../jest.setup.ts'],
+  detectOpenHandles: true,
 };
