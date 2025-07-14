@@ -14,15 +14,17 @@ jest.mock('@google/generative-ai', () => ({
   GoogleGenerativeAI: mockGoogleGenerativeAI,
 }));
 
+import path from 'path';
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Test, TestingModule } from '@nestjs/testing';
-import path from 'path';
 import { ZodError } from 'zod';
 
 import { GeminiService } from './gemini.service';
 import { LLMService } from './llm.service.interface';
 import { JsonParserUtil } from '../common/json-parser.util';
 import { ConfigService } from '../config/config.service';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const textTask = require(path.join(process.cwd(), 'test/data/textTask.json'));
 
