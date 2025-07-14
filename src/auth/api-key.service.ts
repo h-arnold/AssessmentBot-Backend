@@ -31,9 +31,9 @@ import { ConfigService, Config } from '../config/config.service';
  * ```typescript
  * const user = apiKeyService.validate('validApiKey123');
  * if (user) {
- *   console.log('Authentication successful:', user);
+ *   Logger.debug('Authentication successful:', user);
  * } else {
- *   console.log('Authentication failed');
+ *   Logger.debug('Authentication failed');
  * }
  * ```
  */

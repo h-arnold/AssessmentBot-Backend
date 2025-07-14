@@ -38,7 +38,9 @@ export class GeminiService implements LLMService {
     const contents = this.buildContents(payload);
 
     this.logger.debug(`Sending to Gemini with model: ${modelParams.model}`);
-    this.logger.debug(`Payload being sent: ${JSON.stringify(contents, null, 2)}`);
+    this.logger.debug(
+      `Payload being sent: ${JSON.stringify(contents, null, 2)}`,
+    );
 
     try {
       const model = this.client.getGenerativeModel(modelParams);
@@ -59,9 +61,9 @@ export class GeminiService implements LLMService {
 
       return LlmResponseSchema.parse(dataToValidate);
     } catch (error) {
-      console.log('--- Error in GeminiService.send ---');
-      console.log(error);
-      console.log('----------------------------------');
+      Logger.debug('--- Error in GeminiService.send ---');
+      Logger.debug(error);
+      Logger.debug('----------------------------------');
       this.logger.error(
         'Error communicating with or validating response from Gemini API',
         error,
@@ -112,7 +114,9 @@ export class GeminiService implements LLMService {
     if (this.isSystemPrompt(payload)) {
       // If payload.user is already an array of Parts, return it directly.
       // Otherwise, wrap the string in a Part object.
-      return Array.isArray(payload.user) ? payload.user : [{ text: payload.user }];
+      return Array.isArray(payload.user)
+        ? payload.user
+        : [{ text: payload.user }];
     } else if (this.isMultimodal(payload)) {
       const { messages, images } = payload;
       const textPart = { text: messages[0].content };
