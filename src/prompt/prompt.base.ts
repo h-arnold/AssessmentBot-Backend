@@ -38,41 +38,19 @@ export abstract class Prompt {
   protected studentTask!: string;
   protected emptyTask!: string;
   protected readonly logger = new Logger(Prompt.name);
-
-  /**
-   * Builds the default user message parts for reference, empty, and student tasks.
-   * Subclasses can use or extend this for consistent message formatting.
-   */
-  protected buildDefaultUserMessageParts(): Part[] {
-    return [
-      {
-        text: '## Reference Task\n\n### This task would score 5 across all criteria\n\n',
-      },
-      { text: this.referenceTask },
-      {
-        text: '\n\n## Empty Task\n\n### This task would score 0 across all criteria\n\n',
-      },
-      { text: this.emptyTask },
-      {
-        text: '\n\n## Student Task\n\n### This is the task you are assessing\n\n',
-      },
-      { text: this.studentTask },
-    ];
-  }
-  /**
-   * Builds the default user message parts for reference, empty, and student tasks.
-   * Subclasses can use or extend this for consistent message formatting.
-   */
+  protected userTemplateName?: string;
 
   /**
    * Constructs an instance of the class and initializes its properties
    * by parsing the provided input using the `PromptInputSchema`.
+   * Optionally accepts a userTemplateName for rendering user message parts.
    *
    * @param inputs - The raw input data to be parsed into a `PromptInput` object.
    *                 This should conform to the expected schema defined by `PromptInputSchema`.
+   * @param userTemplateName - Optional name of the markdown template for user message parts.
    * @throws {ZodError} If the provided `inputs` do not match the expected schema.
    */
-  constructor(inputs: unknown) {
+  constructor(inputs: unknown, userTemplateName?: string) {
     this.logger.debug(
       `Prompt constructor received inputs: ${JSON.stringify(inputs)}`,
     );
@@ -80,12 +58,28 @@ export abstract class Prompt {
     this.referenceTask = parsed.referenceTask;
     this.studentTask = parsed.studentTask;
     this.emptyTask = parsed.emptyTask;
+    this.userTemplateName = userTemplateName;
     this.logger.debug(
       `Prompt constructor parsed inputs: ${JSON.stringify(parsed)}`,
     );
-    this.logger.debug(
-      `Prompt state after construction: referenceTask='${this.referenceTask}', studentTask='${this.studentTask}', emptyTask='${this.emptyTask}'`,
-    );
+  }
+
+  /**
+   * Builds the user message parts using the provided template name.
+   * If no template name is set, throws an error.
+   * Subclasses can override for custom logic.
+   */
+  protected async buildUserMessageParts(): Promise<Part[]> {
+    if (!this.userTemplateName) {
+      throw new Error('No user template name provided for Prompt');
+    }
+    const userTemplate = await this.readMarkdown(this.userTemplateName);
+    const userMessage = this.render(userTemplate, {
+      referenceTask: this.referenceTask,
+      studentTask: this.studentTask,
+      emptyTask: this.emptyTask,
+    });
+    return [{ text: userMessage }];
   }
 
   /**

@@ -6,6 +6,7 @@ import { getCurrentDirname } from '../common/file-utils';
 import { ImagePromptPayload } from '../llm/llm.service.interface';
 
 export class ImagePrompt extends Prompt {
+  // ImagePrompt does not use a user template, so override with custom logic
   protected async buildUserMessageParts(): Promise<
     import('@google/generative-ai').Part[]
   > {
@@ -18,7 +19,7 @@ export class ImagePrompt extends Prompt {
     inputs: PromptInput,
     images?: { path: string; mimeType: string }[],
   ) {
-    super(inputs);
+    super(inputs, undefined); // No user template for ImagePrompt
     this.images = images || [];
   }
 

@@ -38,9 +38,9 @@ beforeAll(async () => {
 describe('TablePrompt', () => {
   it('should build the final prompt object correctly', async () => {
     const inputs = {
-      referenceTask: tableTask.reference,
-      studentTask: tableTask.studentResponse,
-      emptyTask: tableTask.template,
+      referenceTask: tableTask.referenceTask,
+      studentTask: tableTask.studentTask,
+      emptyTask: tableTask.emptyTask,
     };
 
     // Mock fs.readFile to return correct template content
@@ -63,9 +63,9 @@ describe('TablePrompt', () => {
     expect(message.system).toBe(systemTemplate);
     // Render expected user message using Mustache
     const expectedUser = mustache.render(userTemplate, {
-      referenceTask: tableTask.reference,
-      studentTask: tableTask.studentResponse,
-      emptyTask: tableTask.template,
+      referenceTask: tableTask.referenceTask,
+      studentTask: tableTask.studentTask,
+      emptyTask: tableTask.emptyTask,
     });
     expect(message.user).toBe(expectedUser);
   });

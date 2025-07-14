@@ -9,15 +9,8 @@ import { SystemPromptPayload } from '../llm/llm.service.interface';
  * with specific task-related data.
  */
 export class TextPrompt extends Prompt {
-  protected async buildUserMessageParts(): Promise<Part[]> {
-    // Read and render the user prompt template for text tasks
-    const userTemplate = await this.readMarkdown('text.user.prompt.md');
-    const userMessage = this.render(userTemplate, {
-      referenceTask: this.referenceTask,
-      studentTask: this.studentTask,
-      emptyTask: this.emptyTask,
-    });
-    return [{ text: userMessage }];
+  constructor(inputs: unknown) {
+    super(inputs, 'text.user.prompt.md');
   }
 
   public async buildMessage(): Promise<SystemPromptPayload> {
