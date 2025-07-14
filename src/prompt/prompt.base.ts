@@ -83,6 +83,9 @@ export abstract class Prompt {
     this.logger.debug(
       `Prompt constructor parsed inputs: ${JSON.stringify(parsed)}`,
     );
+    this.logger.debug(
+      `Prompt state after construction: referenceTask='${this.referenceTask}', studentTask='${this.studentTask}', emptyTask='${this.emptyTask}'`,
+    );
   }
 
   /**
@@ -135,9 +138,7 @@ export abstract class Prompt {
       `Rendering template. Data keys: ${Object.keys(data).join(', ')}`,
     );
     const renderedContent = mustache.render(template, data);
-    this.logger.debug(
-      `Template rendered. Content length: ${renderedContent.length}`,
-    );
+    this.logger.debug(`Template rendered. Output:\n${renderedContent}`);
     return renderedContent;
   }
 
