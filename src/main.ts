@@ -48,7 +48,7 @@ async function bootstrap(): Promise<void> {
 
   const configService = app.get(ConfigService);
   const payloadLimit = configService.getGlobalPayloadLimit();
-  const logLevel = configService.get('LOG_LEVEL');
+  const logLevel = configService.get('LOG_LEVEL'); // Already an array due to config schema transform
 
   app.use(json({ limit: payloadLimit }));
 

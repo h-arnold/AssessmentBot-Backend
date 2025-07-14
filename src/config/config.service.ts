@@ -50,8 +50,12 @@ const configSchema = z.object({
     .transform((val) => val.split(',').map((s) => s.trim())),
   GEMINI_API_KEY: z.string().min(1),
   LOG_LEVEL: z
-    .enum(['log', 'error', 'warn', 'debug', 'verbose'])
-    .default(process.env.NODE_ENV === 'production' ? 'log' : 'debug'),
+    .string()
+    .default(process.env.NODE_ENV === 'production' ? 'log' : 'debug')
+    .transform((val) => val.split(',').map((s) => s.trim()))
+    .pipe(
+      z.array(z.enum(['log', 'error', 'warn', 'debug', 'verbose', 'fatal'])),
+    ),
 });
 
 // Infer the type from the schema
