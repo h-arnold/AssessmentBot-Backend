@@ -1,9 +1,6 @@
-import { Part } from '@google/generative-ai';
-import { Part } from '@google/generative-ai';
+import type { Part } from '@google/generative-ai';
 
 import { Prompt } from './prompt.base';
-import { Prompt } from './prompt.base';
-import { SystemPromptPayload } from '../llm/llm.service.interface';
 import { SystemPromptPayload } from '../llm/llm.service.interface';
 
 /**
