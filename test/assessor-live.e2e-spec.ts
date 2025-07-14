@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { json } from 'express';
@@ -9,6 +12,8 @@ import {
   CreateAssessorDto,
   TaskType,
 } from './../src/v1/assessor/dto/create-assessor.dto';
+import tableData from './data/tableTask.json';
+import textData from './data/textTask.json';
 
 describe('AssessorController (e2e-live)', () => {
   let app: INestApplication;
@@ -45,17 +50,23 @@ describe('AssessorController (e2e-live)', () => {
   it('/v1/assessor (POST) should return a valid assessment for a text task', async () => {
     const validPayload: CreateAssessorDto = {
       taskType: TaskType.TEXT,
-      reference:
-        'The capital of the United Kingdom is London, a city with a rich and complex history.',
-      template:
-        'Identify the capital city mentioned in the text and briefly describe its significance.',
-      studentResponse: 'The capital is London. It has a long history.',
+      reference: textData.referenceTask,
+      template: textData.emptyTask,
+      studentResponse: textData.studentTask,
+    };
+
+    // Map JSON fields to DTO fields
+    const mappedPayload = {
+      taskType: validPayload.taskType,
+      reference: textData.referenceTask,
+      template: textData.emptyTask,
+      studentResponse: textData.studentTask,
     };
 
     const response = await request(app.getHttpServer())
       .post('/v1/assessor')
       .set('Authorization', `Bearer ${validApiKey}`)
-      .send(validPayload)
+      .send(mappedPayload)
       .expect(201);
 
     // Validate the structure of the live response
@@ -72,4 +83,79 @@ describe('AssessorController (e2e-live)', () => {
     expect(typeof response.body.spag.score).toBe('number');
     expect(typeof response.body.spag.reasoning).toBe('string');
   }, 30000); // Increase timeout for live API call
+
+  it('/v1/assessor (POST) should return a valid assessment for a table task', async () => {
+    // Map JSON fields to DTO fields
+    const mappedPayload = {
+      taskType: TaskType.TABLE,
+      reference: tableData.referenceTask,
+      template: tableData.emptyTask,
+      studentResponse: tableData.studentTask,
+    };
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/assessor')
+      .set('Authorization', `Bearer ${validApiKey}`)
+      .send(mappedPayload)
+      .expect(201);
+
+    // Validate the structure of the live response
+    expect(response.body).toBeDefined();
+    expect(response.body).toHaveProperty('completeness');
+    expect(typeof response.body.completeness.score).toBe('number');
+    expect(typeof response.body.completeness.reasoning).toBe('string');
+
+    expect(response.body).toHaveProperty('accuracy');
+    expect(typeof response.body.accuracy.score).toBe('number');
+    expect(typeof response.body.accuracy.reasoning).toBe('string');
+
+    expect(response.body).toHaveProperty('spag');
+    expect(typeof response.body.spag.score).toBe('number');
+    expect(typeof response.body.spag.reasoning).toBe('string');
+  }, 30000);
+  it('/v1/assessor (POST) should return a valid assessment for an image task', async () => {
+    // Read and encode image files to base64 at runtime, then format as data URIs
+    const referencePath = path.join(
+      __dirname,
+      'ImageTasks',
+      'referenceTask.png',
+    );
+    const templatePath = path.join(__dirname, 'ImageTasks', 'templateTask.png');
+    const studentPath = path.join(__dirname, 'ImageTasks', 'studentTask.png');
+
+    const referenceBase64 = fs.readFileSync(referencePath).toString('base64');
+    const templateBase64 = fs.readFileSync(templatePath).toString('base64');
+    const studentBase64 = fs.readFileSync(studentPath).toString('base64');
+
+    const referenceDataUri = `data:image/png;base64,${referenceBase64}`;
+    const templateDataUri = `data:image/png;base64,${templateBase64}`;
+    const studentDataUri = `data:image/png;base64,${studentBase64}`;
+
+    const imagePayload = {
+      taskType: TaskType.IMAGE,
+      reference: referenceDataUri,
+      template: templateDataUri,
+      studentResponse: studentDataUri,
+    };
+
+    const response = await request(app.getHttpServer())
+      .post('/v1/assessor')
+      .set('Authorization', `Bearer ${validApiKey}`)
+      .send(imagePayload)
+      .expect(201);
+
+    // Validate the structure of the live response
+    expect(response.body).toBeDefined();
+    expect(response.body).toHaveProperty('completeness');
+    expect(typeof response.body.completeness.score).toBe('number');
+    expect(typeof response.body.completeness.reasoning).toBe('string');
+
+    expect(response.body).toHaveProperty('accuracy');
+    expect(typeof response.body.accuracy.score).toBe('number');
+    expect(typeof response.body.accuracy.reasoning).toBe('string');
+
+    expect(response.body).toHaveProperty('spag');
+    expect(typeof response.body.spag.score).toBe('number');
+    expect(typeof response.body.spag.reasoning).toBe('string');
+  }, 30000);
 });

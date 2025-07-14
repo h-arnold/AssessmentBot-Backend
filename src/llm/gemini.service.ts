@@ -118,12 +118,49 @@ export class GeminiService implements LLMService {
         ? payload.user
         : [{ text: payload.user }];
     } else if (this.isMultimodal(payload)) {
-      const { messages, images } = payload;
-      const textPart = { text: messages[0].content };
-      const imageParts: Part[] = images.map((img) => ({
-        inlineData: { mimeType: img.mimeType, data: img.data },
-      }));
-      return [textPart, ...imageParts];
+      const { images, messages } = payload;
+      // Use first message for text part, fallback to generic text if missing
+      const textPrompt =
+        messages && messages.length > 0 ? messages[0].content : '';
+
+      // Build image parts: support both inline and URI images
+      const imageParts = images
+        .map((img) => {
+          // URI-based image (uploaded)
+          if (
+            typeof img === 'object' &&
+            'uri' in img &&
+            typeof img.uri === 'string' &&
+            typeof img.mimeType === 'string'
+          ) {
+            return {
+              fileData: {
+                uri: img.uri,
+                mimeType: img.mimeType,
+              },
+            };
+          }
+          // Inline base64 image
+          if (
+            typeof img === 'object' &&
+            'data' in img &&
+            typeof img.data === 'string' &&
+            typeof img.mimeType === 'string'
+          ) {
+            return {
+              inlineData: {
+                mimeType: img.mimeType,
+                data: img.data,
+              },
+            };
+          }
+          // Fallback: skip invalid image
+          return undefined;
+        })
+        .filter(Boolean) as Part[];
+
+      // Return user content array: [text, ...images]
+      return [textPrompt, ...imageParts];
     }
 
     // Handle string payload

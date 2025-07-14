@@ -31,17 +31,50 @@ export class ImagePrompt extends Prompt {
       emptyTask: this.emptyTask,
     });
 
-    const imagePromises = this.images.map(async (image) => {
-      const data = await this.readImageFile(image.path, image.mimeType);
-      return { data, mimeType: image.mimeType };
-    });
-
-    const images = await Promise.all(imagePromises);
+    let images: { data: string; mimeType: string }[];
+    if (this.images.length > 0) {
+      images = await this.buildImagesFromFiles();
+    } else {
+      images = this.buildImagesFromDataUris();
+    }
 
     return {
       messages: [{ content: promptText }],
       images,
     };
+  }
+
+  /**
+   * Helper to build images payload from file paths
+   */
+  private async buildImagesFromFiles(): Promise<
+    { data: string; mimeType: string }[]
+  > {
+    const imagePromises = this.images.map(async (image) => {
+      const data = await this.readImageFile(image.path, image.mimeType);
+      return { data, mimeType: image.mimeType };
+    });
+    return Promise.all(imagePromises);
+  }
+
+  /**
+   * Helper to build images payload from data URIs in inputs
+   */
+  private buildImagesFromDataUris(): { data: string; mimeType: string }[] {
+    // Assumes validation pipeline guarantees all three tasks are valid data URIs
+    const parseDataUri = (uri: string): { data: string; mimeType: string } => {
+      const match = /^data:(.+);base64,(.*)$/.exec(uri);
+      if (!match) {
+        throw new Error(`Invalid Data URI: ${uri.slice(0, 30)}...`);
+      }
+      const [, mimeType, data] = match;
+      return { mimeType, data };
+    };
+    const images: { data: string; mimeType: string }[] = [];
+    images.push(parseDataUri(this.referenceTask));
+    images.push(parseDataUri(this.studentTask));
+    images.push(parseDataUri(this.emptyTask));
+    return images;
   }
 
   /**
