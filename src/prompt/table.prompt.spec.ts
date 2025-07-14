@@ -1,11 +1,39 @@
+jest.mock('fs/promises', () => ({
+  readFile: jest.fn(),
+}));
+
 import * as fs from 'fs/promises';
 import path from 'path';
+
+import * as mustache from 'mustache';
 
 import { TablePrompt } from './table.prompt';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const tableTask = require(path.join(process.cwd(), 'test/data/tableTask.json'));
 
-jest.mock('fs/promises');
+let systemTemplate: string;
+let userTemplate: string;
+beforeAll(async () => {
+  // Use the real fs to read files before mocking
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const realFs = require('fs');
+  systemTemplate = realFs.readFileSync(
+    path.join(process.cwd(), 'src/prompt/templates/table.system.prompt.md'),
+    { encoding: 'utf-8' },
+  );
+  userTemplate = realFs.readFileSync(
+    path.join(process.cwd(), 'src/prompt/templates/table.user.prompt.md'),
+    { encoding: 'utf-8' },
+  );
+  (fs.readFile as jest.Mock).mockImplementation((filePath: unknown) => {
+    const filePathStr = String(filePath);
+    if (filePathStr.includes('table.system.prompt.md'))
+      return Promise.resolve(systemTemplate);
+    if (filePathStr.includes('table.user.prompt.md'))
+      return Promise.resolve(userTemplate);
+    return Promise.reject(new Error('File not found'));
+  });
+});
 
 describe('TablePrompt', () => {
   it('should build the final prompt object correctly', async () => {
@@ -15,17 +43,13 @@ describe('TablePrompt', () => {
       emptyTask: tableTask.template,
     };
 
-    const systemTemplate = 'System prompt';
-    const userTemplate =
-      'Reference:\n{{{referenceTask}}}\n\nStudent:\n{{{studentTask}}}\n\nEmpty:\n{{{emptyTask}}}';
-
-    (fs.readFile as jest.Mock).mockImplementation((filePath: string) => {
-      if (filePath.includes('system')) {
+    // Mock fs.readFile to return correct template content
+    jest.spyOn(fs, 'readFile').mockImplementation((filePath: unknown) => {
+      const filePathStr = String(filePath);
+      if (filePathStr.includes('table.system.prompt.md'))
         return Promise.resolve(systemTemplate);
-      }
-      if (filePath.includes('user')) {
+      if (filePathStr.includes('table.user.prompt.md'))
         return Promise.resolve(userTemplate);
-      }
       return Promise.reject(new Error('File not found'));
     });
 
@@ -33,23 +57,16 @@ describe('TablePrompt', () => {
     const message = await prompt.buildMessage();
 
     // Log the rendered user message for debugging
-
     console.info('--- Rendered TablePrompt User Message ---');
-
     console.info(message.user);
 
-    expect(fs.readFile).toHaveBeenCalledWith(
-      expect.stringContaining('table.system.prompt.md'),
-      expect.objectContaining({ encoding: 'utf-8' }),
-    );
-    expect(fs.readFile).toHaveBeenCalledWith(
-      expect.stringContaining('table.user.prompt.md'),
-      expect.objectContaining({ encoding: 'utf-8' }),
-    );
-
-    expect(message).toEqual({
-      system: 'System prompt',
-      user: `Reference:\n${tableTask.reference}\n\nStudent:\n${tableTask.studentResponse}\n\nEmpty:\n${tableTask.template}`,
+    expect(message.system).toBe(systemTemplate);
+    // Render expected user message using Mustache
+    const expectedUser = mustache.render(userTemplate, {
+      referenceTask: tableTask.reference,
+      studentTask: tableTask.studentResponse,
+      emptyTask: tableTask.template,
     });
+    expect(message.user).toBe(expectedUser);
   });
 });
