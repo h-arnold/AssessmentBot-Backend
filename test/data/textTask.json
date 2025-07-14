@@ -1,6 +1,6 @@
 {
-    "taskType": "TEXT",
-    "referenceTask": " - Movement data - it can measure movement in all directions.\n - Your steps\n - Heart rate\n - Sleep\n - Stress levels\n - Distance travelled\n - {any other valid and correct fitness tracker data}",
-    "templateTask": " - ",
-    "studentResponse": " - Trak our breathing\n - Blood\n - Oxygen\n - Heat"
+  "taskType": "TEXT",
+  "reference": "Movement data - it can measure movement in all directions. Your steps, Heart rate, Sleep, Stress levels, Distance travelled, {any other valid and correct fitness tracker data}",
+  "template": "Describe the types of data a fitness tracker can measure.",
+  "studentResponse": "Track our breathing, Blood, Oxygen, Heat"
 }
