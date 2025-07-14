@@ -2,23 +2,20 @@ import { BadRequestException, Logger } from '@nestjs/common';
 
 import { JsonParserUtil } from './json-parser.util';
 
-// Mock the Logger to spy on its methods
-const mockLogger = {
-  log: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn(),
-  verbose: jest.fn(),
-};
+// Use a real Logger and spy on its methods
+const realLogger = new Logger('JsonParserUtil');
+let logSpy: jest.SpyInstance;
+let errorSpy: jest.SpyInstance;
 
 describe('JsonParserUtil', () => {
   let util: JsonParserUtil;
 
   beforeEach(() => {
     util = new JsonParserUtil();
-    // Inject the mock logger
-    (util as { logger: Logger }).logger = mockLogger;
-    // Reset mocks before each test
+    // Replace the logger with a real Logger and spy on its methods
+    (util as JsonParserUtil).logger = realLogger;
+    logSpy = jest.spyOn(realLogger, 'log').mockImplementation(() => {});
+    errorSpy = jest.spyOn(realLogger, 'error').mockImplementation(() => {});
     jest.clearAllMocks();
   });
 
@@ -55,7 +52,7 @@ describe('JsonParserUtil', () => {
   it('should throw BadRequestException for irreparable JSON and log the original string', () => {
     const irreparableJson = 'this is not json';
     expect(() => util.parse(irreparableJson)).toThrow(BadRequestException);
-    expect(mockLogger.error).toHaveBeenCalledWith(
+    expect(errorSpy).toHaveBeenCalledWith(
       `JSON parsing failed for input: ${irreparableJson}`,
       expect.any(Error),
     );
