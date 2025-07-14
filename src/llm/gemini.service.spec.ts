@@ -1,13 +1,8 @@
-
-
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ZodError } from 'zod';
 
 import { GeminiService } from './gemini.service';
-import {
-  ImagePromptPayload,
-  SystemPromptPayload,
-} from './llm.service.interface';
+import { ImagePromptPayload } from './llm.service.interface';
 import { JsonParserUtil } from '../common/json-parser.util';
 import { ConfigService } from '../config/config.service';
 
@@ -71,27 +66,7 @@ describe('GeminiService', () => {
     expect(mockGenerateContent).toHaveBeenCalledWith(['test prompt']);
   });
 
-  it('should send a system prompt payload and return a valid response', async () => {
-    mockGenerateContent.mockResolvedValue({
-      response: {
-        text: () =>
-          '{"completeness": {"score": 2, "reasoning": "Test"}, "accuracy": {"score": 2, "reasoning": "Test"}, "spag": {"score": 2, "reasoning": "Test"}}',
-      },
-    });
-
-    const payload: SystemPromptPayload = {
-      system: 'System instruction',
-      user: 'User message',
-    };
-
-    await service.send(payload);
-
-    expect(mockGetGenerativeModel).toHaveBeenCalledWith({
-      model: 'gemini-2.0-flash-lite',
-      systemInstruction: 'System instruction',
-    });
-    expect(mockGenerateContent).toHaveBeenCalledWith([{ text: 'User message' }]);
-  });
+  // Removed system prompt payload test as SystemPromptPayload is no longer supported
 
   it('should send a multimodal payload and return a valid response', async () => {
     mockGenerateContent.mockResolvedValue({
@@ -112,7 +87,7 @@ describe('GeminiService', () => {
       model: 'gemini-2.5-flash',
     });
     expect(mockGenerateContent).toHaveBeenCalledWith([
-      { text: 'Test message' },
+      'Test message',
       { inlineData: { mimeType: 'image/png', data: 'test-data' } },
     ]);
   });

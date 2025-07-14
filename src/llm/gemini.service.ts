@@ -11,7 +11,6 @@ import {
   ImagePromptPayload,
   LLMService,
   LlmPayload,
-  SystemPromptPayload,
 } from './llm.service.interface';
 import { LlmResponse, LlmResponseSchema } from './types';
 import { JsonParserUtil } from '../common/json-parser.util';
@@ -87,37 +86,16 @@ export class GeminiService implements LLMService {
     );
   }
 
-  private isSystemPrompt(payload: LlmPayload): payload is SystemPromptPayload {
-    return (
-      typeof payload === 'object' &&
-      payload !== null &&
-      'system' in payload &&
-      'user' in payload
-    );
-  }
-
   private buildModelParams(payload: LlmPayload): ModelParams {
     const modelName = this.isMultimodal(payload)
       ? 'gemini-2.5-flash'
       : 'gemini-2.0-flash-lite';
 
-    const modelParams: ModelParams = { model: modelName };
-
-    if (this.isSystemPrompt(payload)) {
-      modelParams.systemInstruction = payload.system;
-    }
-
-    return modelParams;
+    return { model: modelName };
   }
 
   private buildContents(payload: LlmPayload): (string | Part)[] {
-    if (this.isSystemPrompt(payload)) {
-      // If payload.user is already an array of Parts, return it directly.
-      // Otherwise, wrap the string in a Part object.
-      return Array.isArray(payload.user)
-        ? payload.user
-        : [{ text: payload.user }];
-    } else if (this.isMultimodal(payload)) {
+    if (this.isMultimodal(payload)) {
       const { images, messages } = payload;
       // Use first message for text part, fallback to generic text if missing
       const textPrompt =

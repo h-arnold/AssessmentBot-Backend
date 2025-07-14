@@ -3,7 +3,7 @@ import path from 'path';
 
 import { Prompt, PromptInput } from './prompt.base';
 import { getCurrentDirname } from '../common/file-utils';
-import { ImagePromptPayload } from '../llm/llm.service.interface';
+import { ImagePromptPayload, LlmPayload } from '../llm/llm.service.interface';
 
 export class ImagePrompt extends Prompt {
   // ImagePrompt does not use a user template, so override with custom logic
@@ -19,11 +19,11 @@ export class ImagePrompt extends Prompt {
     inputs: PromptInput,
     images?: { path: string; mimeType: string }[],
   ) {
-    super(inputs, undefined); // No user template for ImagePrompt
+    super(inputs, undefined, 'image.system.prompt.md');
     this.images = images || [];
   }
 
-  public async buildMessage(): Promise<ImagePromptPayload> {
+  public async buildMessage(): Promise<LlmPayload> {
     const template = await this.readMarkdown('image.prompt.md');
     const promptText = this.render(template, {
       referenceTask: this.referenceTask,
@@ -39,6 +39,7 @@ export class ImagePrompt extends Prompt {
     }
 
     return {
+      system: this.systemPrompt ?? '',
       messages: [{ content: promptText }],
       images,
     };

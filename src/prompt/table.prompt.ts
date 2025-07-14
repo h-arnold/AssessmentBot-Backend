@@ -1,7 +1,8 @@
 import type { Part } from '@google/generative-ai';
 
 import { Prompt } from './prompt.base';
-import { SystemPromptPayload } from '../llm/llm.service.interface';
+import { LlmPayload } from '../llm/llm.service.interface';
+// ...existing code...
 
 /**
  * Represents a prompt that generates a table-based message.
@@ -11,16 +12,15 @@ import { SystemPromptPayload } from '../llm/llm.service.interface';
  */
 export class TablePrompt extends Prompt {
   constructor(inputs: unknown) {
-    super(inputs, 'table.user.prompt.md');
+    super(inputs, 'table.user.prompt.md', 'table.system.prompt.md');
   }
 
-  public async buildMessage(): Promise<SystemPromptPayload> {
-    const systemTemplate = await this.readMarkdown('table.system.prompt.md');
+  public async buildMessage(): Promise<LlmPayload> {
     const userParts = await this.buildUserMessageParts();
     // Flatten parts into a single string for user
     const userMessage = userParts.map((part) => part.text).join('');
     return {
-      system: systemTemplate,
+      system: this.systemPrompt ?? '',
       user: userMessage,
     };
   }

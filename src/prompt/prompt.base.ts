@@ -3,10 +3,9 @@ import * as path from 'path';
 
 import type { Part } from '@google/generative-ai';
 import { Logger } from '@nestjs/common';
-import * as mustache from 'mustache';
+import Mustache from 'mustache';
 import { z } from 'zod';
 
-import { getCurrentDirname } from '../common/file-utils';
 import { LlmPayload } from '../llm/llm.service.interface';
 
 /**
@@ -39,6 +38,8 @@ export abstract class Prompt {
   protected emptyTask!: string;
   protected readonly logger = new Logger(Prompt.name);
   protected userTemplateName?: string;
+  protected systemPromptFile?: string;
+  protected systemPrompt?: string;
 
   /**
    * Constructs an instance of the class and initializes its properties
@@ -50,7 +51,11 @@ export abstract class Prompt {
    * @param userTemplateName - Optional name of the markdown template for user message parts.
    * @throws {ZodError} If the provided `inputs` do not match the expected schema.
    */
-  constructor(inputs: unknown, userTemplateName?: string) {
+  constructor(
+    inputs: unknown,
+    userTemplateName?: string,
+    systemPromptFile?: string,
+  ) {
     this.logger.debug(
       `Prompt constructor received inputs: ${JSON.stringify(inputs)}`,
     );
@@ -59,9 +64,33 @@ export abstract class Prompt {
     this.studentTask = parsed.studentTask;
     this.emptyTask = parsed.emptyTask;
     this.userTemplateName = userTemplateName;
+    this.systemPromptFile = systemPromptFile;
     this.logger.debug(
       `Prompt constructor parsed inputs: ${JSON.stringify(parsed)}`,
     );
+    // Load system prompt immediately if filename is provided
+    if (systemPromptFile) {
+      this.readMarkdown(systemPromptFile).then((content) => {
+        this.systemPrompt = content;
+        this.logger.debug(`Loaded system prompt from ${systemPromptFile}`);
+      });
+    }
+  }
+
+  /**
+   * Fetches the system prompt markdown content from the specified file.
+   * @param systemPromptFile - The markdown filename for the system prompt.
+   * @returns The content of the system prompt markdown file as a string.
+   */
+
+  /**
+   * Fetches the system prompt markdown content from the specified file.
+   * @param systemPromptFile - The markdown filename for the system prompt.
+   * @returns The content of the system prompt markdown file as a string.
+   */
+  protected async getSystemPrompt(systemPromptFile: string): Promise<string> {
+    this.logger.debug(`Fetching system prompt from: ${systemPromptFile}`);
+    return await this.readMarkdown(systemPromptFile);
   }
 
   /**
@@ -110,6 +139,7 @@ export abstract class Prompt {
       throw new Error('Unauthorised file path');
     }
     // Security: Path is validated above, safe to read
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const content = await fs.readFile(resolvedPath, { encoding: 'utf-8' });
     this.logger.debug(
       `Successfully read markdown file: ${name}, content length: ${content.length}`,
@@ -131,7 +161,7 @@ export abstract class Prompt {
     this.logger.debug(
       `Rendering template. Data keys: ${Object.keys(data).join(', ')}`,
     );
-    const renderedContent = mustache.render(template, data);
+    const renderedContent = Mustache.render(template, data);
     this.logger.debug(`Template rendered. Output:\n${renderedContent}`);
     return renderedContent;
   }

@@ -1,18 +1,19 @@
-import { Part } from '@google/generative-ai';
-
 import { LlmResponse } from './types';
-
-export type SystemPromptPayload = {
-  system: string;
-  user: string | Part[];
-};
 
 export type ImagePromptPayload = {
   messages: { content: string }[];
   images: { mimeType: string; data: string }[];
 };
 
-export type LlmPayload = string | SystemPromptPayload | ImagePromptPayload;
+export type LlmPayload =
+  | string
+  | ImagePromptPayload
+  | { system: string; user: string }
+  | {
+      system: string;
+      messages: { content: string }[];
+      images: { mimeType: string; data: string }[];
+    };
 
 export abstract class LLMService {
   /**

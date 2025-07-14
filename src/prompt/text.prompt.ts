@@ -1,7 +1,7 @@
 import type { Part } from '@google/generative-ai';
 
 import { Prompt } from './prompt.base';
-import { SystemPromptPayload } from '../llm/llm.service.interface';
+import { LlmPayload } from '../llm/llm.service.interface';
 
 /**
  * Represents a text-based prompt that extends the base `Prompt` class.
@@ -10,18 +10,17 @@ import { SystemPromptPayload } from '../llm/llm.service.interface';
  */
 export class TextPrompt extends Prompt {
   constructor(inputs: unknown) {
-    super(inputs, 'text.user.prompt.md');
+    super(inputs, 'text.user.prompt.md', 'text.system.prompt.md');
   }
 
-  public async buildMessage(): Promise<SystemPromptPayload> {
+  public async buildMessage(): Promise<LlmPayload> {
     this.logger.debug('Building message for TextPrompt');
-    const systemTemplate = await this.readMarkdown('text.system.prompt.md');
     const userParts = await this.buildUserMessageParts();
     // Flatten parts into a single string for user
     const userMessage = userParts.map((part) => part.text).join('');
     this.logger.debug(`Rendered user message length: ${userMessage.length}`);
     return {
-      system: systemTemplate,
+      system: this.systemPrompt ?? '',
       user: userMessage,
     };
   }
