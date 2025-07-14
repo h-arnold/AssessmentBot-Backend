@@ -30,26 +30,38 @@ export class JsonParserUtil {
    */
   parse(jsonString: string, trim = true): unknown {
     let processedString = jsonString;
+    let jsonContent = '';
 
-    if (trim) {
+    const jsonBlockRegex = /```json\n([\s\S]*?)\n```/;
+    const match = jsonString.match(jsonBlockRegex);
+
+    if (match && match[1]) {
+      jsonContent = match[1];
+      this.logger.debug('Extracted JSON from markdown block.');
+    } else if (trim) {
       const firstBracketIndex = processedString.indexOf('{');
       const lastBracketIndex = processedString.lastIndexOf('}');
 
       if (firstBracketIndex !== -1 && lastBracketIndex > firstBracketIndex) {
-        processedString = processedString.slice(
+        jsonContent = processedString.slice(
           firstBracketIndex,
           lastBracketIndex + 1,
         );
+        this.logger.debug('Extracted JSON by trimming brackets.');
+      } else {
+        this.logger.error(
+          `JSON parsing failed: No JSON object found in input: ${jsonString}`,
+        );
+        throw new BadRequestException('No valid JSON object found in response.');
       }
+    } else {
+      jsonContent = processedString;
     }
 
     try {
-      const repairedJsonString = jsonrepair(processedString);
+      const repairedJsonString = jsonrepair(jsonContent);
       const parsed = JSON.parse(repairedJsonString);
 
-      // The primary use case is for LLM responses, which should be objects/arrays.
-      // If parsing results in a primitive type, it's likely due to
-      // `jsonrepair` turning non-JSON text into a string literal. This is an error condition for us.
       if (typeof parsed !== 'object' || parsed === null) {
         throw new Error('Parsed JSON is not a structured object or array.');
       }

@@ -1,3 +1,5 @@
+
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ZodError } from 'zod';
 
@@ -66,7 +68,7 @@ describe('GeminiService', () => {
     expect(mockGetGenerativeModel).toHaveBeenCalledWith({
       model: 'gemini-2.0-flash-lite',
     });
-    expect(mockGenerateContent).toHaveBeenCalledWith('test prompt');
+    expect(mockGenerateContent).toHaveBeenCalledWith(['test prompt']);
   });
 
   it('should send a system prompt payload and return a valid response', async () => {
@@ -88,7 +90,7 @@ describe('GeminiService', () => {
       model: 'gemini-2.0-flash-lite',
       systemInstruction: 'System instruction',
     });
-    expect(mockGenerateContent).toHaveBeenCalledWith('User message');
+    expect(mockGenerateContent).toHaveBeenCalledWith([{ text: 'User message' }]);
   });
 
   it('should send a multimodal payload and return a valid response', async () => {
@@ -152,5 +154,21 @@ describe('GeminiService', () => {
     });
 
     await expect(service.send('test')).rejects.toThrow(ZodError);
+  });
+
+  it('should throw an error if JsonParserUtil fails to parse the response', async () => {
+    mockGenerateContent.mockResolvedValue({
+      response: {
+        text: () => 'This is not JSON.',
+      },
+    });
+
+    (jsonParserUtil.parse as jest.Mock).mockImplementation(() => {
+      throw new Error('Malformed or irreparable JSON string provided.');
+    });
+
+    await expect(service.send('test')).rejects.toThrow(
+      'Failed to get a valid and structured response from the LLM.',
+    );
   });
 });

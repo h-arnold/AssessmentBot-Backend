@@ -49,6 +49,9 @@ const configSchema = z.object({
     .default('image/png')
     .transform((val) => val.split(',').map((s) => s.trim())),
   GEMINI_API_KEY: z.string().min(1),
+  LOG_LEVEL: z
+    .enum(['log', 'error', 'warn', 'debug', 'verbose'])
+    .default(process.env.NODE_ENV === 'production' ? 'log' : 'debug'),
 });
 
 // Infer the type from the schema

@@ -48,9 +48,12 @@ async function bootstrap(): Promise<void> {
 
   const configService = app.get(ConfigService);
   const payloadLimit = configService.getGlobalPayloadLimit();
+  const logLevel = configService.get('LOG_LEVEL');
+
   app.use(json({ limit: payloadLimit }));
 
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.useLogger(logLevel);
   await app.listen(3000);
 }
 bootstrap();

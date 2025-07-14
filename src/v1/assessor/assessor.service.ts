@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { CreateAssessorDto } from './dto/create-assessor.dto';
-import { LLMService } from '../../llm/llm.service.interface';
+import { LLMService, LlmPayload } from '../../llm/llm.service.interface';
 import { LlmResponse } from '../../llm/types';
 import { PromptFactory } from '../../prompt/prompt.factory';
 
@@ -61,6 +61,6 @@ export class AssessorService {
     if (dto.taskType === 'IMAGE' && isMultimodalPayload(message)) {
       return this.llmService.send(message);
     }
-    return this.llmService.send(message as string);
+    return this.llmService.send(message as LlmPayload);
   }
 }

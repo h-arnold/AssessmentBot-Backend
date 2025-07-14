@@ -37,19 +37,37 @@ export class GeminiService implements LLMService {
     const modelParams = this.buildModelParams(payload);
     const contents = this.buildContents(payload);
 
+    this.logger.debug(`Sending to Gemini with model: ${modelParams.model}`);
+    this.logger.debug(`Payload being sent: ${JSON.stringify(contents, null, 2)}`);
+
     try {
       const model = this.client.getGenerativeModel(modelParams);
       const result = await model.generateContent(contents);
       const responseText = result.response.text?.() ?? '';
+
       this.logger.debug(`Raw response from Gemini: ${responseText}`);
+
       const parsedJson = this.jsonParserUtil.parse(responseText);
-      return LlmResponseSchema.parse(parsedJson);
+      this.logger.debug(
+        `Parsed JSON response: ${JSON.stringify(parsedJson, null, 2)}`,
+      );
+
+      // Handle cases where the LLM returns an array with a single object
+      const dataToValidate = Array.isArray(parsedJson)
+        ? parsedJson[0]
+        : parsedJson;
+
+      return LlmResponseSchema.parse(dataToValidate);
     } catch (error) {
+      console.log('--- Error in GeminiService.send ---');
+      console.log(error);
+      console.log('----------------------------------');
       this.logger.error(
         'Error communicating with or validating response from Gemini API',
         error,
       );
       if (error instanceof ZodError) {
+        this.logger.error('Zod validation failed', error.errors);
         throw error;
       }
       throw new Error(
@@ -90,21 +108,21 @@ export class GeminiService implements LLMService {
     return modelParams;
   }
 
-  private buildContents(payload: LlmPayload): string | (string | Part)[] {
+  private buildContents(payload: LlmPayload): (string | Part)[] {
     if (this.isSystemPrompt(payload)) {
-      return payload.user;
-    }
-
-    if (this.isMultimodal(payload)) {
+      // If payload.user is already an array of Parts, return it directly.
+      // Otherwise, wrap the string in a Part object.
+      return Array.isArray(payload.user) ? payload.user : [{ text: payload.user }];
+    } else if (this.isMultimodal(payload)) {
       const { messages, images } = payload;
       const textPart = { text: messages[0].content };
-      const imageParts = images.map((img) => ({
+      const imageParts: Part[] = images.map((img) => ({
         inlineData: { mimeType: img.mimeType, data: img.data },
       }));
       return [textPart, ...imageParts];
     }
 
     // Handle string payload
-    return payload;
+    return [payload as string];
   }
 }

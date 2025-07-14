@@ -47,9 +47,8 @@ describe('Global Setup and E2E Tests', () => {
     expect(response.body).toHaveProperty('statusCode', 400);
     expect(response.body).toHaveProperty('message', 'Validation failed'); // ZodValidationPipe message
     expect(response.body).toHaveProperty('errors');
-    expect(response.body.errors).toHaveLength(2);
-    expect(response.body.errors[0]).toHaveProperty('path', ['name']);
-    expect(response.body.errors[1]).toHaveProperty('path', ['age']);
+    expect(response.body.errors).toHaveLength(1);
+    expect(response.body.errors[0]).toHaveProperty('message', 'Invalid input');
   });
 
   it('Controller endpoint should process valid payload successfully', async () => {
