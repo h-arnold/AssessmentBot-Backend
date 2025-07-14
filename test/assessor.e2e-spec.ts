@@ -26,10 +26,8 @@ const loadFileAsDataURI = (filePath: string): string => {
 
 describe('AssessorController (e2e)', () => {
   let app: INestApplication;
-  let assessorService: AssessorService;
   let configService: ConfigService;
   let validApiKey: string;
-  let createAssessmentSpy: jest.SpyInstance;
 
   // Load test data
   const textTask = JSON.parse(
@@ -51,31 +49,26 @@ describe('AssessorController (e2e)', () => {
     ),
   };
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     // Environment variables are loaded from .test.env
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
     app = moduleFixture.createNestApplication({ bodyParser: false });
-    assessorService = moduleFixture.get<AssessorService>(AssessorService);
     configService = moduleFixture.get<ConfigService>(ConfigService);
-    validApiKey = (configService.get('API_KEYS') as string[])[0];
-
-    const mockLlmResponse = {
-      completeness: { score: 5, reasoning: 'Perfect' },
-      accuracy: { score: 4, reasoning: 'Good' },
-      spag: { score: 3, reasoning: 'Okay' },
-    };
-    createAssessmentSpy = jest
-      .spyOn(assessorService, 'createAssessment')
-      .mockResolvedValue(mockLlmResponse);
+    const apiKeys = configService.get('API_KEYS');
+    if (!apiKeys || apiKeys.length === 0) {
+      throw new Error(
+        'API_KEYS not found in config. Make sure .test.env is set up correctly.',
+      );
+    }
+    validApiKey = apiKeys[0];
     const payloadLimit = configService.getGlobalPayloadLimit();
     app.use(json({ limit: payloadLimit }));
-
     await app.init();
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await app.close();
   });
 
@@ -87,7 +80,9 @@ describe('AssessorController (e2e)', () => {
         .send(textTask)
         .expect(201);
       expect(res.status).toBe(201);
-      expect(createAssessmentSpy).toHaveBeenCalledWith(textTask);
+      expect(res.body).toHaveProperty('completeness');
+      expect(res.body).toHaveProperty('accuracy');
+      expect(res.body).toHaveProperty('spag');
     });
 
     it('should process a valid TABLE task', async () => {
@@ -97,7 +92,9 @@ describe('AssessorController (e2e)', () => {
         .send(tableTask)
         .expect(201);
       expect(res.status).toBe(201);
-      expect(createAssessmentSpy).toHaveBeenCalledWith(tableTask);
+      expect(res.body).toHaveProperty('completeness');
+      expect(res.body).toHaveProperty('accuracy');
+      expect(res.body).toHaveProperty('spag');
     });
 
     it('should process a valid IMAGE task', async () => {
@@ -107,46 +104,42 @@ describe('AssessorController (e2e)', () => {
         .send(imageTask)
         .expect(201);
       expect(res.status).toBe(201);
-      expect(createAssessmentSpy).toHaveBeenCalledWith(imageTask);
+      expect(res.body).toHaveProperty('completeness');
+      expect(res.body).toHaveProperty('accuracy');
+      expect(res.body).toHaveProperty('spag');
     });
   });
 
   describe('Auth and Validation', () => {
     it('/v1/assessor (POST) should return 401 Unauthorized when no API key is provided', async () => {
-      await request(app.getHttpServer())
+      const res = await request(app.getHttpServer())
         .post('/v1/assessor')
         .send(textTask)
-        .expect(401)
-        .then((res) => {
-          expect(res.body.message).toBe('Unauthorized');
-        });
+        .expect(401);
+      expect(res.body.message).toBe('Unauthorized');
     });
 
     it('/v1/assessor (POST) should return 401 Unauthorized when an invalid API key is provided', async () => {
-      await request(app.getHttpServer())
+      const res = await request(app.getHttpServer())
         .post('/v1/assessor')
         .set('Authorization', 'Bearer invalid-key')
         .send(textTask)
-        .expect(401)
-        .then((res) => {
-          expect(res.body.message).toBe('Invalid API key');
-        });
+        .expect(401);
+      expect(res.body.message).toBe('Invalid API key');
     });
 
     it('/v1/assessor (POST) should return 400 Bad Request for invalid DTO', async () => {
       const invalidPayload = { ...textTask, taskType: 'INVALID' };
-      await request(app.getHttpServer())
+      const res = await request(app.getHttpServer())
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${validApiKey}`)
         .send(invalidPayload)
-        .expect(400)
-        .then((res) => {
-          expect(res.body.message).toBe('Validation failed');
-        });
+        .expect(400);
+      expect(res.body.message).toBe('Validation failed');
     });
   });
 
-  it('/v1/assessor (POST) should return 201 Created for valid DTO and call service', async () => {
+  it('/v1/assessor (POST) should return 201 Created for valid DTO', async () => {
     const validPayload: CreateAssessorDto = {
       taskType: TaskType.TEXT,
       reference: 'test',
@@ -154,20 +147,13 @@ describe('AssessorController (e2e)', () => {
       studentResponse: 'test',
     };
 
-    await request(app.getHttpServer())
+    const res = await request(app.getHttpServer())
       .post('/v1/assessor')
       .set('Authorization', `Bearer ${validApiKey}`)
       .send(validPayload)
-      .expect(201)
-      .then((res) => {
-        expect(res.body).toEqual({
-          completeness: { score: 5, reasoning: 'Perfect' },
-          accuracy: { score: 4, reasoning: 'Good' },
-          spag: { score: 3, reasoning: 'Okay' },
-        });
-      });
-
-    expect(createAssessmentSpy).toHaveBeenCalledTimes(1);
-    expect(createAssessmentSpy).toHaveBeenCalledWith(validPayload);
+      .expect(201);
+    expect(res.body).toHaveProperty('completeness');
+    expect(res.body).toHaveProperty('accuracy');
+    expect(res.body).toHaveProperty('spag');
   });
 });
