@@ -23,9 +23,11 @@ export class TablePrompt extends Prompt {
   public async buildMessage(): Promise<SystemPromptPayload> {
     const systemTemplate = await this.readMarkdown('table.system.prompt.md');
     const userParts = await this.buildUserMessageParts();
+    // Flatten parts into a single string for user
+    const userMessage = userParts.map((part) => part.text).join('');
     return {
       system: systemTemplate,
-      user: userParts,
+      user: userMessage,
     };
   }
 }

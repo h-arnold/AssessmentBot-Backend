@@ -10,18 +10,26 @@ import { SystemPromptPayload } from '../llm/llm.service.interface';
  */
 export class TextPrompt extends Prompt {
   protected async buildUserMessageParts(): Promise<Part[]> {
-    return this.buildDefaultUserMessageParts();
+    // Read and render the user prompt template for text tasks
+    const userTemplate = await this.readMarkdown('text.user.prompt.md');
+    const userMessage = this.render(userTemplate, {
+      referenceTask: this.referenceTask,
+      studentTask: this.studentTask,
+      emptyTask: this.emptyTask,
+    });
+    return [{ text: userMessage }];
   }
 
   public async buildMessage(): Promise<SystemPromptPayload> {
     this.logger.debug('Building message for TextPrompt');
     const systemTemplate = await this.readMarkdown('text.system.prompt.md');
     const userParts = await this.buildUserMessageParts();
-
-    this.logger.debug(`User message parts count: ${userParts.length}`);
+    // Flatten parts into a single string for user
+    const userMessage = userParts.map((part) => part.text).join('');
+    this.logger.debug(`Rendered user message length: ${userMessage.length}`);
     return {
       system: systemTemplate,
-      user: userParts,
+      user: userMessage,
     };
   }
 }
