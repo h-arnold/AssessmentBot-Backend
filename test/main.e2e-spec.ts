@@ -1,5 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.test.env' });
 import * as request from 'supertest';
 
 // import { AppModule } from './../src/app.module'; // No longer directly importing AppModule
@@ -11,7 +13,6 @@ describe('Global Setup and E2E Tests', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
-    process.env.GEMINI_API_KEY = 'test-key';
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [TestAppModule], // Use TestAppModule here
     }).compile();

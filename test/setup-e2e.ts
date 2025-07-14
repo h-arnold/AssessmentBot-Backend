@@ -1,2 +1,2 @@
-process.env.LOG_LEVEL = 'debug';
-process.env.API_KEYS = 'test-api-key';
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.test.env' });

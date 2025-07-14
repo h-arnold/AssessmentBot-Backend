@@ -1,11 +1,14 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import * as dotenv from 'dotenv';
 import * as request from 'supertest';
 
 import { AppModule } from './../src/app.module';
 import { HttpExceptionFilter } from './../src/common/http-exception.filter';
 import { ZodValidationPipe } from './../src/common/zod-validation.pipe';
 import { ConfigService } from './../src/config/config.service';
+
+dotenv.config({ path: '.test.env' });
 
 describe('Authentication E2E Tests', () => {
   let app: INestApplication;
@@ -16,12 +19,7 @@ describe('Authentication E2E Tests', () => {
   const INVALID_API_KEY = 'invalid_key';
 
   beforeEach(async () => {
-    process.env.GEMINI_API_KEY = 'test-key';
-    // Set environment variables for API keys before module compilation
-    process.env.API_KEYS = `${VALID_API_KEY},${ANOTHER_VALID_API_KEY}`;
-    process.env.NODE_ENV = 'test';
-    process.env.PORT = '3000';
-
+    // Environment variables are loaded from .test.env
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -36,10 +34,7 @@ describe('Authentication E2E Tests', () => {
 
   afterEach(async () => {
     await app.close();
-    // Clean up environment variables after each test
-    delete process.env.API_KEYS;
-    delete process.env.NODE_ENV;
-    delete process.env.PORT;
+    // No need to clean up environment variables, dotenv only loads once
   });
 
   // 2.1 Protected Routes
