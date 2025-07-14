@@ -1,17 +1,22 @@
 import { LlmResponse } from './types';
 
+export type SystemPromptPayload = {
+  system: string;
+  user: string;
+};
+
+export type ImagePromptPayload = {
+  messages: { content: string }[];
+  images: { mimeType: string; data: string }[];
+};
+
+export type LlmPayload = string | SystemPromptPayload | ImagePromptPayload;
+
 export abstract class LLMService {
   /**
    * Send a payload to the LLM provider.
    * @param payload - Can be a rendered prompt string or an object with messages and attachments.
    * @returns A Promise resolving to a validated LLM response payload.
    */
-  abstract send(
-    payload:
-      | string
-      | {
-          messages: { content: string }[];
-          images: { mimeType: string; data: string }[];
-        },
-  ): Promise<LlmResponse>;
+  abstract send(payload: LlmPayload): Promise<LlmResponse>;
 }

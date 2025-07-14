@@ -1,6 +1,7 @@
 import * as fs from 'fs/promises';
 
 import { ImagePrompt } from './image.prompt';
+import { ImagePromptPayload } from '../llm/llm.service.interface';
 
 jest.mock('fs/promises');
 
@@ -17,16 +18,16 @@ describe('ImagePrompt', () => {
       { path: 'studentTask.png', mimeType: 'image/png' },
     ];
 
-    const template = 'Prompt: {{{referenceTask}}} and {{{studentTask}}}';
+    const template =
+      'Prompt: {{{referenceTask}}} and {{{studentTask}}} and {{{emptyTask}}}';
     (fs.readFile as jest.Mock)
       .mockResolvedValueOnce(template) // For the prompt template
       .mockResolvedValueOnce('base64data') // For the reference image
       .mockResolvedValueOnce('base64data'); // For the student image
 
     const prompt = new ImagePrompt(inputs, images);
-    const message = await prompt.buildMessage();
+    const message = (await prompt.buildMessage()) as ImagePromptPayload;
 
-    const baseDir = 'src/prompt/templates';
     expect(fs.readFile).toHaveBeenCalledWith(
       expect.stringContaining('image.prompt.md'),
       { encoding: 'utf-8' },
@@ -40,13 +41,13 @@ describe('ImagePrompt', () => {
       { encoding: 'base64' },
     );
 
-    expect(message).toEqual({
-      messages: ['Prompt: Reference text and Student text'],
-      images: [
-        { data: 'base64data', mimeType: 'image/png' },
-        { data: 'base64data', mimeType: 'image/png' },
-      ],
-    });
+    expect(message.messages[0].content).toBe(
+      'Prompt: Reference text and Student text and Empty text',
+    );
+    expect(message.images).toEqual([
+      { data: 'base64data', mimeType: 'image/png' },
+      { data: 'base64data', mimeType: 'image/png' },
+    ]);
   });
 
   it('should reject images with disallowed MIME types', async () => {

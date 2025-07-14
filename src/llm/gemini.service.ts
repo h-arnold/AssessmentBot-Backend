@@ -1,8 +1,18 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import {
+  Content,
+  GoogleGenerativeAI,
+  ModelParams,
+  Part,
+} from '@google/generative-ai';
 import { Injectable, Logger } from '@nestjs/common';
 import { ZodError } from 'zod';
 
-import { LLMService } from './llm.service.interface';
+import {
+  ImagePromptPayload,
+  LLMService,
+  LlmPayload,
+  SystemPromptPayload,
+} from './llm.service.interface';
 import { LlmResponse, LlmResponseSchema } from './types';
 import { JsonParserUtil } from '../common/json-parser.util';
 import { ConfigService } from '../config/config.service';
@@ -23,21 +33,12 @@ export class GeminiService implements LLMService {
     this.client = new GoogleGenerativeAI(apiKey);
   }
 
-  public async send(
-    payload:
-      | string
-      | {
-          messages: { content: string }[];
-          images: { mimeType: string; data: string }[];
-        },
-  ): Promise<LlmResponse> {
-    const modelName = this.isMultimodal(payload)
-      ? 'gemini-2.5-flash'
-      : 'gemini-2.0-flash-lite';
-    const contents = this.buildRequest(payload);
+  public async send(payload: LlmPayload): Promise<LlmResponse> {
+    const modelParams = this.buildModelParams(payload);
+    const contents = this.buildContents(payload);
+
     try {
-      // Use getGenerativeModel instead of models.generateContent
-      const model = this.client.getGenerativeModel({ model: modelName });
+      const model = this.client.getGenerativeModel(modelParams);
       const result = await model.generateContent(contents);
       const responseText = result.response.text?.() ?? '';
       this.logger.debug(`Raw response from Gemini: ${responseText}`);
@@ -48,7 +49,6 @@ export class GeminiService implements LLMService {
         'Error communicating with or validating response from Gemini API',
         error,
       );
-      // Re-throw ZodError to maintain specific error types for validation failures
       if (error instanceof ZodError) {
         throw error;
       }
@@ -58,35 +58,53 @@ export class GeminiService implements LLMService {
     }
   }
 
-  private isMultimodal(
-    payload:
-      | string
-      | {
-          messages: { content: string }[];
-          images: { mimeType: string; data: string }[];
-        },
-  ): boolean {
+  private isMultimodal(payload: LlmPayload): payload is ImagePromptPayload {
     return (
-      typeof payload === 'object' && payload !== null && 'images' in payload
+      typeof payload === 'object' &&
+      payload !== null &&
+      'images' in payload &&
+      Array.isArray(payload.images)
     );
   }
 
-  private buildRequest(
-    payload:
-      | string
-      | {
-          messages: { content: string }[];
-          images: { mimeType: string; data: string }[];
-        },
-  ): (string | { inlineData: { mimeType: string; data: string } })[] {
-    if (typeof payload === 'string') {
-      return [payload];
+  private isSystemPrompt(payload: LlmPayload): payload is SystemPromptPayload {
+    return (
+      typeof payload === 'object' &&
+      payload !== null &&
+      'system' in payload &&
+      'user' in payload
+    );
+  }
+
+  private buildModelParams(payload: LlmPayload): ModelParams {
+    const modelName = this.isMultimodal(payload)
+      ? 'gemini-2.5-flash'
+      : 'gemini-2.0-flash-lite';
+
+    const modelParams: ModelParams = { model: modelName };
+
+    if (this.isSystemPrompt(payload)) {
+      modelParams.systemInstruction = payload.system;
     }
-    const { messages, images } = payload;
-    const textPart = messages[0].content;
-    const imageParts = images.map((img) => ({
-      inlineData: { mimeType: img.mimeType, data: img.data },
-    }));
-    return [textPart, ...imageParts];
+
+    return modelParams;
+  }
+
+  private buildContents(payload: LlmPayload): string | (string | Part)[] {
+    if (this.isSystemPrompt(payload)) {
+      return payload.user;
+    }
+
+    if (this.isMultimodal(payload)) {
+      const { messages, images } = payload;
+      const textPart = { text: messages[0].content };
+      const imageParts = images.map((img) => ({
+        inlineData: { mimeType: img.mimeType, data: img.data },
+      }));
+      return [textPart, ...imageParts];
+    }
+
+    // Handle string payload
+    return payload;
   }
 }

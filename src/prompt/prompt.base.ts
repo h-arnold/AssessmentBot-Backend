@@ -5,6 +5,7 @@ import * as mustache from 'mustache';
 import { z } from 'zod';
 
 import { getCurrentDirname } from '../common/file-utils';
+import { LlmPayload } from '../llm/llm.service.interface';
 
 /**
  * Schema definition for validating the input structure of a prompt.
@@ -96,5 +97,5 @@ export abstract class Prompt {
     return mustache.render(template, data);
   }
 
-  public abstract buildMessage(): Promise<string | object>;
+  public abstract buildMessage(): Promise<LlmPayload>;
 }

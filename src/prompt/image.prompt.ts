@@ -3,6 +3,7 @@ import path from 'path';
 
 import { Prompt, PromptInput } from './prompt.base';
 import { getCurrentDirname } from '../common/file-utils';
+import { ImagePromptPayload } from '../llm/llm.service.interface';
 
 export class ImagePrompt extends Prompt {
   private readonly images: { path: string; mimeType: string }[];
@@ -15,25 +16,12 @@ export class ImagePrompt extends Prompt {
     this.images = images || [];
   }
 
-  /**
-   * Builds a message object containing a rendered prompt text and associated images.
-   *
-   * This method reads a markdown template file, renders it with provided task data,
-   * and processes a list of images to include their data and MIME types in the result.
-   *
-   * @returns {Promise<object>} A promise that resolves to an object containing:
-   * - `messages`: An array with the rendered prompt text.
-   * - `images`: An array of objects, each containing:
-   *   - `data`: The binary data of the image.
-   *   - `mimeType`: The MIME type of the image.
-   *
-   * @throws {Error} If reading the markdown template or image files fails.
-   */
-  public async buildMessage(): Promise<object> {
+  public async buildMessage(): Promise<ImagePromptPayload> {
     const template = await this.readMarkdown('image.prompt.md');
     const promptText = this.render(template, {
       referenceTask: this.referenceTask,
       studentTask: this.studentTask,
+      emptyTask: this.emptyTask,
     });
 
     const imagePromises = this.images.map(async (image) => {
@@ -44,7 +32,7 @@ export class ImagePrompt extends Prompt {
     const images = await Promise.all(imagePromises);
 
     return {
-      messages: [promptText],
+      messages: [{ content: promptText }],
       images,
     };
   }

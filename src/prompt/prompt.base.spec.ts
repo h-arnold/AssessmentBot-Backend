@@ -1,10 +1,11 @@
 import { ZodError } from 'zod';
 
 import { Prompt, PromptInput, PromptInputSchema } from './prompt.base';
+import { LlmPayload } from '../llm/llm.service.interface';
 
 // Mock implementation of the abstract class for testing
 class TestPrompt extends Prompt {
-  public async buildMessage(): Promise<string | object> {
+  public async buildMessage(): Promise<LlmPayload> {
     return 'test message';
   }
   // Expose protected readMarkdown for testing
