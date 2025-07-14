@@ -7,12 +7,19 @@ import { Prompt } from './prompt.base';
  * task-related data.
  */
 export class TablePrompt extends Prompt {
-  public async buildMessage(): Promise<string> {
-    const template = await this.readMarkdown('tablePrompt.md');
-    return this.render(template, {
+  public async buildMessage(): Promise<{ system: string; user: string }> {
+    const systemTemplate = await this.readMarkdown('table.system.prompt.md');
+    const userTemplate = await this.readMarkdown('table.user.prompt.md');
+
+    const userMessage = this.render(userTemplate, {
       referenceTask: this.referenceTask,
       studentTask: this.studentTask,
       emptyTask: this.emptyTask,
     });
+
+    return {
+      system: systemTemplate,
+      user: userMessage,
+    };
   }
 }

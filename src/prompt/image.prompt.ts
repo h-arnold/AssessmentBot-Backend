@@ -30,7 +30,7 @@ export class ImagePrompt extends Prompt {
    * @throws {Error} If reading the markdown template or image files fails.
    */
   public async buildMessage(): Promise<object> {
-    const template = await this.readMarkdown('imagePrompt.md');
+    const template = await this.readMarkdown('image.prompt.md');
     const promptText = this.render(template, {
       referenceTask: this.referenceTask,
       studentTask: this.studentTask,

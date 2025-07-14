@@ -26,9 +26,9 @@ describe('ImagePrompt', () => {
     const prompt = new ImagePrompt(inputs, images);
     const message = await prompt.buildMessage();
 
-    const baseDir = '/docs/ImplementationPlan/Stage6/Prompts';
+    const baseDir = 'src/prompt/templates';
     expect(fs.readFile).toHaveBeenCalledWith(
-      expect.stringContaining('imagePrompt.md'),
+      expect.stringContaining('image.prompt.md'),
       { encoding: 'utf-8' },
     );
     expect(fs.readFile).toHaveBeenCalledWith(

@@ -72,11 +72,7 @@ export abstract class Prompt {
       throw new Error('Invalid markdown filename');
     }
 
-    // TODO: Update this path to get a production-ready path.
-    const baseDir = path.resolve(
-      process.cwd(),
-      'docs/ImplementationPlan/Stage6/Prompts',
-    );
+    const baseDir = path.resolve(process.cwd(), 'src/prompt/templates');
     const resolvedPath = path.resolve(baseDir, name);
     if (!resolvedPath.startsWith(baseDir)) {
       throw new Error('Unauthorised file path');

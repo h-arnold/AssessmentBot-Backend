@@ -6,12 +6,19 @@ import { Prompt } from './prompt.base';
  * with specific task-related data.
  */
 export class TextPrompt extends Prompt {
-  public async buildMessage(): Promise<string> {
-    const template = await this.readMarkdown('textPrompt.md');
-    return this.render(template, {
+  public async buildMessage(): Promise<{ system: string; user: string }> {
+    const systemTemplate = await this.readMarkdown('text.system.prompt.md');
+    const userTemplate = await this.readMarkdown('text.user.prompt.md');
+
+    const userMessage = this.render(userTemplate, {
       referenceTask: this.referenceTask,
       studentTask: this.studentTask,
       emptyTask: this.emptyTask,
     });
+
+    return {
+      system: systemTemplate,
+      user: userMessage,
+    };
   }
 }
