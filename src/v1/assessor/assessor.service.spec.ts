@@ -84,5 +84,52 @@ describe('AssessorService', () => {
       expect(llmService.send).toHaveBeenCalledWith('prompt message');
       expect(result).toEqual({ score: 5 });
     });
+
+    it('should correctly handle a multimodal (image) payload', async () => {
+      const dto: CreateAssessorDto = {
+        taskType: TaskType.IMAGE,
+        reference: 'A picture of a cat',
+        studentResponse: 'A drawing of a cat',
+        template: 'An empty canvas',
+        images: [
+          {
+            mimeType: 'image/png',
+            base64: 'base64-encoded-string-1',
+          },
+          {
+            mimeType: 'image/png',
+            base64: 'base64-encoded-string-2',
+          },
+        ],
+      };
+
+      const mockMultimodalPayload = {
+        system: 'You are an art critic.',
+        user: [
+          { type: 'text', text: 'Assess this artwork.' },
+          {
+            type: 'image',
+            image: { mimeType: 'image/png', base64: 'base64-encoded-string-1' },
+          },
+          {
+            type: 'image',
+            image: { mimeType: 'image/png', base64: 'base64-encoded-string-2' },
+          },
+        ],
+      };
+
+      const mockPrompt = {
+        buildMessage: jest.fn().mockResolvedValue(mockMultimodalPayload),
+      };
+      (promptFactory.create as jest.Mock).mockReturnValue(mockPrompt);
+      (llmService.send as jest.Mock).mockResolvedValue({ score: 4 });
+
+      const result = await service.createAssessment(dto);
+
+      expect(promptFactory.create).toHaveBeenCalledWith(dto);
+      expect(mockPrompt.buildMessage).toHaveBeenCalled();
+      expect(llmService.send).toHaveBeenCalledWith(mockMultimodalPayload);
+      expect(result).toEqual({ score: 4 });
+    });
   });
 });

@@ -3,11 +3,15 @@ import { readMarkdown } from '../common/file-utils';
 import { LlmPayload } from '../llm/llm.service.interface';
 
 /**
- * Represents a text-based prompt that extends the base `Prompt` class.
- * This class is responsible for building a message by rendering a markdown template
- * with specific task-related data.
+ * A prompt for assessing text-based tasks.
  */
 export class TextPrompt extends Prompt {
+  /**
+   * Initializes the TextPrompt instance.
+   * @param inputs The prompt inputs.
+   * @param userTemplateName The name of the user template file.
+   * @param systemPrompt The system prompt string.
+   */
   constructor(
     inputs: unknown,
     userTemplateName?: string,
@@ -16,6 +20,10 @@ export class TextPrompt extends Prompt {
     super(inputs, userTemplateName ?? 'text.user.prompt.md', systemPrompt);
   }
 
+  /**
+   * Builds the LLM payload for a text-based assessment.
+   * @returns A Promise that resolves to the LlmPayload.
+   */
   public async buildMessage(): Promise<LlmPayload> {
     this.logger.debug('Building message for TextPrompt');
     const userTemplate = await readMarkdown(this.userTemplateName!);

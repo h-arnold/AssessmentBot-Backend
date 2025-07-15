@@ -1,32 +1,41 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
 import { Prompt } from './prompt.base';
-import { readMarkdown } from '../common/file-utils';
+import { getCurrentDirname } from '../common/file-utils';
 import { LlmPayload } from '../llm/llm.service.interface';
 
 /**
- * Represents a prompt that generates a table-based message.
- * This class extends the `Prompt` class and provides functionality
- * to build a message by rendering a markdown template with specific
- * task-related data.
+ * A prompt for assessing table-based tasks.
  */
 export class TablePrompt extends Prompt {
-  constructor(
-    inputs: unknown,
-    userTemplateName?: string,
-    systemPrompt?: string,
-  ) {
-    super(inputs, userTemplateName ?? 'table.user.prompt.md', systemPrompt);
-  }
+  /**
+   * Builds the LLM payload for a table-based assessment.
+   * @returns A Promise that resolves to the LlmPayload.
+   */
+  async buildMessage(): Promise<LlmPayload> {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    const systemPromptTemplate = readFileSync(
+      join(getCurrentDirname(), 'templates', 'table.system.prompt.md'),
+      'utf-8',
+    );
 
-  public async buildMessage(): Promise<LlmPayload> {
-    const userTemplate = await readMarkdown(this.userTemplateName!);
-    const userMessage = this.render(userTemplate, {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    const userPromptTemplate = readFileSync(
+      join(getCurrentDirname(), 'templates', 'table.user.prompt.md'),
+      'utf-8',
+    );
+
+    const systemPrompt = this.render(systemPromptTemplate, {});
+    const userPrompt = this.render(userPromptTemplate, {
       referenceTask: this.referenceTask,
       studentTask: this.studentTask,
       emptyTask: this.emptyTask,
     });
+
     return {
-      system: this.systemPrompt ?? '',
-      user: userMessage,
+      system: systemPrompt,
+      user: userPrompt,
     };
   }
 }

@@ -5,6 +5,9 @@ import { Prompt, PromptInput } from './prompt.base';
 import { getCurrentDirname } from '../common/file-utils';
 import { LlmPayload } from '../llm/llm.service.interface';
 
+/**
+ * A prompt for assessing image-based tasks.
+ */
 export class ImagePrompt extends Prompt {
   // ImagePrompt does not use a user template, so override with custom logic
   protected async buildUserMessageParts(): Promise<
@@ -15,6 +18,12 @@ export class ImagePrompt extends Prompt {
   }
   private readonly images: { path: string; mimeType: string }[];
 
+  /**
+   * Initializes the ImagePrompt instance.
+   * @param inputs The prompt inputs.
+   * @param images An array of image objects.
+   * @param systemPrompt The system prompt string.
+   */
   constructor(
     inputs: PromptInput,
     images?: { path: string; mimeType: string }[],
@@ -24,6 +33,10 @@ export class ImagePrompt extends Prompt {
     this.images = images || [];
   }
 
+  /**
+   * Builds the LLM payload for an image-based assessment.
+   * @returns A Promise that resolves to the LlmPayload.
+   */
   public async buildMessage(): Promise<LlmPayload> {
     // For image prompts, the user message is a combination of the rendered system prompt
     // and the structured inputs.
@@ -46,6 +59,7 @@ export class ImagePrompt extends Prompt {
 
   /**
    * Helper to build images payload from file paths
+   * @returns A promise that resolves to an array of image data and mime types.
    */
   private async buildImagesFromFiles(): Promise<
     { data: string; mimeType: string }[]
@@ -59,6 +73,7 @@ export class ImagePrompt extends Prompt {
 
   /**
    * Helper to build images payload from data URIs in inputs
+   * @returns An array of image data and mime types.
    */
   private buildImagesFromDataUris(): { data: string; mimeType: string }[] {
     // Assumes validation pipeline guarantees all three tasks are valid data URIs
