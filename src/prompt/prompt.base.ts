@@ -2,6 +2,7 @@ import { Logger } from '@nestjs/common';
 import Mustache from 'mustache';
 import { z } from 'zod';
 
+import { readMarkdown } from '../common/file-utils';
 import { LlmPayload } from '../llm/llm.service.interface';
 
 /**
@@ -84,5 +85,27 @@ export abstract class Prompt {
    * This method must be implemented by all subclasses.
    * @returns A Promise that resolves to the LlmPayload.
    */
-  public abstract buildMessage(): Promise<LlmPayload>;
+  /**
+   * Builds the final payload to be sent to the LLM service.
+   * This is the default implementation for text and table prompts.
+   * Subclasses can override if needed (e.g., ImagePrompt).
+   * @returns A Promise that resolves to the LlmPayload.
+   */
+  public async buildMessage(): Promise<LlmPayload> {
+    this.logger.debug(`Building message for ${this.constructor.name}`);
+    let userMessage = '';
+    if (this.userTemplateName) {
+      const userTemplate = await readMarkdown(this.userTemplateName);
+      userMessage = this.render(userTemplate, {
+        referenceTask: this.referenceTask,
+        studentTask: this.studentTask,
+        emptyTask: this.emptyTask,
+      });
+      this.logger.debug(`Rendered user message length: ${userMessage.length}`);
+    }
+    return {
+      system: this.systemPrompt ?? '',
+      user: userMessage,
+    };
+  }
 }

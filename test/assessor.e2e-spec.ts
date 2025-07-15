@@ -10,7 +10,6 @@ import request from 'supertest';
 
 import { AppModule } from './../src/app.module';
 import { ConfigService } from './../src/config/config.service';
-import { AssessorService } from './../src/v1/assessor/assessor.service';
 import {
   CreateAssessorDto,
   TaskType,
@@ -56,6 +55,8 @@ describe('AssessorController (e2e)', () => {
     }).compile();
     app = moduleFixture.createNestApplication({ bodyParser: false });
     configService = moduleFixture.get<ConfigService>(ConfigService);
+    // Use log levels from config
+    app.useLogger(configService.get('LOG_LEVEL'));
     const apiKeys = configService.get('API_KEYS');
     if (!apiKeys || apiKeys.length === 0) {
       throw new Error(
@@ -71,8 +72,6 @@ describe('AssessorController (e2e)', () => {
   afterAll(async () => {
     await app.close();
   });
-
-  // ...existing code...
 
   describe('Auth and Validation', () => {
     it('/v1/assessor (POST) should return 401 Unauthorized when no API key is provided', async () => {
