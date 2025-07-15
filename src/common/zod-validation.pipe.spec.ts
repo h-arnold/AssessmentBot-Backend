@@ -150,12 +150,17 @@ describe('ZodValidationPipe', () => {
       password: 'short',
     };
 
+    const originalNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'development';
+
     let thrownError: unknown;
     try {
       pipeWithMultipleErrors.transform(invalidData, {} as ArgumentMetadata);
     } catch (error) {
       thrownError = error;
     }
+
+    process.env.NODE_ENV = originalNodeEnv;
     expect(thrownError).toBeInstanceOf(BadRequestException);
     const response = (
       thrownError as BadRequestException
@@ -165,10 +170,6 @@ describe('ZodValidationPipe', () => {
     expect(Array.isArray(response.errors)).toBe(true);
     expect(response.errors).toHaveLength(2);
     expect(response.errors[0]).toHaveProperty('message', 'Invalid email');
-    expect(response.errors[1]).toHaveProperty(
-      'message',
-      'String must contain at least 8 character(s)',
-    );
     expect(response.errors[1]).toHaveProperty(
       'message',
       'String must contain at least 8 character(s)',

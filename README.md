@@ -66,6 +66,8 @@ To get the Assessment Bot backend up and running, follow these steps:
 - **Zod**: A TypeScript-first schema declaration and validation library. It's essential for fulfilling the security principle of validating all inputs.
 - **Jest**: The testing framework. An all-in-one framework that simplifies the TDD process mentioned in the guiding principles.
 - **json-repair**: A library to fix malformed JSON strings, making LLM responses more robust.
+- **@google/genai**: The official Google AI SDK for Node.js, used to interact with the Gemini family of models.
+- **mustache**: A logic-less template engine used for rendering prompts.
 
 ## Development & QA Strategy
 
@@ -131,7 +133,18 @@ This endpoint is responsible for initiating an assessment. It accepts a JSON pay
 
 ```json
 {
-  "message": "Assessment created successfully"
+  "completeness": {
+    "score": 5,
+    "reasoning": "The response is complete and addresses all aspects of the prompt."
+  },
+  "accuracy": {
+    "score": 4,
+    "reasoning": "The response is mostly accurate, but contains a minor factual error."
+  },
+  "spag": {
+    "score": 3,
+    "reasoning": "The response contains several spelling and grammar errors."
+  }
 }
 ```
 

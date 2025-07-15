@@ -44,30 +44,30 @@ export class ZodValidationPipe implements PipeTransform {
   constructor(private schema?: ZodTypeAny) {}
 
   transform(value: unknown, metadata: ArgumentMetadata): unknown {
-    try {
-      if (!this.schema) {
-        return value;
-      }
-      const parsedValue = this.schema.parse(value);
-      return parsedValue;
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const errors =
-          process.env.NODE_ENV === 'production'
-            ? [{ message: 'Invalid input' }]
-            : error.issues;
-        this.logger.warn('Validation failed', errors);
-        throw new BadRequestException({
-          message: 'Validation failed',
-          errors: errors,
-        });
-      } else {
-        this.logger.warn('Validation failed', error);
-        throw new BadRequestException({
-          message: 'Validation failed',
-          errors: error,
-        });
-      }
+    if (!this.schema) {
+      return value;
     }
+
+    const result = this.schema.safeParse(value);
+
+    if (result.success) {
+      return result.data;
+    }
+
+    const error = result.error;
+    const errors =
+      process.env.NODE_ENV === 'production'
+        ? [{ message: 'Invalid input' }]
+        : error.issues.map((issue) => ({
+            message: issue.message,
+            path: issue.path,
+          }));
+
+    this.logger.warn('Validation failed', errors);
+
+    throw new BadRequestException({
+      message: 'Validation failed',
+      errors,
+    });
   }
 }

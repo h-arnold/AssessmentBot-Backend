@@ -233,7 +233,7 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
     2.  Call `buildMessage()` on the created prompt instance.
     3.  Pass the result to `llmService.send()`.
     4.  Return the validated response from the `llmService`.
-- [ ] Run all tests (`assessor.service.spec.ts`, module specs) and ensure they pass.
+- [x] Run all tests (`assessor.service.spec.ts`, module specs) and ensure they pass.
 
 ##### Refactor & Commit
 
@@ -253,12 +253,13 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 ## 6. Documentation and Cleanup
 
-- [ ] Get the current commit ID as it is verified as working and all tests pass: (commit: SHORT ID GOES HERE)
+- [x] Get the current commit ID as it is verified as working and all tests pass: (commit: 6919813)
 - [ ] Thoroughly review and update `README.md` and any other relevant documentation (e.g., `docs/api/API_Documentation.md`) to reflect the new architecture and dependencies (`@google/genai`, `mustache`).
 
 ## 7. Thorough Code Review
 
 - [ ] Commit your changes up this point. Record commit ID here: (commit: SHORT ID GOES HERE)
+- [ ] Consult the project's overall principles in `README.md`
 - [ ] Conduct a thorough code review of the entire implementation, focusing on:
   - [ ] Eliminating code smells and ensuring clean, maintainable code.
   - [ ] Ensuring all new code is well-documented and follows best practices, ensuring that there are detailed JSDoc comments are all methods and classes.
