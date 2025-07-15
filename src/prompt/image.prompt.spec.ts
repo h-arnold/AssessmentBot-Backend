@@ -18,8 +18,6 @@ describe('ImagePrompt', () => {
       { path: 'studentTask.png', mimeType: 'image/png' },
     ];
 
-    const template =
-      'Prompt: {{{referenceTask}}} and {{{studentTask}}} and {{{emptyTask}}}';
     (fs.readFile as jest.Mock).mockImplementation(
       (filePath: string, options: { encoding: string }) => {
         if (
@@ -35,25 +33,20 @@ describe('ImagePrompt', () => {
       },
     );
 
-    const prompt = new ImagePrompt(inputs, images, template);
+    const systemPrompt = 'system prompt';
+    const prompt = new ImagePrompt(inputs, images, systemPrompt);
     const message = (await prompt.buildMessage()) as ImagePromptPayload;
 
-    expect(fs.readFile).toHaveBeenCalledWith(
-      expect.stringContaining('image.system.prompt.md'),
-      { encoding: 'utf-8' },
-    );
-    expect(fs.readFile).toHaveBeenCalledWith(
-      expect.stringContaining('referenceTask.png'),
-      { encoding: 'base64' },
-    );
-    expect(fs.readFile).toHaveBeenCalledWith(
-      expect.stringContaining('studentTask.png'),
-      { encoding: 'base64' },
+    const calls = (fs.readFile as jest.Mock).mock.calls;
+    expect(calls).toEqual(
+      expect.arrayContaining([
+        [expect.stringContaining('referenceTask.png'), { encoding: 'base64' }],
+        [expect.stringContaining('studentTask.png'), { encoding: 'base64' }],
+      ]),
     );
 
-    expect(message.messages[0].content).toBe(
-      'Prompt: Reference text and Student text and Empty text',
-    );
+    // For ImagePrompt, system is passed directly, no template rendering
+    expect(message.system).toBe(systemPrompt);
     expect(message.images).toEqual([
       { data: 'base64data', mimeType: 'image/png' },
       { data: 'base64data', mimeType: 'image/png' },

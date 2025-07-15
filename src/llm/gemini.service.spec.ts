@@ -69,6 +69,7 @@ describe('GeminiService', () => {
 
     expect(mockGetGenerativeModel).toHaveBeenCalledWith({
       model: 'gemini-2.0-flash-lite',
+      systemInstruction: 'system prompt',
     });
     expect(mockGenerateContent).toHaveBeenCalledWith(['test prompt']);
   });
@@ -90,6 +91,7 @@ describe('GeminiService', () => {
 
     await service.send(payload);
 
+    // PNG files should be read with base64 encoding
     expect(mockGetGenerativeModel).toHaveBeenCalledWith({
       model: 'gemini-2.5-flash',
     });

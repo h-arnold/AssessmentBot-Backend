@@ -250,7 +250,26 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 - [x] Run the full E2E test suite (`npm run test:e2e`) to ensure the refactoring has not introduced any regressions.
 - [ ] Manually test the `/v1/assessor` endpoint using a tool like Postman or cURL with text, table, and image payloads to confirm the end-to-end flow works as expected.
-- [x] Update `README.md` and any other relevant documentation (e.g., `docs/api/API_Documentation.md`) to reflect the new architecture and dependencies (`@google/genai`, `mustache`).
+
+## 6. Documentation and Cleanup
+
+- [ ] Get the current commit ID as it is verified as working and all tests pass: (commit: SHORT ID GOES HERE)
+- [ ] Thoroughly review and update `README.md` and any other relevant documentation (e.g., `docs/api/API_Documentation.md`) to reflect the new architecture and dependencies (`@google/genai`, `mustache`).
+
+## 7. Thorough Code Review
+
+- [ ] Commit your changes up this point. Record commit ID here: (commit: SHORT ID GOES HERE)
+- [ ] Conduct a thorough code review of the entire implementation, focusing on:
+  - [ ] Eliminating code smells and ensuring clean, maintainable code.
+  - [ ] Ensuring all new code is well-documented and follows best practices, ensuring that there are detailed JSDoc comments are all methods and classes.
+  - [ ] Look for opportunities to simplify or improve the code structure.
+  - [ ] Ensuring that all functionality is thoroughly covered by tests, including edge cases.
+  - [ ] Identify potential security vulnerabilities or performance issues.
+  - [ ] Save the review comments in a file named `docs/ImplementationPlan/Stage6/CodeReview.md` for future reference.
+  - [ ] Commit your changes after the review is complete. Record commit ID here: (commit: SHORT ID GOES HERE)
+
+## 7. Final Merge and Cleanup
+
 - [ ] Review and merge the `Stage6` branch into the main development branch.
 - [ ] Delete the `Stage6` feature branch after successful merge.
 - [x] Note any issues or changes that might affect future steps below.
