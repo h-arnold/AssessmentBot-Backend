@@ -27,11 +27,8 @@ export class ImagePrompt extends Prompt {
   public async buildMessage(): Promise<LlmPayload> {
     // For image prompts, the user message is a combination of the rendered system prompt
     // and the structured inputs.
-    const promptText = this.render(this.systemPrompt ?? '', {
-      referenceTask: this.referenceTask,
-      studentTask: this.studentTask,
-      emptyTask: this.emptyTask,
-    });
+
+    // Handle the images
 
     let images: { data: string; mimeType: string }[];
     if (this.images.length > 0) {
@@ -42,7 +39,7 @@ export class ImagePrompt extends Prompt {
 
     return {
       system: this.systemPrompt ?? '',
-      user: promptText,
+      user: '',
       images,
     };
   }
