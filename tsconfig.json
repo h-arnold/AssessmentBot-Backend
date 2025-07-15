@@ -19,6 +19,7 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": false,
     "resolveJsonModule": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "isolatedModules": true
   }
 }
