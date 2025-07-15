@@ -11,6 +11,7 @@ import {
   ImagePromptPayload,
   LLMService,
   LlmPayload,
+  StringPromptPayload,
 } from './llm.service.interface';
 import { LlmResponse, LlmResponseSchema } from './types';
 import { JsonParserUtil } from '../common/json-parser.util';
@@ -60,9 +61,6 @@ export class GeminiService implements LLMService {
 
       return LlmResponseSchema.parse(dataToValidate);
     } catch (error) {
-      Logger.debug('--- Error in GeminiService.send ---');
-      Logger.debug(error);
-      Logger.debug('----------------------------------');
       this.logger.error(
         'Error communicating with or validating response from Gemini API',
         error,
@@ -77,34 +75,41 @@ export class GeminiService implements LLMService {
     }
   }
 
-  private isMultimodal(payload: LlmPayload): payload is ImagePromptPayload {
-    return (
-      typeof payload === 'object' &&
-      payload !== null &&
-      'images' in payload &&
-      Array.isArray(payload.images)
-    );
+  private isImagePromptPayload(
+    payload: LlmPayload,
+  ): payload is ImagePromptPayload {
+    return 'images' in payload;
+  }
+
+  private isStringPromptPayload(
+    payload: LlmPayload,
+  ): payload is StringPromptPayload {
+    return 'user' in payload;
   }
 
   private buildModelParams(payload: LlmPayload): ModelParams {
-    const modelName = this.isMultimodal(payload)
+    const modelName = this.isImagePromptPayload(payload)
       ? 'gemini-2.5-flash'
       : 'gemini-2.0-flash-lite';
 
-    return { model: modelName };
+    const systemInstruction = payload.system;
+
+    return { model: modelName, systemInstruction };
   }
 
   private buildContents(payload: LlmPayload): (string | Part)[] {
-    if (this.isMultimodal(payload)) {
+    if (this.isImagePromptPayload(payload)) {
       const { images, messages } = payload;
       const textPrompt =
         messages && messages.length > 0 ? messages[0].content : '';
       const imageParts = this.mapImageParts(images);
       return [textPrompt, ...imageParts];
     }
-
-    // Handle string payload
-    return [payload as string];
+    if (this.isStringPromptPayload(payload)) {
+      return [payload.user];
+    }
+    // This case should not be reachable if the payload is validated correctly
+    throw new Error('Unsupported payload type');
   }
 
   /**

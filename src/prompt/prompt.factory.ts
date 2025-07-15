@@ -28,21 +28,18 @@ import {
 
 @Injectable()
 export class PromptFactory {
-  public async create(dto: CreateAssessorDto): Promise<Prompt> {
+  public create(dto: CreateAssessorDto): Prompt {
     const inputs = {
       referenceTask: dto.reference,
       studentTask: dto.studentResponse,
       emptyTask: dto.template,
     };
 
-    let prompt: Prompt;
     switch (dto.taskType) {
       case TaskType.TEXT:
-        prompt = new TextPrompt(inputs);
-        break;
+        return new TextPrompt(inputs);
       case TaskType.TABLE:
-        prompt = new TablePrompt(inputs);
-        break;
+        return new TablePrompt(inputs);
       case TaskType.IMAGE: {
         const imageInputs = {
           referenceTask: Buffer.isBuffer(dto.reference)
@@ -55,15 +52,12 @@ export class PromptFactory {
             ? dto.template.toString()
             : dto.template,
         };
-        prompt = new ImagePrompt(imageInputs, dto.images);
-        break;
+        return new ImagePrompt(imageInputs, dto.images);
       }
       default:
         throw new Error(
           `Unsupported task type: ${String((dto as Record<string, unknown>).taskType)}`,
         );
     }
-    await prompt.initSystemPrompt();
-    return prompt;
   }
 }

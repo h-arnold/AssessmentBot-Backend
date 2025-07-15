@@ -1,7 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-import type { Part } from '@google/generative-ai';
 import { Logger } from '@nestjs/common';
 import Mustache from 'mustache';
 import { z } from 'zod';
@@ -68,18 +67,12 @@ export abstract class Prompt {
     this.logger.debug(
       `Prompt constructor parsed inputs: ${JSON.stringify(parsed)}`,
     );
-    // Do not load system prompt asynchronously in constructor. Require explicit initialization.
-  }
 
-  /**
-   * Explicitly loads the system prompt markdown file and sets this.systemPrompt.
-   * Should be called after instantiation if systemPromptFile is provided.
-   */
-  public async initSystemPrompt(): Promise<void> {
-    if (this.systemPromptFile) {
-      this.systemPrompt = await this.readMarkdown(this.systemPromptFile);
-      this.logger.debug(`Loaded system prompt from ${this.systemPromptFile}`);
-    }
+    // Bind all methods to the current instance to ensure `this` is always correct.
+    this.getSystemPrompt = this.getSystemPrompt.bind(this);
+    this.readMarkdown = this.readMarkdown.bind(this);
+    this.render = this.render.bind(this);
+    this.buildMessage = this.buildMessage.bind(this);
   }
 
   /**
@@ -96,24 +89,6 @@ export abstract class Prompt {
   protected async getSystemPrompt(systemPromptFile: string): Promise<string> {
     this.logger.debug(`Fetching system prompt from: ${systemPromptFile}`);
     return await this.readMarkdown(systemPromptFile);
-  }
-
-  /**
-   * Builds the user message parts using the provided template name.
-   * If no template name is set, throws an error.
-   * Subclasses can override for custom logic.
-   */
-  protected async buildUserMessageParts(): Promise<Part[]> {
-    if (!this.userTemplateName) {
-      throw new Error('No user template name provided for Prompt');
-    }
-    const userTemplate = await this.readMarkdown(this.userTemplateName);
-    const userMessage = this.render(userTemplate, {
-      referenceTask: this.referenceTask,
-      studentTask: this.studentTask,
-      emptyTask: this.emptyTask,
-    });
-    return [{ text: userMessage }];
   }
 
   /**

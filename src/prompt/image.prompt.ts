@@ -3,7 +3,7 @@ import path from 'path';
 
 import { Prompt, PromptInput } from './prompt.base';
 import { getCurrentDirname } from '../common/file-utils';
-import { ImagePromptPayload, LlmPayload } from '../llm/llm.service.interface';
+import { LlmPayload } from '../llm/llm.service.interface';
 
 export class ImagePrompt extends Prompt {
   // ImagePrompt does not use a user template, so override with custom logic
@@ -24,8 +24,11 @@ export class ImagePrompt extends Prompt {
   }
 
   public async buildMessage(): Promise<LlmPayload> {
-    const template = await this.readMarkdown('image.system.prompt.md');
-    const promptText = this.render(template, {
+    const systemPrompt = await this.readMarkdown('image.system.prompt.md');
+
+    // For image prompts, the user message is a combination of the rendered system prompt
+    // and the structured inputs.
+    const promptText = this.render(systemPrompt, {
       referenceTask: this.referenceTask,
       studentTask: this.studentTask,
       emptyTask: this.emptyTask,
@@ -39,7 +42,7 @@ export class ImagePrompt extends Prompt {
     }
 
     return {
-      system: this.systemPrompt ?? '',
+      system: systemPrompt,
       messages: [{ content: promptText }],
       images,
     };

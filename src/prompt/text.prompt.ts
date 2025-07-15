@@ -1,5 +1,3 @@
-import type { Part } from '@google/generative-ai';
-
 import { Prompt } from './prompt.base';
 import { LlmPayload } from '../llm/llm.service.interface';
 
@@ -15,9 +13,12 @@ export class TextPrompt extends Prompt {
 
   public async buildMessage(): Promise<LlmPayload> {
     this.logger.debug('Building message for TextPrompt');
-    const userParts = await this.buildUserMessageParts();
-    // Flatten parts into a single string for user
-    const userMessage = userParts.map((part) => part.text).join('');
+    const userTemplate = await this.readMarkdown(this.userTemplateName!);
+    const userMessage = this.render(userTemplate, {
+      referenceTask: this.referenceTask,
+      studentTask: this.studentTask,
+      emptyTask: this.emptyTask,
+    });
     this.logger.debug(`Rendered user message length: ${userMessage.length}`);
     return {
       system: this.systemPrompt ?? '',
