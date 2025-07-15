@@ -53,7 +53,7 @@ export class ImagePrompt extends Prompt {
     return {
       system: this.systemPrompt ?? '',
       user: '',
-      images,
+      images: images,
     };
   }
 

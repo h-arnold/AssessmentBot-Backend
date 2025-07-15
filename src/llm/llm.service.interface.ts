@@ -17,11 +17,11 @@ export type ImagePromptPayload = {
   /** The system instruction or context for the LLM. */
   system: string;
   /** The user-provided prompt or question. */
-  user: {
-    type: string;
-    text?: string;
-    image?: { mimeType: string; base64: string };
-  }[];
+  user: string;
+  /** Array of images with their metadata. */
+  images: Array<{ mimeType: string; data?: string; uri?: string }>;
+  /** Optional messages array. */
+  messages?: Array<{ content: string }>;
 };
 
 /**
