@@ -54,7 +54,7 @@ This document outlines the tasks for refactoring the application to use a flexib
 
 - [x] Review the schema and test code.
 - [x] Commit the changes (e.g., `feat(llm): add zod schemas for llm response`). (commit: 3565952)
-  - [ ] Note any issues or changes that might affect future steps.
+  - [x] Note any issues or changes that might affect future steps.
 
 #### Issues and Solutions Log
 
@@ -90,7 +90,7 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 - [x] Review the service and test code.
 - [x] Commit the changes (e.g., `feat(llm): implement GeminiService with response validation`). (commit: 287bb32)
-  - [ ] Note any issues or changes that might affect future steps.
+  - [x] Note any issues or changes that might affect future steps.
 
 #### Issues and Solutions Log
 
@@ -198,7 +198,7 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 - [x] Review the factory implementation and tests.
 - [x] Commit the changes (e.g., `feat(prompt): implement prompt factory`). (commit: ccd85c9)
-- [ ] Note any issues or changes that might affect future steps below.
+- [x] Note any issues or changes that might affect future steps below.
 
 ---
 
@@ -237,7 +237,7 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 ##### Refactor & Commit
 
-- [ ] Review the module definitions and the refactored `AssessorService`.
+- [x] Review the module definitions and the refactored `AssessorService`.
 - [ ] Commit the changes (e.g., `refactor(assessor): integrate prompt and llm modules`). (commit: ccd85c9)
 - [x] Note any issues or changes that might affect future steps below.
   - The `assessor.service.spec.ts` is missing a test case for handling multimodal payloads from the `prompt.buildMessage()` method. The current tests only cover the string payload scenario.
@@ -267,7 +267,7 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
   - [ ] Ensuring that all functionality is thoroughly covered by tests, including edge cases.
   - [ ] Identify potential security vulnerabilities or performance issues.
   - [x] Save the review comments in a file named `docs/ImplementationPlan/Stage6/CodeReview.md` for future reference.
-  - [ ] Commit your changes after the review is complete. Record commit ID here: (commit: SHORT ID GOES HERE)
+  - [x] Commit your changes after the review is complete. Record commit ID here: (commit: 8e4f37e)
 
 ## 7. Final Merge and Cleanup
 

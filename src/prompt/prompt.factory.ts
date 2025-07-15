@@ -15,7 +15,6 @@
  * - `TaskType.TABLE`: Creates a `TablePrompt` instance.
  * - `TaskType.IMAGE`: Creates an `ImagePrompt` instance, converting buffer inputs to strings if necessary.
  */
-// ...existing code...
 
 import { Injectable } from '@nestjs/common';
 
@@ -38,35 +37,59 @@ export class PromptFactory {
       emptyTask: dto.template,
     };
 
-    // Determine system prompt and user template file names based on task type
-    let systemPromptFile: string | undefined;
-    let userTemplateFile: string | undefined;
-    switch (dto.taskType) {
+    // Determine and load prompt files
+    const { systemPromptFile, userTemplateFile } = this.getPromptFiles(
+      dto.taskType,
+    );
+    const systemPrompt = await this.loadSystemPrompt(systemPromptFile);
+
+    // Instantiate the appropriate Prompt subclass
+    return this.instantiatePrompt(dto, inputs, userTemplateFile, systemPrompt);
+  }
+
+  // Determine prompt file names based on task type
+  private getPromptFiles(taskType: TaskType): {
+    systemPromptFile?: string;
+    userTemplateFile?: string;
+  } {
+    switch (taskType) {
       case TaskType.TEXT:
-        systemPromptFile = 'text.system.prompt.md';
-        userTemplateFile = 'text.user.prompt.md';
-        break;
+        return {
+          systemPromptFile: 'text.system.prompt.md',
+          userTemplateFile: 'text.user.prompt.md',
+        };
       case TaskType.TABLE:
-        systemPromptFile = 'table.system.prompt.md';
-        userTemplateFile = 'table.user.prompt.md';
-        break;
+        return {
+          systemPromptFile: 'table.system.prompt.md',
+          userTemplateFile: 'table.user.prompt.md',
+        };
       case TaskType.IMAGE:
-        systemPromptFile = 'image.system.prompt.md';
-        userTemplateFile = undefined;
-        break;
+        return {
+          systemPromptFile: 'image.system.prompt.md',
+          userTemplateFile: undefined,
+        };
       default:
-        throw new Error(
-          `Unsupported task type: ${String((dto as Record<string, unknown>).taskType)}`,
-        );
+        throw new Error(`Unsupported task type: ${String(taskType)}`);
     }
+  }
 
-    // Fetch the system prompt content
-    let systemPrompt: string | undefined = undefined;
+  // Load system prompt content from markdown file, if provided
+  private async loadSystemPrompt(
+    systemPromptFile?: string,
+  ): Promise<string | undefined> {
     if (systemPromptFile) {
-      systemPrompt = await readMarkdown(systemPromptFile);
+      return await readMarkdown(systemPromptFile);
     }
+    return undefined;
+  }
 
-    // Instantiate the correct Prompt subclass
+  // Instantiate the correct Prompt subclass
+  private instantiatePrompt(
+    dto: CreateAssessorDto,
+    inputs: unknown,
+    userTemplateFile?: string,
+    systemPrompt?: string,
+  ): Prompt {
     switch (dto.taskType) {
       case TaskType.TEXT:
         return new TextPrompt(inputs, userTemplateFile, systemPrompt);
@@ -87,9 +110,7 @@ export class PromptFactory {
         return new ImagePrompt(imageInputs, dto.images, systemPrompt);
       }
       default:
-        throw new Error(
-          `Unsupported task type: ${String((dto as Record<string, unknown>).taskType)}`,
-        );
+        throw new Error('Unsupported task type');
     }
   }
 }
