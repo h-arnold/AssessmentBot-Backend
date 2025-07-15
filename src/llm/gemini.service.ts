@@ -60,16 +60,14 @@ export class GeminiService implements LLMService {
     const contents = this.buildContents(payload);
 
     this.logger.debug(`Sending to Gemini with model: ${modelParams.model}`);
-    this.logger.debug(
-      `Payload being sent: ${JSON.stringify(contents, null, 2)}`,
-    );
+    this.logPayload(payload, contents);
 
     try {
       const model = this.client.getGenerativeModel(modelParams);
       const result = await model.generateContent(contents);
       const responseText = result.response.text?.() ?? '';
 
-      this.logger.debug(`Raw response from Gemini: ${responseText}`);
+      this.logger.debug(`Raw response from Gemini: \n\n${responseText}`);
 
       const parsedJson = this.jsonParserUtil.parse(responseText);
       this.logger.debug(
@@ -196,5 +194,28 @@ export class GeminiService implements LLMService {
         return undefined;
       })
       .filter(Boolean) as Part[];
+  }
+
+  /**
+   * Logs the payload being sent to Gemini, with different logging strategies based on payload type.
+   * For StringPromptPayload: logs the full contents
+   * For ImagePromptPayload: logs only the length of contents to avoid logging large image data
+   * @param payload The original payload being sent
+   * @param contents The processed contents array
+   */
+  private logPayload(payload: LlmPayload, contents: (string | Part)[]): void {
+    if (this.isStringPromptPayload(payload)) {
+      this.logger.debug(
+        `String payload being sent: ${JSON.stringify(contents, null, 2)}`,
+      );
+    } else if (this.isImagePromptPayload(payload)) {
+      this.logger.debug(
+        `Image payload being sent with ${contents.length} content items`,
+      );
+    } else {
+      this.logger.debug(
+        `Unknown payload type being sent with ${contents.length} content items`,
+      );
+    }
   }
 }
