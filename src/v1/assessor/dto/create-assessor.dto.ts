@@ -77,6 +77,12 @@ export const createAssessorDtoSchema = z
         studentResponse: z.union([z.string().min(1), z.instanceof(Buffer)]),
         /**
          * An array of image objects, each with a path and mimeType.
+         * This field is used to provide additional image data related to the IMAGE taskType.
+         * Each object in the array represents an image with its file path and MIME type.
+         * @example [
+         *   { path: "/images/image1.png", mimeType: "image/png" },
+         *   { path: "/images/image2.jpg", mimeType: "image/jpeg" }
+         * ]
          */
         images: z
           .array(z.object({ path: z.string(), mimeType: z.string() }))
