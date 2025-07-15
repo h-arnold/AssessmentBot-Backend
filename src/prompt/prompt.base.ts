@@ -68,12 +68,17 @@ export abstract class Prompt {
     this.logger.debug(
       `Prompt constructor parsed inputs: ${JSON.stringify(parsed)}`,
     );
-    // Load system prompt immediately if filename is provided
-    if (systemPromptFile) {
-      this.readMarkdown(systemPromptFile).then((content) => {
-        this.systemPrompt = content;
-        this.logger.debug(`Loaded system prompt from ${systemPromptFile}`);
-      });
+    // Do not load system prompt asynchronously in constructor. Require explicit initialization.
+  }
+
+  /**
+   * Explicitly loads the system prompt markdown file and sets this.systemPrompt.
+   * Should be called after instantiation if systemPromptFile is provided.
+   */
+  public async initSystemPrompt(): Promise<void> {
+    if (this.systemPromptFile) {
+      this.systemPrompt = await this.readMarkdown(this.systemPromptFile);
+      this.logger.debug(`Loaded system prompt from ${this.systemPromptFile}`);
     }
   }
 
@@ -160,6 +165,12 @@ export abstract class Prompt {
   protected render(template: string, data: Record<string, string>): string {
     this.logger.debug(
       `Rendering template. Data keys: ${Object.keys(data).join(', ')}`,
+    );
+    this.logger.debug(
+      `Render called. this.constructor: ${this && this.constructor ? this.constructor.name : typeof this}`,
+    );
+    this.logger.debug(
+      `Render called. this keys: ${this ? Object.keys(this).join(', ') : 'undefined'}`,
     );
     const renderedContent = Mustache.render(template, data);
     this.logger.debug(`Template rendered. Output:\n${renderedContent}`);

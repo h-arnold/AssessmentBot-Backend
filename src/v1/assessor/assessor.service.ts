@@ -15,9 +15,7 @@ import { PromptFactory } from '../../prompt/prompt.factory';
  * @param msg - The object to be checked.
  * @returns `true` if the object matches the multimodal payload structure, otherwise `false`.
  */
-function isMultimodalPayload(
-  msg: unknown,
-): msg is {
+function isMultimodalPayload(msg: unknown): msg is {
   messages: { content: string }[];
   images: { mimeType: string; data: string }[];
 } {
@@ -56,7 +54,7 @@ export class AssessorService {
    * - Otherwise, the message is sent as a string.
    */
   async createAssessment(dto: CreateAssessorDto): Promise<LlmResponse> {
-    const prompt = this.promptFactory.create(dto);
+    const prompt = await this.promptFactory.create(dto);
     const message = await prompt.buildMessage();
     if (dto.taskType === 'IMAGE' && isMultimodalPayload(message)) {
       return this.llmService.send(message);

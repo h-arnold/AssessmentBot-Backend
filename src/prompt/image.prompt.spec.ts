@@ -23,7 +23,7 @@ describe('ImagePrompt', () => {
     (fs.readFile as jest.Mock).mockImplementation(
       (filePath: string, options: { encoding: string }) => {
         if (
-          filePath.includes('src/prompt/templates/image.prompt.md') &&
+          filePath.includes('src/prompt/templates/image.system.prompt.md') &&
           options.encoding === 'utf-8'
         ) {
           return Promise.resolve(template);
@@ -39,7 +39,7 @@ describe('ImagePrompt', () => {
     const message = (await prompt.buildMessage()) as ImagePromptPayload;
 
     expect(fs.readFile).toHaveBeenCalledWith(
-      expect.stringContaining('image.prompt.md'),
+      expect.stringContaining('image.system.prompt.md'),
       { encoding: 'utf-8' },
     );
     expect(fs.readFile).toHaveBeenCalledWith(

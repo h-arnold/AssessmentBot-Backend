@@ -24,7 +24,7 @@ export class ImagePrompt extends Prompt {
   }
 
   public async buildMessage(): Promise<LlmPayload> {
-    const template = await this.readMarkdown('image.prompt.md');
+    const template = await this.readMarkdown('image.system.prompt.md');
     const promptText = this.render(template, {
       referenceTask: this.referenceTask,
       studentTask: this.studentTask,

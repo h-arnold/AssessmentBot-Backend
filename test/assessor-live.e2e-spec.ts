@@ -1,19 +1,30 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { json } from 'express';
 import * as request from 'supertest';
 
+import { getCurrentDirname } from '../src/common/file-utils';
 import { AppModule } from './../src/app.module';
 import { ConfigService } from './../src/config/config.service';
 import {
   CreateAssessorDto,
   TaskType,
 } from './../src/v1/assessor/dto/create-assessor.dto';
-import tableData from './data/tableTask.json';
-import textData from './data/textTask.json';
+
+interface TaskData {
+  taskType: string;
+  referenceTask: string;
+  emptyTask: string;
+  studentTask: string;
+}
+
+const currentDir = getCurrentDirname();
+let tableData: TaskData;
+let textData: TaskData;
 
 describe('AssessorController (e2e-live)', () => {
   let app: INestApplication;
@@ -21,6 +32,18 @@ describe('AssessorController (e2e-live)', () => {
   let validApiKey: string;
 
   beforeAll(async () => {
+    tableData = JSON.parse(
+      fs.readFileSync(
+        path.join(currentDir, 'test', 'data', 'tableTask.json'),
+        'utf-8',
+      ),
+    );
+    textData = JSON.parse(
+      fs.readFileSync(
+        path.join(currentDir, 'test', 'data', 'textTask.json'),
+        'utf-8',
+      ),
+    );
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -116,12 +139,23 @@ describe('AssessorController (e2e-live)', () => {
   it('/v1/assessor (POST) should return a valid assessment for an image task', async () => {
     // Read and encode image files to base64 at runtime, then format as data URIs
     const referencePath = path.join(
-      __dirname,
+      currentDir,
+      'test',
       'ImageTasks',
       'referenceTask.png',
     );
-    const templatePath = path.join(__dirname, 'ImageTasks', 'templateTask.png');
-    const studentPath = path.join(__dirname, 'ImageTasks', 'studentTask.png');
+    const templatePath = path.join(
+      currentDir,
+      'test',
+      'ImageTasks',
+      'templateTask.png',
+    );
+    const studentPath = path.join(
+      currentDir,
+      'test',
+      'ImageTasks',
+      'studentTask.png',
+    );
 
     const referenceBase64 = fs.readFileSync(referencePath).toString('base64');
     const templateBase64 = fs.readFileSync(templatePath).toString('base64');
