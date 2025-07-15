@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { INestApplication } from '@nestjs/common';
+import { ConsoleLogger, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.test.env' });
@@ -55,8 +55,10 @@ describe('AssessorController (e2e)', () => {
     }).compile();
     app = moduleFixture.createNestApplication({ bodyParser: false });
     configService = moduleFixture.get<ConfigService>(ConfigService);
-    // Use log levels from config
-    app.useLogger(configService.get('LOG_LEVEL'));
+    // Use console logger to ensure debug output is visible
+    const logger = new ConsoleLogger();
+    logger.setLogLevels(configService.get('LOG_LEVEL'));
+    app.useLogger(logger);
     const apiKeys = configService.get('API_KEYS');
     if (!apiKeys || apiKeys.length === 0) {
       throw new Error(

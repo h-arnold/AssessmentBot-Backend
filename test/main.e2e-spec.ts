@@ -1,4 +1,8 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  ConsoleLogger,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.test.env' });
@@ -19,8 +23,10 @@ describe('Global Setup and E2E Tests', () => {
 
     app = moduleFixture.createNestApplication();
     const configService = moduleFixture.get(ConfigService);
-    // Use log levels from config
-    app.useLogger(configService.get('LOG_LEVEL'));
+    // Use console logger to ensure debug output is visible
+    const logger = new ConsoleLogger();
+    logger.setLogLevels(configService.get('LOG_LEVEL'));
+    app.useLogger(logger);
     app.useGlobalFilters(new HttpExceptionFilter());
     app.useGlobalPipes(new ZodValidationPipe());
     await app.init();
