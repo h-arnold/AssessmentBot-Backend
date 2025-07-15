@@ -1,6 +1,6 @@
 import { Prompt } from './prompt.base';
+import { readMarkdown } from '../common/file-utils';
 import { LlmPayload } from '../llm/llm.service.interface';
-// ...existing code...
 
 /**
  * Represents a prompt that generates a table-based message.
@@ -9,12 +9,16 @@ import { LlmPayload } from '../llm/llm.service.interface';
  * task-related data.
  */
 export class TablePrompt extends Prompt {
-  constructor(inputs: unknown) {
-    super(inputs, 'table.user.prompt.md', 'table.system.prompt.md');
+  constructor(
+    inputs: unknown,
+    userTemplateName?: string,
+    systemPrompt?: string,
+  ) {
+    super(inputs, userTemplateName ?? 'table.user.prompt.md', systemPrompt);
   }
 
   public async buildMessage(): Promise<LlmPayload> {
-    const userTemplate = await this.readMarkdown(this.userTemplateName!);
+    const userTemplate = await readMarkdown(this.userTemplateName!);
     const userMessage = this.render(userTemplate, {
       referenceTask: this.referenceTask,
       studentTask: this.studentTask,

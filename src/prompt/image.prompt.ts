@@ -18,17 +18,16 @@ export class ImagePrompt extends Prompt {
   constructor(
     inputs: PromptInput,
     images?: { path: string; mimeType: string }[],
+    systemPrompt?: string,
   ) {
-    super(inputs, undefined, 'image.system.prompt.md');
+    super(inputs, undefined, systemPrompt);
     this.images = images || [];
   }
 
   public async buildMessage(): Promise<LlmPayload> {
-    const systemPrompt = await this.readMarkdown('image.system.prompt.md');
-
     // For image prompts, the user message is a combination of the rendered system prompt
     // and the structured inputs.
-    const promptText = this.render(systemPrompt, {
+    const promptText = this.render(this.systemPrompt ?? '', {
       referenceTask: this.referenceTask,
       studentTask: this.studentTask,
       emptyTask: this.emptyTask,
@@ -42,8 +41,8 @@ export class ImagePrompt extends Prompt {
     }
 
     return {
-      system: systemPrompt,
-      messages: [{ content: promptText }],
+      system: this.systemPrompt ?? '',
+      user: promptText,
       images,
     };
   }

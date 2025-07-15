@@ -55,7 +55,11 @@ describe('TextPrompt', () => {
       return Promise.reject(new Error('File not found'));
     });
 
-    const prompt = new TextPrompt(inputs);
+    const prompt = new TextPrompt(
+      inputs,
+      'text.user.prompt.md',
+      systemTemplate,
+    );
     const message = await prompt.buildMessage();
 
     // Log the rendered user message for debugging

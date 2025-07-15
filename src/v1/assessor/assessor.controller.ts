@@ -14,7 +14,7 @@ import { ConfigService } from 'src/config/config.service';
 
 import { AssessorService } from './assessor.service';
 import {
-  CreateAssessorDto,
+  type CreateAssessorDto,
   createAssessorDtoSchema,
 } from './dto/create-assessor.dto';
 import { LlmResponse } from '../../llm/types';

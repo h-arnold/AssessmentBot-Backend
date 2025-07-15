@@ -54,7 +54,11 @@ describe('TablePrompt', () => {
       return Promise.reject(new Error('File not found'));
     });
 
-    const prompt = new TablePrompt(inputs);
+    const prompt = new TablePrompt(
+      inputs,
+      'table.user.prompt.md',
+      systemTemplate,
+    );
     const message = await prompt.buildMessage();
 
     // Log the rendered user message for debugging

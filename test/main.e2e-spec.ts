@@ -2,7 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.test.env' });
-import * as request from 'supertest';
+import request from 'supertest';
 
 import { AppModule } from './../src/app.module';
 import { HttpExceptionFilter } from './../src/common/http-exception.filter';

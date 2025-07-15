@@ -4,7 +4,7 @@ import path from 'path';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { json } from 'express';
-import * as request from 'supertest';
+import request from 'supertest';
 
 import { AppModule } from './../src/app.module';
 import { ConfigService } from './../src/config/config.service';

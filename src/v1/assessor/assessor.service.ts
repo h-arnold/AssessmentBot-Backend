@@ -27,7 +27,7 @@ export class AssessorService {
    * @returns A promise that resolves to an `LlmResponse` containing the result of the assessment.
    */
   async createAssessment(dto: CreateAssessorDto): Promise<LlmResponse> {
-    const prompt = this.promptFactory.create(dto);
+    const prompt = await this.promptFactory.create(dto);
     const message = await prompt.buildMessage();
     return this.llmService.send(message);
   }

@@ -1,9 +1,9 @@
 import { Controller, Get, HttpException, UseGuards, Req } from '@nestjs/common';
-import { Request } from 'express';
+import type { Request } from 'express';
 
-import { AppService, HealthCheckResponse } from './app.service';
+import { AppService, type HealthCheckResponse } from './app.service';
 import { ApiKeyGuard } from './auth/api-key.guard';
-import { User } from './auth/user.interface';
+import type { User } from './auth/user.interface';
 
 /**
  * Controller for handling application routes.

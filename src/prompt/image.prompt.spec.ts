@@ -35,7 +35,7 @@ describe('ImagePrompt', () => {
       },
     );
 
-    const prompt = new ImagePrompt(inputs, images);
+    const prompt = new ImagePrompt(inputs, images, template);
     const message = (await prompt.buildMessage()) as ImagePromptPayload;
 
     expect(fs.readFile).toHaveBeenCalledWith(

@@ -1,5 +1,4 @@
 {
-  "type": "module",
   "name": "assessmentbot-backend",
   "version": "0.0.1",
   "description": "The backend for Assessment Bot, which provides LLM services.",

@@ -6,7 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.test.env' });
 import { json } from 'express';
-import * as request from 'supertest';
+import request from 'supertest';
 
 import { AppModule } from './../src/app.module';
 import { ConfigService } from './../src/config/config.service';

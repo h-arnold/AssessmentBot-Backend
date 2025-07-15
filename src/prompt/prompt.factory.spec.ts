@@ -31,8 +31,9 @@ describe('PromptFactory', () => {
       studentResponse: 'stud',
       template: 'temp',
     };
-    const prompt = factory.create(dto);
-    expect(prompt).toBeInstanceOf(TextPrompt);
+    return factory.create(dto).then((prompt) => {
+      expect(prompt).toBeInstanceOf(TextPrompt);
+    });
   });
 
   it("should return a TablePrompt for taskType 'TABLE'", () => {
@@ -42,8 +43,9 @@ describe('PromptFactory', () => {
       studentResponse: 'stud',
       template: 'temp',
     };
-    const prompt = factory.create(dto);
-    expect(prompt).toBeInstanceOf(TablePrompt);
+    return factory.create(dto).then((prompt) => {
+      expect(prompt).toBeInstanceOf(TablePrompt);
+    });
   });
 
   it("should return an ImagePrompt for taskType 'IMAGE'", () => {
@@ -54,14 +56,17 @@ describe('PromptFactory', () => {
       template: 'temp',
       images: [],
     };
-    const prompt = factory.create(dto);
-    expect(prompt).toBeInstanceOf(ImagePrompt);
+    return factory.create(dto).then((prompt) => {
+      expect(prompt).toBeInstanceOf(ImagePrompt);
+    });
   });
 
   it('should throw an error for an unsupported taskType', () => {
     const dto = {
       taskType: 'INVALID',
     } as unknown as CreateAssessorDto;
-    expect(() => factory.create(dto)).toThrow('Unsupported task type: INVALID');
+    return expect(factory.create(dto)).rejects.toThrow(
+      'Unsupported task type: INVALID',
+    );
   });
 });

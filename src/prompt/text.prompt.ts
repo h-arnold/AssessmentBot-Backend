@@ -1,4 +1,5 @@
 import { Prompt } from './prompt.base';
+import { readMarkdown } from '../common/file-utils';
 import { LlmPayload } from '../llm/llm.service.interface';
 
 /**
@@ -7,13 +8,17 @@ import { LlmPayload } from '../llm/llm.service.interface';
  * with specific task-related data.
  */
 export class TextPrompt extends Prompt {
-  constructor(inputs: unknown) {
-    super(inputs, 'text.user.prompt.md', 'text.system.prompt.md');
+  constructor(
+    inputs: unknown,
+    userTemplateName?: string,
+    systemPrompt?: string,
+  ) {
+    super(inputs, userTemplateName ?? 'text.user.prompt.md', systemPrompt);
   }
 
   public async buildMessage(): Promise<LlmPayload> {
     this.logger.debug('Building message for TextPrompt');
-    const userTemplate = await this.readMarkdown(this.userTemplateName!);
+    const userTemplate = await readMarkdown(this.userTemplateName!);
     const userMessage = this.render(userTemplate, {
       referenceTask: this.referenceTask,
       studentTask: this.studentTask,

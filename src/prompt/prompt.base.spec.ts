@@ -1,22 +1,19 @@
 import { ZodError } from 'zod';
 
 import { Prompt, PromptInput, PromptInputSchema } from './prompt.base';
+import { readMarkdown } from '../common/file-utils';
 import { LlmPayload } from '../llm/llm.service.interface';
 
 // Mock implementation of the abstract class for testing
 class TestPrompt extends Prompt {
   public async buildMessage(): Promise<LlmPayload> {
-    return 'test message';
+    return { system: '', images: [], messages: [] } as LlmPayload;
   }
   // Stub implementation to satisfy abstract base class
   protected async buildUserMessageParts(): Promise<
     import('@google/generative-ai').Part[]
   > {
     return [];
-  }
-  // Expose protected readMarkdown for testing
-  public async testReadMarkdown(name: string): Promise<string> {
-    return this.readMarkdown(name);
   }
 }
 
@@ -76,15 +73,13 @@ describe('Prompt Base Class', (): void => {
 
   describe('readMarkdown', () => {
     it('should reject filenames with path traversal', async () => {
-      const prompt = new TestPrompt(validInput);
-      await expect(prompt.testReadMarkdown('../template.md')).rejects.toThrow(
+      await expect(readMarkdown('../template.md')).rejects.toThrow(
         'Invalid markdown filename',
       );
     });
 
     it('should reject filenames that do not end with .md', async () => {
-      const prompt = new TestPrompt(validInput);
-      await expect(prompt.testReadMarkdown('template.txt')).rejects.toThrow(
+      await expect(readMarkdown('template.txt')).rejects.toThrow(
         'Invalid markdown filename',
       );
     });

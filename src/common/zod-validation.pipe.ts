@@ -5,7 +5,7 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import { ZodTypeAny, ZodError } from 'zod';
+import { ZodError, type ZodTypeAny } from 'zod';
 
 /**
  * A custom validation pipe that uses Zod schemas to validate incoming data.
