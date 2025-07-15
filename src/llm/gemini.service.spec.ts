@@ -2,7 +2,10 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ZodError } from 'zod';
 
 import { GeminiService } from './gemini.service';
-import { ImagePromptPayload } from './llm.service.interface';
+import {
+  ImagePromptPayload,
+  StringPromptPayload,
+} from './llm.service.interface';
 import { JsonParserUtil } from '../common/json-parser.util';
 import { ConfigService } from '../config/config.service';
 
@@ -58,7 +61,11 @@ describe('GeminiService', () => {
       },
     });
 
-    await service.send('test prompt');
+    const payload: StringPromptPayload = {
+      system: 'system prompt',
+      user: 'test prompt',
+    };
+    await service.send(payload);
 
     expect(mockGetGenerativeModel).toHaveBeenCalledWith({
       model: 'gemini-2.0-flash-lite',
@@ -108,7 +115,11 @@ describe('GeminiService', () => {
       JSON.parse(repairedJson),
     );
 
-    await service.send('test');
+    const payload: StringPromptPayload = {
+      system: 'system prompt',
+      user: 'test',
+    };
+    await service.send(payload);
 
     expect(jsonParserUtil.parse).toHaveBeenCalledWith(malformedJson);
   });
@@ -116,7 +127,11 @@ describe('GeminiService', () => {
   it('should throw an error if the SDK fails', async () => {
     mockGenerateContent.mockRejectedValue(new Error('SDK Error'));
 
-    await expect(service.send('test')).rejects.toThrow(
+    const payload: StringPromptPayload = {
+      system: 'system prompt',
+      user: 'test',
+    };
+    await expect(service.send(payload)).rejects.toThrow(
       'Failed to get a valid and structured response from the LLM.',
     );
   });
@@ -128,7 +143,11 @@ describe('GeminiService', () => {
       },
     });
 
-    await expect(service.send('test')).rejects.toThrow(ZodError);
+    const payload: StringPromptPayload = {
+      system: 'system prompt',
+      user: 'test',
+    };
+    await expect(service.send(payload)).rejects.toThrow(ZodError);
   });
 
   it('should throw an error if JsonParserUtil fails to parse the response', async () => {
@@ -142,7 +161,11 @@ describe('GeminiService', () => {
       throw new Error('Malformed or irreparable JSON string provided.');
     });
 
-    await expect(service.send('test')).rejects.toThrow(
+    const payload: StringPromptPayload = {
+      system: 'system prompt',
+      user: 'test',
+    };
+    await expect(service.send(payload)).rejects.toThrow(
       'Failed to get a valid and structured response from the LLM.',
     );
   });
