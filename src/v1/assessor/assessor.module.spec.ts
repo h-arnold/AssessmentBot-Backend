@@ -1,10 +1,10 @@
 import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { LoggerModule } from 'nestjs-pino';
 
 import { AssessorController } from './assessor.controller';
 import { AssessorModule } from './assessor.module';
 import { AssessorService } from './assessor.service';
-import { ConfigService } from '../../config/config.service';
 
 const mockConfigService = {
   get: jest.fn((key: string) => {
@@ -15,6 +15,7 @@ const mockConfigService = {
       API_KEYS: 'test-api-key',
       MAX_IMAGE_UPLOAD_SIZE_MB: 5,
       ALLOWED_IMAGE_MIME_TYPES: 'image/png,image/jpeg',
+      LOG_LEVEL: 'debug',
     };
     return config[key];
   }),
@@ -34,7 +35,18 @@ describe('AssessorModule', () => {
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      imports: [AssessorModule],
+      imports: [
+        AssessorModule,
+        LoggerModule.forRootAsync({
+          imports: [ConfigModule],
+          inject: [ConfigService],
+          useFactory: (configService: ConfigService) => ({
+            pinoHttp: {
+              level: configService.get('LOG_LEVEL'),
+            },
+          }),
+        }),
+      ],
       providers: [Logger],
     })
       .overrideProvider(ConfigService)
