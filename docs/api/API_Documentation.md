@@ -32,9 +32,9 @@ This endpoint is responsible for initiating an assessment. It accepts a JSON pay
   ```json
   {
     "taskType": "TEXT | TABLE | IMAGE",
-    "reference": "string | Buffer (for IMAGE: base64-encoded string, with or without Data URI prefix)",
-    "template": "string | Buffer (for IMAGE: base64-encoded string, with or without Data URI prefix)",
-    "studentResponse": "string | Buffer (for IMAGE: base64-encoded string, with or without Data URI prefix)"
+    "reference": "string | Buffer (for IMAGE: base64-encoded string, **with a Data URI prefix**)",
+    "template": "string | Buffer (for IMAGE: base64-encoded string, **with a Data URI prefix**)",
+    "studentResponse": "string | Buffer (for IMAGE: base64-encoded string, **with a Data URI prefix**)"
   }
   ```
 
@@ -54,10 +54,8 @@ This endpoint is responsible for initiating an assessment. It accepts a JSON pay
     - Disallowed types (e.g., GIF, BMP) will be rejected with a `400 Bad Request` error.
   - **Supported Formats:**
     - Images may be provided as Buffers or base64-encoded strings.
-    - For base64-encoded images, both of the following formats are accepted:
-      1. **Raw base64 string** (no prefix):
-         - Example: `iVBORw0KGgoAAAANSUhEUgAA...` (just the base64 data)
-      2. **Data URI string**:
+    - For base64-encoded images, you must include the Data URI prefix:
+      1. **Data URI string**:
          - Example: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...`
     - The pipe will infer the MIME type and size, and reject invalid or malformed images.
   - **Error Responses:**
