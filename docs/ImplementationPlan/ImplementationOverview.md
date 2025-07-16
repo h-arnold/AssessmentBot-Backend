@@ -103,7 +103,7 @@ The core of the problem stemmed from a mismatch between how TypeScript compiled 
   - Mock LLM service returns deterministic output in tests
   - Prompt templates load correctly from markdown files
 
-## Stage 8: Logging and Throttling
+## Stage 7: Logging and Throttling
 
 - **Objectives**: Add structured logging and rate limiting.
 - **Deliverables**:
