@@ -46,14 +46,15 @@ import { AssessorModule } from './v1/assessor/assessor.module';
               singleLine: true,
             },
           },
-          serializers: {
-            req: (req: IncomingMessage): IncomingMessage => {
-              if (req.headers.authorization) {
-                req.headers.authorization = 'Bearer <redacted>';
-              }
-              return req;
-            },
-          },
+          // Temporarily disable Authorization header redaction for debugging
+          // serializers: {
+          //   req: (req: IncomingMessage): IncomingMessage => {
+          //     if (req.headers.authorization) {
+          //       req.headers.authorization = 'Bearer <redacted>';
+          //     }
+          //     return req;
+          //   },
+          // },
         },
       }),
     }),
