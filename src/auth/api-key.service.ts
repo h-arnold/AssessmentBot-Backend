@@ -47,6 +47,7 @@ export class ApiKeyService {
   ) {
     const apiKeysFromConfig = this.configService.get('API_KEYS');
     this.apiKeys = Array.isArray(apiKeysFromConfig) ? apiKeysFromConfig : [];
+    this.logger.debug(`Loaded API keys: ${JSON.stringify(this.apiKeys)}`);
     if (!this.apiKeys.length) {
       this.logger.warn(
         'No API keys configured. All requests will be unauthorised.',
@@ -55,13 +56,18 @@ export class ApiKeyService {
   }
 
   validate(apiKey: unknown): User | null {
+    this.logger.debug(
+      `API key received for validation: ${JSON.stringify(apiKey)}`,
+    );
     const apiKeySchema = z
       .string()
       .min(10)
       .regex(/^[a-zA-Z0-9_-]+$/);
     const parsed = apiKeySchema.safeParse(apiKey);
     if (!parsed.success) {
-      this.logger.warn('API key is missing or invalid');
+      this.logger.warn(
+        `API key is missing or invalid: ${JSON.stringify(apiKey)}`,
+      );
       throw new UnauthorizedException('Invalid API key');
     }
     const validKey = parsed.data;
@@ -70,7 +76,7 @@ export class ApiKeyService {
       this.logger.log('API key authentication attempt successful');
       return { apiKey: validKey };
     }
-    this.logger.warn('Invalid API key');
+    this.logger.warn(`Invalid API key: ${JSON.stringify(validKey)}`);
     throw new UnauthorizedException('Invalid API key');
   }
 }
