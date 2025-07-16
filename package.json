@@ -85,7 +85,7 @@
   },
   "homepage": "https://github.com/h-arnold/AssessmentBot-Backend#readme",
   "lint-staged": {
-    "*.ts": "eslint",
+    "*.ts": "eslint --fix",
     "*.{js,ts,json,md}": "prettier --write"
   },
   "repository": {
