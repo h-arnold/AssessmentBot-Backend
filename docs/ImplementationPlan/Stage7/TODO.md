@@ -117,7 +117,7 @@ _(Use this space to document any challenges, workarounds, or key decisions made 
 
 - [ ] All "Red Phase" tests are written and initially failing.
 - [ ] All "Green Phase" implementation tasks are complete.
-- [ ] All tests are passing.
+- [x] All tests are passing.
 - [ ] The `TODO.md` file is updated with checkmarks.
 - [ ] A final review of the code for quality, clarity, and adherence to project standards has been conducted.
 - [ ] **Update CI Pipeline**: ensure CI runs the new E2E specs (`logging.e2e-spec.ts` and `throttler.e2e-spec.ts`) and fails on failures.

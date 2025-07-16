@@ -110,3 +110,14 @@ This document records the attempts made to fix the End-to-End (E2E) tests after 
 
 - **Action**: Removed `Logger` from `providers` and `exports` in `src/common/common.module.ts`. Imported `LoggerModule` into `CommonModule`.
 - **Result**: All E2E tests failed with `Nest can't resolve dependencies of the JsonParserUtil (?). Please make sure that the argument Logger at index [0] is available in the CommonModule context.` This confirmed that `JsonParserUtil` in `CommonModule` still requires a `Logger` and that simply importing `LoggerModule` into `CommonModule` was not sufficient to make the `PinoLogger` available to `JsonParserUtil` within `CommonModule`'s context.
+
+## Attempt 10: Fixing Unit Test Dependency Injection for Logger
+
+- **Action**: Add `LoggerModule.forRootAsync` to the `imports` array of `TestingModule` in `llm.module.spec.ts`, `assessor.module.spec.ts`, and `assessor.service.spec.ts`.
+- **Result**: Initial attempts resulted in `ReferenceError: LoggerModule is not defined` or `ConfigModule is not defined` because the necessary imports were missing in the test files.
+- **Solution**:
+  - Added `import { LoggerModule } from 'nestjs-pino';` to `llm.module.spec.ts`, `assessor.module.spec.ts`, and `assessor.service.spec.ts`.
+  - Added `import { ConfigModule } from '../../config/config.module';` to `assessor.module.spec.ts` and `assessor.service.spec.ts`.
+  - Ensured `ConfigModule` was included in the `imports` array of `LoggerModule.forRootAsync` within the test files, as `LoggerModule` needs to resolve `ConfigService` from its own context.
+  - Added `LOG_LEVEL: 'debug'` to the `mockConfigService` in `assessor.module.spec.ts` to ensure the logger was initialized with a valid level.
+- **Outcome**: All unit tests are now passing. This indicates that the logger's dependency injection is correctly configured within the isolated unit test environments.
