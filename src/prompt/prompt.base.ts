@@ -45,7 +45,8 @@ export abstract class Prompt {
     userTemplateName?: string,
     systemPrompt?: string,
   ) {
-    this.logger.debug(
+    // Prompt constructor received inputs is set to verbose logging because it can output the base64 strings from image prompts, which often isn't particularly helpful for debugging.
+    this.logger.verbose(
       `Prompt constructor received inputs: ${JSON.stringify(inputs)}`,
     );
     const parsed: PromptInput = PromptInputSchema.parse(inputs);
@@ -54,9 +55,27 @@ export abstract class Prompt {
     this.emptyTask = parsed.emptyTask;
     this.userTemplateName = userTemplateName;
     this.systemPrompt = systemPrompt;
-    this.logger.debug(
-      `Prompt constructor parsed inputs: ${JSON.stringify(parsed)}`,
-    );
+
+    this.logInputLengths(parsed);
+  }
+
+  /**
+   * Logs the length of each input element at info level.
+   * @param inputs The validated PromptInput object.
+   */
+  private logInputLengths(inputs: PromptInput): void {
+    const keys: (keyof PromptInput)[] = [
+      'referenceTask',
+      'studentTask',
+      'emptyTask',
+    ];
+    const lengths = keys
+      .map((key) => {
+        const value = inputs[key];
+        return `${key}: ${typeof value === 'string' ? value.length : 'N/A'}`;
+      })
+      .join(', ');
+    this.logger.log(`Prompt input lengths - ${lengths}`);
   }
 
   /**

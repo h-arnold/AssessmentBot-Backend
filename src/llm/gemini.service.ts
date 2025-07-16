@@ -1,9 +1,4 @@
-import {
-  Content,
-  GoogleGenerativeAI,
-  ModelParams,
-  Part,
-} from '@google/generative-ai';
+import { GoogleGenerativeAI, ModelParams, Part } from '@google/generative-ai';
 import { Injectable, Logger } from '@nestjs/common';
 import { ZodError } from 'zod';
 

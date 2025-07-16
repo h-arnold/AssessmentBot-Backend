@@ -1,5 +1,4 @@
 import { readFileSync } from 'fs';
-import path from 'path';
 
 import { ConsoleLogger, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
