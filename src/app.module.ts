@@ -46,15 +46,18 @@ import { AssessorModule } from './v1/assessor/assessor.module';
               singleLine: true,
             },
           },
-          // Temporarily disable Authorization header redaction for debugging
-          // serializers: {
-          //   req: (req: IncomingMessage): IncomingMessage => {
-          //     if (req.headers.authorization) {
-          //       req.headers.authorization = 'Bearer <redacted>';
-          //     }
-          //     return req;
-          //   },
-          // },
+          serializers: {
+            req: (req: IncomingMessage): IncomingMessage => {
+              // Clone the request object shallowly for logging
+              const clonedReq = Object.assign({}, req);
+              if (clonedReq.headers && clonedReq.headers.authorization) {
+                clonedReq.headers = Object.assign({}, clonedReq.headers, {
+                  authorization: 'Bearer <redacted>',
+                });
+              }
+              return clonedReq;
+            },
+          },
         },
       }),
     }),

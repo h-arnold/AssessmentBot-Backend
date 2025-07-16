@@ -10,6 +10,7 @@ import {
   TaskType,
 } from './../src/v1/assessor/dto/create-assessor.dto';
 import { TestAppModule } from './test-app.module';
+import { ConfigService } from '../src/config/config.service';
 
 // --- Synchronous Top-Level File Loading with Hardcoded Paths ---
 
