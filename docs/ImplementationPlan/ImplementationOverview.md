@@ -89,7 +89,7 @@ The core of the problem stemmed from a mismatch between how TypeScript compiled 
   - Endpoints accept and validate input, returning stubbed responses
   - Unit tests for controller and service layer
 
-## Stage 6: LLM Integration
+## ✅ (COMPLETE) Stage 6: LLM Integration
 
 - **Objectives**: Implement `LLMModule` and service hierarchy for prompt handling.
 - **Deliverables**:
@@ -103,16 +103,6 @@ The core of the problem stemmed from a mismatch between how TypeScript compiled 
   - Mock LLM service returns deterministic output in tests
   - Prompt templates load correctly from markdown files
 
-## Stage 7: JSON Repair and Parsing
-
-- **Objectives**: Robustly handle LLM responses, repairing malformed JSON.
-- **Deliverables**:
-  - Integration of `json-repair` library in `JsonParserUtil`
-  - Utility methods to normalize and validate LLM output
-- **Test Criteria**:
-  - Faulty JSON responses corrected and parsed successfully
-  - Unit tests covering edge cases of malformed data
-
 ## Stage 8: Logging and Throttling
 
 - **Objectives**: Add structured logging and rate limiting.
@@ -122,7 +112,7 @@ The core of the problem stemmed from a mismatch between how TypeScript compiled 
   - Middleware or interceptors for request logging
 - **Test Criteria**:
   - Logs include timestamp, IP, API key, request path
-  - Rate limits enforced; tests simulate throttling behavior
+  - Rate limits enforced; tests simulate throttling behaviour
 
 ## Stage 9: API Documentation (Swagger)
 
