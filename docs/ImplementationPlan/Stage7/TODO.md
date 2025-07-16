@@ -21,6 +21,12 @@ This document outlines the tasks required to implement structured logging and AP
 ### Red Phase: Failing Tests
 
 - [ ] **Implement Logging E2E Tests**: Create `test/logging.e2e-spec.ts` and implement all test cases as defined in `docs/ImplementationPlan/Stage7/TestCases.md`.
+- [ ] **Commit Red Phase changes and record commit ID here:** (commit: )
+- [ ] **Note any issues or changes that might affect future steps below.**
+
+#### Issues and Solutions Log (Red Phase)
+
+_(Use this space to document any challenges, workarounds, or key decisions made during this section.)_
 
 ### Green Phase: Implementation
 
@@ -42,6 +48,12 @@ This document outlines the tasks required to implement structured logging and AP
   - `src/common/json-parser.util.ts`
   - `src/llm/gemini.service.ts`
   - `src/prompt/prompt.base.ts`
+- [ ] **Commit Green Phase changes and record commit ID here:** (commit: )
+- [ ] **Note any issues or changes that might affect future steps below.**
+
+#### Issues and Solutions Log (Green Phase)
+
+_(Use this space to document any challenges, workarounds, or key decisions made during this section.)_
 
 ### Refactor Phase
 
@@ -57,6 +69,12 @@ This document outlines the tasks required to implement structured logging and AP
 ### Red Phase: Failing Tests
 
 - [ ] **Implement Throttling E2E Tests**: Create `test/throttler.e2e-spec.ts` and implement all test cases as defined in `docs/ImplementationPlan/Stage7/TestCases.md`.
+- [ ] **Commit Red Phase changes and record commit ID here:** (commit: )
+- [ ] **Note any issues or changes that might affect future steps below.**
+
+#### Issues and Solutions Log (Red Phase)
+
+_(Use this space to document any challenges, workarounds, or key decisions made during this section.)_
 
 ### Green Phase: Implementation
 
@@ -70,6 +88,12 @@ This document outlines the tasks required to implement structured logging and AP
   - [ ] **Ensure Docker/Compose Pass Env Vars**: update `docker-compose.yml` and `Dockerfile` to expose `LOG_LEVEL`, `THROTTLER_TTL`, and `THROTTLER_LIMIT` inside the container.
 - [ ] **Create `ApiKeyThrottlerGuard`**: Create `src/auth/api-key-throttler.guard.ts`. The guard must extend `ThrottlerGuard`, inject the `Logger`, override `getTracker()` to use the API key, and override `handleRequest()` to log throttled events.
 - [ ] **Apply Global Guard**: Add `ApiKeyThrottlerGuard` to the global providers list in `src/app.module.ts`.
+- [ ] **Commit Green Phase changes and record commit ID here:** (commit: )
+- [ ] **Note any issues or changes that might affect future steps below.**
+
+#### Issues and Solutions Log (Green Phase)
+
+_(Use this space to document any challenges, workarounds, or key decisions made during this section.)_
 
 ### Refactor Phase
 
