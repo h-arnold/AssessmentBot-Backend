@@ -1,21 +1,3 @@
-/**
- * Factory class responsible for creating instances of different types of prompts
- * based on the provided task type and input data.
- *
- * @class PromptFactory
- * @method create
- * @param {CreateAssessorDto} dto - Data Transfer Object containing the task type and input data
- * for creating a prompt.
- * @returns {Prompt} - An instance of a specific prompt type (TextPrompt, TablePrompt, or ImagePrompt)
- * based on the task type provided in the DTO.
- * @throws {Error} - Throws an error if the task type is unsupported.
- *
- * The factory supports the following task types:
- * - `TaskType.TEXT`: Creates a `TextPrompt` instance.
- * - `TaskType.TABLE`: Creates a `TablePrompt` instance.
- * - `TaskType.IMAGE`: Creates an `ImagePrompt` instance, converting buffer inputs to strings if necessary.
- */
-
 import { Injectable } from '@nestjs/common';
 
 import { ImagePrompt } from './image.prompt';
@@ -28,8 +10,17 @@ import {
   TaskType,
 } from '../v1/assessor/dto/create-assessor.dto';
 
+/**
+ * A factory for creating prompt instances based on the task type.
+ */
 @Injectable()
 export class PromptFactory {
+  /**
+   * Creates a prompt instance based on the provided DTO.
+   * @param dto The DTO containing the task type and other data.
+   * @returns A prompt instance.
+   * @throws An error if the task type is unsupported.
+   */
   public async create(dto: CreateAssessorDto): Promise<Prompt> {
     const inputs = {
       referenceTask: dto.reference,
@@ -47,7 +38,11 @@ export class PromptFactory {
     return this.instantiatePrompt(dto, inputs, userTemplateFile, systemPrompt);
   }
 
-  // Determine prompt file names based on task type
+  /**
+   * Determines the prompt file names based on the task type.
+   * @param taskType The task type.
+   * @returns An object containing the system and user prompt file names.
+   */
   private getPromptFiles(taskType: TaskType): {
     systemPromptFile?: string;
     userTemplateFile?: string;
@@ -73,7 +68,11 @@ export class PromptFactory {
     }
   }
 
-  // Load system prompt content from markdown file, if provided
+  /**
+   * Loads the system prompt content from a markdown file.
+   * @param systemPromptFile The name of the system prompt file.
+   * @returns The content of the system prompt file, or undefined if the file name is not provided.
+   */
   private async loadSystemPrompt(
     systemPromptFile?: string,
   ): Promise<string | undefined> {
@@ -83,7 +82,14 @@ export class PromptFactory {
     return undefined;
   }
 
-  // Instantiate the correct Prompt subclass
+  /**
+   * Instantiates the correct Prompt subclass.
+   * @param dto The DTO.
+   * @param inputs The prompt inputs.
+   * @param userTemplateFile The name of the user template file.
+   * @param systemPrompt The system prompt string.
+   * @returns A prompt instance.
+   */
   private instantiatePrompt(
     dto: CreateAssessorDto,
     inputs: unknown,

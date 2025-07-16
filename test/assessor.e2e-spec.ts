@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { INestApplication } from '@nestjs/common';
+import { ConsoleLogger, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.test.env' });
@@ -10,7 +10,6 @@ import request from 'supertest';
 
 import { AppModule } from './../src/app.module';
 import { ConfigService } from './../src/config/config.service';
-import { AssessorService } from './../src/v1/assessor/assessor.service';
 import {
   CreateAssessorDto,
   TaskType,
@@ -56,6 +55,10 @@ describe('AssessorController (e2e)', () => {
     }).compile();
     app = moduleFixture.createNestApplication({ bodyParser: false });
     configService = moduleFixture.get<ConfigService>(ConfigService);
+    // Use console logger to ensure debug output is visible
+    const logger = new ConsoleLogger();
+    logger.setLogLevels(configService.get('LOG_LEVEL'));
+    app.useLogger(logger);
     const apiKeys = configService.get('API_KEYS');
     if (!apiKeys || apiKeys.length === 0) {
       throw new Error(
@@ -71,8 +74,6 @@ describe('AssessorController (e2e)', () => {
   afterAll(async () => {
     await app.close();
   });
-
-  // ...existing code...
 
   describe('Auth and Validation', () => {
     it('/v1/assessor (POST) should return 401 Unauthorized when no API key is provided', async () => {

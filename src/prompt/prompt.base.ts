@@ -2,17 +2,11 @@ import { Logger } from '@nestjs/common';
 import Mustache from 'mustache';
 import { z } from 'zod';
 
+import { readMarkdown } from '../common/file-utils';
 import { LlmPayload } from '../llm/llm.service.interface';
 
 /**
- * Schema definition for validating the input structure of a prompt.
- *
- * This schema ensures that the input object contains the following properties:
- * - `referenceTask`: A string representing the reference task.
- * - `studentTask`: A string representing the student's task.
- * - `emptyTask`: A string representing an empty task.
- *
- * The schema is used for runtime validation of the input data.
+ * Zod schema for validating the basic inputs for any prompt.
  */
 export const PromptInputSchema = z.object({
   referenceTask: z.string(),
@@ -21,13 +15,16 @@ export const PromptInputSchema = z.object({
 });
 
 /**
- * Represents the input type for a prompt, inferred from the `PromptInputSchema`.
- * This type is dynamically generated based on the schema definition using Zod.
- *
- * @typedef PromptInput
+ * Type inferred from the PromptInputSchema.
  */
 export type PromptInput = z.infer<typeof PromptInputSchema>;
 
+/**
+ * An abstract base class for all prompt types.
+ *
+ * It handles common functionality such as input validation, template reading,
+ * and rendering. Subclasses must implement the `buildMessage` method.
+ */
 export abstract class Prompt {
   protected referenceTask!: string;
   protected studentTask!: string;
@@ -38,14 +35,10 @@ export abstract class Prompt {
   protected systemPrompt?: string;
 
   /**
-   * Constructs an instance of the class and initializes its properties
-   * by parsing the provided input using the `PromptInputSchema`.
-   * Optionally accepts a userTemplateName for rendering user message parts.
-   *
-   * @param inputs - The raw input data to be parsed into a `PromptInput` object.
-   *                 This should conform to the expected schema defined by `PromptInputSchema`.
-   * @param userTemplateName - Optional name of the markdown template for user message parts.
-   * @throws {ZodError} If the provided `inputs` do not match the expected schema.
+   * Initializes the Prompt instance.
+   * @param inputs The raw, unknown input, which is then validated against the PromptInputSchema.
+   * @param userTemplateName Optional name of the markdown template for user message parts.
+   * @param systemPrompt Optional system prompt string.
    */
   constructor(
     inputs: unknown,
@@ -67,14 +60,10 @@ export abstract class Prompt {
   }
 
   /**
-   * Renders a template string using the provided data.
-   * This method utilizes the Mustache templating engine to replace placeholders
-   * in the template with corresponding values from the data object.
-   *
-   * @param template - The template string containing placeholders in Mustache format.
-   * @param data - A record object where keys correspond to placeholder names in the template
-   *               and values are the replacement strings.
-   * @returns The rendered string with placeholders replaced by their corresponding values.
+   * Renders a template string using mustache with the provided data.
+   * @param template The template string to render.
+   * @param data A record of key-value pairs to substitute in the template.
+   * @returns The rendered string.
    */
   protected render(template: string, data: Record<string, string>): string {
     this.logger.debug(
@@ -91,5 +80,32 @@ export abstract class Prompt {
     return renderedContent;
   }
 
-  public abstract buildMessage(): Promise<LlmPayload>;
+  /**
+   * Builds the final payload to be sent to the LLM service.
+   * This method must be implemented by all subclasses.
+   * @returns A Promise that resolves to the LlmPayload.
+   */
+  /**
+   * Builds the final payload to be sent to the LLM service.
+   * This is the default implementation for text and table prompts.
+   * Subclasses can override if needed (e.g., ImagePrompt).
+   * @returns A Promise that resolves to the LlmPayload.
+   */
+  public async buildMessage(): Promise<LlmPayload> {
+    this.logger.debug(`Building message for ${this.constructor.name}`);
+    let userMessage = '';
+    if (this.userTemplateName) {
+      const userTemplate = await readMarkdown(this.userTemplateName);
+      userMessage = this.render(userTemplate, {
+        referenceTask: this.referenceTask,
+        studentTask: this.studentTask,
+        emptyTask: this.emptyTask,
+      });
+      this.logger.debug(`Rendered user message length: ${userMessage.length}`);
+    }
+    return {
+      system: this.systemPrompt ?? '',
+      user: userMessage,
+    };
+  }
 }

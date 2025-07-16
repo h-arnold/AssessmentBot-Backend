@@ -1,32 +1,19 @@
 import { Prompt } from './prompt.base';
-import { readMarkdown } from '../common/file-utils';
-import { LlmPayload } from '../llm/llm.service.interface';
-
 /**
- * Represents a prompt that generates a table-based message.
- * This class extends the `Prompt` class and provides functionality
- * to build a message by rendering a markdown template with specific
- * task-related data.
+ * A prompt for assessing table-based tasks.
  */
 export class TablePrompt extends Prompt {
+  /**
+   * Initializes the TablePrompt instance.
+   * @param inputs The prompt inputs.
+   * @param userTemplateName The name of the user template file.
+   * @param systemPrompt The system prompt string.
+   */
   constructor(
     inputs: unknown,
     userTemplateName?: string,
     systemPrompt?: string,
   ) {
     super(inputs, userTemplateName ?? 'table.user.prompt.md', systemPrompt);
-  }
-
-  public async buildMessage(): Promise<LlmPayload> {
-    const userTemplate = await readMarkdown(this.userTemplateName!);
-    const userMessage = this.render(userTemplate, {
-      referenceTask: this.referenceTask,
-      studentTask: this.studentTask,
-      emptyTask: this.emptyTask,
-    });
-    return {
-      system: this.systemPrompt ?? '',
-      user: userMessage,
-    };
   }
 }

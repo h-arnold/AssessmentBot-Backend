@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import path from 'path';
 
-import { INestApplication } from '@nestjs/common';
+import { ConsoleLogger, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { json } from 'express';
 import request from 'supertest';
@@ -60,6 +60,10 @@ describe('AssessorController (e2e-live)', () => {
 
     app = moduleFixture.createNestApplication({ bodyParser: false });
     configService = moduleFixture.get<ConfigService>(ConfigService);
+    // Use console logger to ensure debug output is visible
+    const logger = new ConsoleLogger();
+    logger.setLogLevels(configService.get('LOG_LEVEL'));
+    app.useLogger(logger);
 
     const apiKeys = configService.get('API_KEYS');
     if (!apiKeys || apiKeys.length === 0) {

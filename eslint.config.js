@@ -83,7 +83,6 @@ export default tseslint.config(
         },
       ],
 
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-console': ['warn', { allow: ['warn', 'error', 'info', 'debug'] }],
       'security/detect-eval-with-expression': 'error',
       '@typescript-eslint/no-var-requires': 'error',
