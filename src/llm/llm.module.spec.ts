@@ -1,5 +1,7 @@
 import { Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { LoggerModule } from 'nestjs-pino';
 
 import { LlmModule } from './llm.module';
 import { LLMService } from './llm.service.interface';
@@ -43,7 +45,18 @@ const mockJsonParserUtil = {
 describe('LlmModule', () => {
   it('should compile the module', async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [LlmModule],
+      imports: [
+        LlmModule,
+        LoggerModule.forRootAsync({
+          imports: [ConfigModule],
+          inject: [ConfigService],
+          useFactory: (configService: ConfigService) => ({
+            pinoHttp: {
+              level: configService.get('LOG_LEVEL'),
+            },
+          }),
+        }),
+      ],
       providers: [Logger],
     })
       .overrideProvider(ConfigService)
@@ -56,7 +69,18 @@ describe('LlmModule', () => {
 
   it('should provide the LLMService', async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [LlmModule],
+      imports: [
+        LlmModule,
+        LoggerModule.forRootAsync({
+          imports: [ConfigModule],
+          inject: [ConfigService],
+          useFactory: (configService: ConfigService) => ({
+            pinoHttp: {
+              level: configService.get('LOG_LEVEL'),
+            },
+          }),
+        }),
+      ],
       providers: [Logger],
     })
       .overrideProvider(ConfigService)
