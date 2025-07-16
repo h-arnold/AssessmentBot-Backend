@@ -1,3 +1,9 @@
+import { INestApplication } from '@nestjs/common';
+import request from 'supertest';
+
+import { TestAppModule } from './test-app.module';
+import { ConfigService } from '../src/config/config.service';
+
 interface LogObject {
   req?: {
     id?: string;
@@ -47,7 +53,8 @@ describe('Logging (e2e)', () => {
     await app.init();
 
     const configService = app.get(ConfigService);
-    apiKey = configService.get('API_KEY');
+    // @ts-expect-error: test config typing is not strict
+    apiKey = configService.get('API_KEY') as string;
   });
 
   afterAll(async () => {
@@ -93,10 +100,13 @@ describe('Logging (e2e)', () => {
     expect(logObject).toBeDefined();
     expect(logObject).toHaveProperty('req');
     expect(logObject).toHaveProperty('res');
-    expect(logObject.req).toHaveProperty('id');
-    expect(logObject.req).toHaveProperty('method', 'GET');
-    expect(logObject.req).toHaveProperty('url', '/');
-    expect(logObject.res).toHaveProperty('statusCode', 200);
+    expect(logObject).toBeDefined();
+    expect(logObject?.req).toBeDefined();
+    expect(logObject?.req).toHaveProperty('id');
+    expect(logObject?.req).toHaveProperty('method', 'GET');
+    expect(logObject).toBeDefined();
+    expect(logObject?.req).toHaveProperty('url', '/');
+    expect(logObject?.res).toHaveProperty('statusCode', 200);
     expect(logObject).toHaveProperty('responseTime');
   });
 
@@ -116,7 +126,10 @@ describe('Logging (e2e)', () => {
     );
     expect(logObjects.length).toBeGreaterThan(0);
     for (const logObject of logObjects) {
-      expect(logObject.req.headers.authorization).toBe('Bearer <redacted>');
+      expect(logObject).toBeDefined();
+      expect(logObject.req).toBeDefined();
+      expect(logObject.req?.headers).toBeDefined();
+      expect(logObject.req?.headers?.authorization).toBe('Bearer <redacted>');
     }
   });
 
@@ -146,14 +159,12 @@ describe('Logging (e2e)', () => {
         obj.msg.includes('API key authentication attempt successful'),
     );
 
-    expect(
-      requestCompletedLog &&
-        requestCompletedLog.req &&
-        requestCompletedLog.req.id,
-    ).toBeDefined();
-    expect(serviceLog && serviceLog.req && serviceLog.req.id).toBe(
-      requestCompletedLog.req.id,
-    );
+    expect(requestCompletedLog).toBeDefined();
+    expect(requestCompletedLog?.req).toBeDefined();
+    expect(requestCompletedLog?.req?.id).toBeDefined();
+    expect(serviceLog).toBeDefined();
+    expect(serviceLog?.req).toBeDefined();
+    expect(serviceLog?.req?.id).toBe(requestCompletedLog?.req?.id);
   });
 
   it('5. Should Log Errors with Stack Traces', async () => {
@@ -166,10 +177,10 @@ describe('Logging (e2e)', () => {
       (obj) => obj.level === 50 || obj.level === 'error',
     );
     expect(logObject).toBeDefined();
-    expect(logObject).toHaveProperty('err');
-    expect(logObject.err).toHaveProperty('type');
-    expect(logObject.err).toHaveProperty('message');
-    expect(logObject.err).toHaveProperty('stack');
+    expect(logObject?.err).toBeDefined();
+    expect(logObject?.err).toHaveProperty('type');
+    expect(logObject?.err).toHaveProperty('message');
+    expect(logObject?.err).toHaveProperty('stack');
   });
 
   it('6. Should Include ISO-8601 Timestamps', async () => {
@@ -179,8 +190,10 @@ describe('Logging (e2e)', () => {
 
     const logObject = getLogObjects().find((obj) => obj.timestamp);
     expect(logObject).toBeDefined();
-    const timestamp = new Date(logObject.timestamp);
-    expect(timestamp.toISOString()).toBe(logObject.timestamp);
+    expect(logObject).toBeDefined();
+    expect(logObject?.timestamp).toBeDefined();
+    const timestamp = new Date(logObject!.timestamp!);
+    expect(timestamp.toISOString()).toBe(logObject!.timestamp);
   });
 
   it('7. Should Respect LOG_LEVEL Configuration', () => {
