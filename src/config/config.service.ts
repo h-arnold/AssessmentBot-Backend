@@ -50,8 +50,8 @@ const configSchema = z.object({
     .transform((val) => val.split(',').map((s) => s.trim())),
   GEMINI_API_KEY: z.string().min(1),
   LOG_LEVEL: z
-    .enum(['log', 'error', 'warn', 'debug', 'verbose', 'fatal'])
-    .default('log'),
+    .enum(['info', 'error', 'warn', 'debug', 'verbose', 'fatal'])
+    .default('info'),
 });
 
 // Infer the type from the schema
