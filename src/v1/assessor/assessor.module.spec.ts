@@ -4,7 +4,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AssessorController } from './assessor.controller';
 import { AssessorModule } from './assessor.module';
 import { AssessorService } from './assessor.service';
-import { ConfigModule } from '../../config/config.module';
 import { ConfigService } from '../../config/config.service';
 
 const mockConfigService = {
