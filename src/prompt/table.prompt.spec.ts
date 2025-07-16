@@ -64,9 +64,10 @@ describe('TablePrompt', () => {
     // Log the rendered user message for debugging
     console.info('--- Rendered TablePrompt User Message ---');
     if (!isSystemUserMessage(message)) {
-      throw new Error('Prompt did not return expected object shape');
+      throw new Error(
+        'Prompt did not return expected object shape. \n Rendered TablePrompt User Message: ${message.user)',
+      );
     }
-    console.info(message.user);
     expect(message.system).toBe(systemTemplate);
     // Render expected user message using Mustache
     const expectedUser = mustache.render(userTemplate, {

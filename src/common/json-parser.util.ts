@@ -16,7 +16,7 @@ import { jsonrepair } from 'jsonrepair';
  */
 @Injectable()
 export class JsonParserUtil {
-  public logger = new Logger(JsonParserUtil.name);
+  private logger = new Logger(JsonParserUtil.name);
 
   /**
    * Parses and repairs a JSON string into a structured object or array.
@@ -52,7 +52,9 @@ export class JsonParserUtil {
         this.logger.error(
           `JSON parsing failed: No JSON object found in input: ${jsonString}`,
         );
-        throw new BadRequestException('No valid JSON object found in response.');
+        throw new BadRequestException(
+          'No valid JSON object found in response.',
+        );
       }
     } else {
       jsonContent = processedString;

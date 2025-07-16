@@ -65,11 +65,10 @@ describe('TextPrompt', () => {
     // Log the rendered user message for debugging
     console.info('--- Rendered TextPrompt User Message ---');
     if (!isSystemUserMessage(message)) {
-      throw new Error('Prompt did not return expected object shape');
+      throw new Error(
+        `Prompt did not return expected object shape. \n Actual message.system: \n ${message.system} \nActual message.user: \n ${message.user}`,
+      );
     }
-    const logger = new Logger('TextPromptTest');
-    logger.debug(`Actual message.system: ${message.system}`);
-    logger.debug(`Actual message.user: ${message.user}`);
     expect(message.system).toBe(systemTemplate);
     // Render expected user message using Mustache
     const expectedUser = mustache.render(userTemplate, {
