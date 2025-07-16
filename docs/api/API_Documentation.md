@@ -32,16 +32,16 @@ This endpoint is responsible for initiating an assessment. It accepts a JSON pay
   ```json
   {
     "taskType": "TEXT | TABLE | IMAGE",
-    "reference": "string | Buffer (base64 encoded for images)",
-    "template": "string | Buffer (base64 encoded for images)",
-    "studentResponse": "string | Buffer (base64 encoded for images)"
+    "reference": "string | Buffer (for IMAGE: base64-encoded string, with or without Data URI prefix)",
+    "template": "string | Buffer (for IMAGE: base64-encoded string, with or without Data URI prefix)",
+    "studentResponse": "string | Buffer (for IMAGE: base64-encoded string, with or without Data URI prefix)"
   }
   ```
 
   - `taskType`: (Required) The type of assessment task. Must be one of `TEXT`, `TABLE`, or `IMAGE`.
-  - `reference`: (Required) The reference solution or content for the assessment. Can be a string (for TEXT/TABLE) or a base64 encoded string/Buffer (for IMAGE).
-  - `template`: (Required) The template or instructions for the assessment. Can be a string (for TEXT/TABLE) or a base64 encoded string/Buffer (for IMAGE).
-  - `studentResponse`: (Required) The student's response to be assessed. Can be a string (for TEXT/TABLE) or a base64 encoded string/Buffer (for IMAGE).
+  - `reference`: (Required) The reference solution or content for the assessment. Can be a string (for TEXT/TABLE) or, for IMAGE, a base64-encoded string or Buffer. For IMAGE, both raw base64 strings (no prefix) and Data URI strings (e.g., `data:image/png;base64,...`) are accepted.
+  - `template`: (Required) The template or instructions for the assessment. Can be a string (for TEXT/TABLE) or, for IMAGE, a base64-encoded string or Buffer. For IMAGE, both raw base64 strings (no prefix) and Data URI strings are accepted.
+  - `studentResponse`: (Required) The student's response to be assessed. Can be a string (for TEXT/TABLE) or, for IMAGE, a base64-encoded string or Buffer. For IMAGE, both raw base64 strings (no prefix) and Data URI strings are accepted.
 
   **Image Validation**
 
@@ -53,7 +53,12 @@ This endpoint is responsible for initiating an assessment. It accepts a JSON pay
     - Only images with MIME types listed in the `ALLOWED_IMAGE_MIME_TYPES` environment variable (comma-separated, default: `image/png`) are accepted.
     - Disallowed types (e.g., GIF, BMP) will be rejected with a `400 Bad Request` error.
   - **Supported Formats:**
-    - Images may be provided as Buffers or base64-encoded strings (with or without a data URI prefix).
+    - Images may be provided as Buffers or base64-encoded strings.
+    - For base64-encoded images, both of the following formats are accepted:
+      1. **Raw base64 string** (no prefix):
+         - Example: `iVBORw0KGgoAAAANSUhEUgAA...` (just the base64 data)
+      2. **Data URI string**:
+         - Example: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...`
     - The pipe will infer the MIME type and size, and reject invalid or malformed images.
   - **Error Responses:**
     - `400 Bad Request`: Returned if the image is too large, of a disallowed type, or malformed. Error messages will indicate the reason (e.g., "Image exceeds maximum size", "Disallowed MIME type").
@@ -66,6 +71,28 @@ This endpoint is responsible for initiating an assessment. It accepts a JSON pay
     "reference": "The quick brown fox jumps over the lazy dog.",
     "template": "Write a sentence about a fox.",
     "studentResponse": "A fox is a mammal."
+  }
+  ```
+
+  **Example (`IMAGE` task, raw base64):**
+
+  ```json
+  {
+    "taskType": "IMAGE",
+    "reference": "iVBORw0KGgoAAAANSUhEUgAA...", // base64 string only
+    "template": "iVBORw0KGgoAAAANSUhEUgAA...",
+    "studentResponse": "iVBORw0KGgoAAAANSUhEUgAA..."
+  }
+  ```
+
+  **Example (`IMAGE` task, Data URI):**
+
+  ```json
+  {
+    "taskType": "IMAGE",
+    "reference": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
+    "template": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
+    "studentResponse": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
   }
   ```
 
