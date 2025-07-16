@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { LoggerModule } from 'nestjs-pino';
 
 import { AssessorService } from './assessor.service';
+import { ConfigModule, ConfigService } from '../../config';
 import { CreateAssessorDto, TaskType } from './dto/create-assessor.dto';
 import { JsonParserUtil } from '../../common/json-parser.util';
 import { GeminiService } from '../../llm/gemini.service';

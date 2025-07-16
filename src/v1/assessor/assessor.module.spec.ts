@@ -5,6 +5,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { AssessorController } from './assessor.controller';
 import { AssessorModule } from './assessor.module';
 import { AssessorService } from './assessor.service';
+import { ConfigModule, ConfigService } from '../../config';
 
 const mockConfigService = {
   get: jest.fn((key: string) => {
