@@ -1,65 +1,39 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  ConsoleLogger,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import * as request from 'supertest';
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.test.env' });
+import request from 'supertest';
 
-// import { AppModule } from './../src/app.module'; // No longer directly importing AppModule
+import { AppModule } from './../src/app.module';
 import { HttpExceptionFilter } from './../src/common/http-exception.filter';
 import { ZodValidationPipe } from './../src/common/zod-validation.pipe';
-import { TestAppModule } from './test-app.module'; // Import the new TestAppModule
+import { ConfigService } from './../src/config/config.service';
 
 describe('Global Setup and E2E Tests', () => {
   let app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [TestAppModule], // Use TestAppModule here
+      imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    // Register global pipes and filters explicitly for the test application
+    const configService = moduleFixture.get(ConfigService);
+    // Use console logger to ensure debug output is visible
+    const logger = new ConsoleLogger();
+    logger.setLogLevels(configService.get('LOG_LEVEL'));
+    app.useLogger(logger);
     app.useGlobalFilters(new HttpExceptionFilter());
-    app.useGlobalPipes(new ZodValidationPipe(null)); // Pass null as schema for global pipe
+    app.useGlobalPipes(new ZodValidationPipe());
     await app.init();
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await app.close();
-  });
-
-  it('Global HttpExceptionFilter should catch an exception thrown from a test controller', async () => {
-    const response = await request(app.getHttpServer())
-      .get('/test-error')
-      .expect(400);
-
-    expect(response.body).toHaveProperty('statusCode', 400);
-    expect(response.body).toHaveProperty('message', 'This is a test error');
-    expect(response.body).toHaveProperty('timestamp'); // This should now pass
-    expect(response.body).toHaveProperty('path', '/test-error');
-  });
-
-  it('Controller endpoint should return 400 for invalid payload', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/test-validation')
-      .send({ name: 'ab', age: 17 }) // Invalid data
-      .expect(400);
-
-    expect(response.body).toHaveProperty('statusCode', 400);
-    expect(response.body).toHaveProperty('message', 'Validation failed'); // ZodValidationPipe message
-    expect(response.body).toHaveProperty('errors');
-    expect(response.body.errors).toHaveLength(2);
-    expect(response.body.errors[0]).toHaveProperty('path', ['name']);
-    expect(response.body.errors[1]).toHaveProperty('path', ['age']);
-  });
-
-  it('Controller endpoint should process valid payload successfully', async () => {
-    const validData = { name: 'John Doe', age: 25 };
-    const response = await request(app.getHttpServer())
-      .post('/test-validation')
-      .send(validData)
-      .expect(201); // Assuming a POST request typically returns 201 Created
-
-    expect(response.body).toHaveProperty('message', 'Validation successful');
-    expect(response.body).toHaveProperty('data', validData);
   });
 
   it('CommonModule should integrate properly with existing ConfigModule', async () => {

@@ -26,6 +26,16 @@
       "detail": "Runs 'npm test' to execute all unit and integration tests."
     },
     {
+      "label": "Run E2E Tests",
+      "type": "npm",
+      "script": "test:e2e",
+      "group": {
+      "kind": "test",
+      "isDefault": true
+      },
+      "detail": "Runs 'npm run test:e2e' to execute all end-to-end tests."
+    },
+    {
       "label": "Run Linter",
       "type": "npm",
       "script": "lint",

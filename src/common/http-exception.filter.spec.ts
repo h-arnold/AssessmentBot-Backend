@@ -272,7 +272,7 @@ describe('HttpExceptionFilter', () => {
   it('should use error level for 5xx errors', () => {
     // This test checks that 5xx errors are logged with error level
     const exception = new HttpException(
-      'Internal Server Error',
+      'Internal server error',
       HttpStatus.INTERNAL_SERVER_ERROR,
     );
     const loggerSpy = jest
@@ -311,7 +311,7 @@ describe('HttpExceptionFilter', () => {
     // Call the filter's catch method and check that the logger was called with the expected arguments
     filter.catch(exception, mockArgumentsHost);
     expect(loggerSpy).toHaveBeenCalledWith(
-      `HTTP ${HttpStatus.INTERNAL_SERVER_ERROR} - Internal Server Error`,
+      `HTTP ${HttpStatus.INTERNAL_SERVER_ERROR} - Internal server error`,
       {
         method: 'GET',
         path: '/error',

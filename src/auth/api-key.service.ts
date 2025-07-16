@@ -4,6 +4,39 @@ import { z } from 'zod';
 import { User } from './user.interface';
 import { ConfigService, Config } from '../config/config.service';
 
+/**
+ * Service responsible for managing and validating API keys for authentication.
+ *
+ * @class ApiKeyService
+ * @decorator `@Injectable`
+ *
+ * @constructor
+ * Initializes the service with API keys retrieved from the configuration.
+ * Logs a warning if no API keys are configured.
+ *
+ * @param {ConfigService} configService - Service for accessing application configuration.
+ * @param {Logger} logger - Service for logging messages and warnings.
+ *
+ * @property {string[]} apiKeys - Array of valid API keys retrieved from the configuration.
+ *
+ * @method validate
+ * Validates the provided API key against the configured API keys.
+ *
+ * @param {unknown} apiKey - The API key to validate.
+ * @returns {User | null} - Returns a user object containing the valid API key if authentication is successful, or `null` otherwise.
+ *
+ * @throws {UnauthorizedException} Throws an exception if the API key is invalid or missing.
+ *
+ * @example
+ * ```typescript
+ * const user = apiKeyService.validate('validApiKey123');
+ * if (user) {
+ *   Logger.debug('Authentication successful:', user);
+ * } else {
+ *   Logger.debug('Authentication failed');
+ * }
+ * ```
+ */
 @Injectable()
 export class ApiKeyService {
   private readonly apiKeys: string[];

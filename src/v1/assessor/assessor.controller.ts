@@ -14,14 +14,36 @@ import { ConfigService } from 'src/config/config.service';
 
 import { AssessorService } from './assessor.service';
 import {
-  CreateAssessorDto,
+  type CreateAssessorDto,
   createAssessorDtoSchema,
 } from './dto/create-assessor.dto';
+import { LlmResponse } from '../../llm/types';
 
 /**
  * Controller for handling assessor-related API requests.
  */
 
+/**
+ * Controller responsible for handling assessor-related operations.
+ *
+ * @remarks
+ * This controller is part of the v1 API and is protected by the `ApiKeyGuard`.
+ * It provides endpoints for creating assessments and validating input data.
+ *
+ * @constructor
+ * @param assessorService - Service responsible for assessment-related business logic.
+ * @param configService - Service for accessing application configuration settings.
+ *
+ * @method create
+ * Handles the creation of a new assessment.
+ *
+ * @param createAssessorDto - The data transfer object containing assessment details.
+ * @returns A promise that resolves to the result of the assessment creation.
+ *
+ * @remarks
+ * If the `taskType` is `IMAGE`, additional validation is performed on image-related fields
+ * (`reference`, `template`, and `studentResponse`) using the `ImageValidationPipe`.
+ */
 @Controller('v1/assessor')
 @UseGuards(ApiKeyGuard)
 export class AssessorController {
@@ -39,7 +61,7 @@ export class AssessorController {
   async create(
     @Body(new ZodValidationPipe(createAssessorDtoSchema))
     createAssessorDto: CreateAssessorDto,
-  ): Promise<{ message: string }> {
+  ): Promise<LlmResponse> {
     // If taskType is IMAGE, validate image fields using ImageValidationPipe
     if (createAssessorDto.taskType === 'IMAGE') {
       const imagePipe = new ImageValidationPipe(this.configService);

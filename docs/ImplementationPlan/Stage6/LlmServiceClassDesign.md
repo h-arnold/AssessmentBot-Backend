@@ -76,7 +76,7 @@ export interface LLMService {
 
 ```ts
 import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigService } from '../config/config.service';
 import { LLMService } from './llm.service.interface';
 import { GeminiService } from './gemini.service';
 

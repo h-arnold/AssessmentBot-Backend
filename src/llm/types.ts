@@ -14,6 +14,15 @@ export const AssessmentCriterionSchema = z.object({
  * Defines the schema for the complete LLM assessment response.
  * It expects exactly three criteria: completeness, accuracy, and spag.
  */
+/**
+ * Schema for validating the response from an LLM (Large Language Model).
+ * This schema ensures that the response adheres to specific assessment criteria.
+ *
+ * Properties:
+ * - `completeness`: Represents the completeness of the response, validated using the `AssessmentCriterionSchema`.
+ * - `accuracy`: Represents the accuracy of the response, validated using the `AssessmentCriterionSchema`.
+ * - `spag`: Represents spelling, punctuation, and grammar (SPAG) of the response, validated using the `AssessmentCriterionSchema`.
+ */
 export const LlmResponseSchema = z.object({
   completeness: AssessmentCriterionSchema,
   accuracy: AssessmentCriterionSchema,

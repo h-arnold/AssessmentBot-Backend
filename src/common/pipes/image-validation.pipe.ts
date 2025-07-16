@@ -4,6 +4,43 @@ import validator from 'validator';
 
 import { ConfigService } from '../../config/config.service';
 
+/**
+ * A pipe for validating image uploads, ensuring they meet size and format requirements.
+ * This pipe supports both binary image buffers and base64-encoded image strings.
+ *
+ * @class ImageValidationPipe
+ * @implements {PipeTransform}
+ *
+ * @constructor
+ * @param {ConfigService} configService - Service for accessing configuration values.
+ *
+ * @method transform
+ * Validates the provided image data based on its type (Buffer or base64 string).
+ * Throws a `BadRequestException` if the image fails validation.
+ *
+ * @param {unknown} value - The image data to validate. Can be a Buffer or a base64 string.
+ * @returns {Promise<unknown>} - The validated image data, or the original value if validation passes.
+ *
+ * Validation Rules:
+ * - For Buffers:
+ *   - Must not be empty.
+ *   - Must not exceed the maximum file size defined in configuration.
+ *   - Must have a MIME type included in the allowed list.
+ * - For base64 strings:
+ *   - Must not exceed a length limit to mitigate ReDoS risks.
+ *   - Must start with a valid Data URI prefix (`data:image/`).
+ *   - Must be base64-encoded.
+ *   - Must have a MIME type included in the allowed list.
+ *   - Must decode to a non-empty Buffer.
+ *   - Must not exceed the maximum file size defined in configuration.
+ *
+ * Exceptions:
+ * - Throws `BadRequestException` for invalid image buffers or base64 strings.
+ *
+ * Configuration Keys:
+ * - `MAX_IMAGE_UPLOAD_SIZE_MB`: Maximum allowed image size in megabytes.
+ * - `ALLOWED_IMAGE_MIME_TYPES`: List of allowed MIME types for images.
+ */
 @Injectable()
 export class ImageValidationPipe implements PipeTransform {
   constructor(private readonly configService: ConfigService) {}

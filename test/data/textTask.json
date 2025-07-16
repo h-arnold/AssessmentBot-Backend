@@ -1,0 +1,6 @@
+{
+  "taskType": "TEXT",
+  "referenceTask": "Movement data - it can measure movement in all directions. Your steps, Heart rate, Sleep, Stress levels, Distance travelled, {any other valid and correct fitness tracker data}",
+  "emptyTask": "Describe the types of data a fitness tracker can measure.",
+  "studentTask": "Track our breathing, Blood, Oxygen, Heat"
+}
