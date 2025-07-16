@@ -40,20 +40,35 @@ import { AssessorModule } from './v1/assessor/assessor.module';
       useFactory: (configService: ConfigService): Params => ({
         pinoHttp: {
           level: configService.get('LOG_LEVEL'),
-          transport: {
-            target: 'pino-pretty',
-            options: {
-              singleLine: true,
-            },
-          },
+          // No transport: output is JSON
           serializers: {
             req: (req: IncomingMessage): IncomingMessage => {
               // Clone the request object shallowly for logging
               const clonedReq = Object.assign({}, req);
-              if (clonedReq.headers && clonedReq.headers.authorization) {
-                clonedReq.headers = Object.assign({}, clonedReq.headers, {
-                  authorization: 'Bearer <redacted>',
-                });
+              if (clonedReq.headers) {
+                // Debug: print incoming authorization header value
+                // eslint-disable-next-line no-console
+                console.log(
+                  '[DEBUG] Incoming authorization header:',
+                  clonedReq.headers.authorization,
+                );
+                if (
+                  Object.prototype.hasOwnProperty.call(
+                    clonedReq.headers,
+                    'authorization',
+                  )
+                ) {
+                  // Always set to 'Bearer <redacted>' regardless of original value
+                  clonedReq.headers = Object.assign({}, clonedReq.headers, {
+                    authorization: 'Bearer <redacted>',
+                  });
+                  // Debug: print outgoing authorization header value
+                  // eslint-disable-next-line no-console
+                  console.log(
+                    '[DEBUG] Outgoing authorization header:',
+                    clonedReq.headers.authorization,
+                  );
+                }
               }
               return clonedReq;
             },
