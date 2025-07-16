@@ -52,8 +52,6 @@ async function bootstrap(): Promise<void> {
 
   app.use(json({ limit: payloadLimit }));
 
-  app.useGlobalFilters(new HttpExceptionFilter(app.get(Logger)));
-  app.useLogger(app.get(Logger));
   await app.listen(3000);
 }
 bootstrap();

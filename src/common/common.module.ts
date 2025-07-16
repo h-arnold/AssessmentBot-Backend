@@ -1,4 +1,6 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
+import { LoggerModule } from 'nestjs-pino';
 
 import { HttpExceptionFilter } from './http-exception.filter';
 import { JsonParserUtil } from './json-parser.util';
@@ -14,7 +16,11 @@ import { JsonParserUtil } from './json-parser.util';
  * making them available for use in other modules that import `CommonModule`.
  */
 @Module({
-  providers: [HttpExceptionFilter, JsonParserUtil, Logger],
-  exports: [HttpExceptionFilter, JsonParserUtil, Logger],
+  imports: [LoggerModule],
+  providers: [
+    JsonParserUtil,
+    { provide: APP_FILTER, useClass: HttpExceptionFilter },
+  ],
+  exports: [JsonParserUtil],
 })
 export class CommonModule {}

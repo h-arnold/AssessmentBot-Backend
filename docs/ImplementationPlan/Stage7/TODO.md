@@ -62,6 +62,9 @@ This document outlines the tasks required to implement structured logging and AP
 - **Solution**: The test setup files (`*.spec.ts`) for modules using `ConfigService` were updated to include a valid `LOG_LEVEL` (e.g., 'debug') in the mocked environment variables.
 - **Issue**: Multiple commit attempts were blocked by the `husky` pre-commit hook due to persistent ESLint errors, particularly a tricky `explicit-function-return-type` error in the `app.module.ts` `LoggerModule.forRootAsync` configuration.
 - **Solution**: After several attempts, the issue was resolved by importing `Params` from `nestjs-pino` to explicitly type the return value of the `useFactory` function, and importing `IncomingMessage` from `http` to correctly type the `req` parameter in the pino serializer.
+- **Issue**: All 26 E2E tests failed to run after the Green Phase implementation. The primary error was an `Invalid environment configuration` from `ConfigService` because the Zod schema for `LOG_LEVEL` incorrectly used `.transform()` instead of `z.preprocess()`, causing a validation failure on the comma-separated string.
+- **Secondary Issue**: This configuration error prevented the NestJS application from building in the test environment, leading to a `TypeError` on `app.close()` in all E2E test suites because the `app` instance was never created.
+- **Solution**: The Zod schema in `src/config/config.service.ts` for `LOG_LEVEL` must be changed from `.transform()` to `z.preprocess()` to correctly parse the string into an array _before_ validation.
 
 ### Refactor Phase
 

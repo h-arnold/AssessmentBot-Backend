@@ -8,17 +8,17 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: '.test.env' });
 import request from 'supertest';
 
-import { AppModule } from './../src/app.module';
 import { HttpExceptionFilter } from './../src/common/http-exception.filter';
 import { ZodValidationPipe } from './../src/common/zod-validation.pipe';
 import { ConfigService } from './../src/config/config.service';
+import { TestAppModule } from './test-app.module';
 
 describe('Global Setup and E2E Tests', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [TestAppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();

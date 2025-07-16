@@ -5,12 +5,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { json } from 'express';
 import request from 'supertest';
 
-import { AppModule } from './../src/app.module';
 import { ConfigService } from './../src/config/config.service';
 import {
   CreateAssessorDto,
   TaskType,
 } from './../src/v1/assessor/dto/create-assessor.dto';
+import { TestAppModule } from './test-app.module';
 
 // --- Synchronous Top-Level File Loading with Hardcoded Paths ---
 
@@ -54,7 +54,7 @@ describe('AssessorController (e2e-live)', () => {
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [TestAppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication({ bodyParser: false });

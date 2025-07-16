@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 
-import { AppModule } from '../src/app.module';
+import { TestAppModule } from './test-app.module';
 import { ConfigService } from '../src/config/config.service';
 
 describe('Logging (e2e)', () => {
@@ -19,7 +19,7 @@ describe('Logging (e2e)', () => {
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [TestAppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -128,7 +128,7 @@ describe('Logging (e2e)', () => {
   it('7. Should Respect LOG_LEVEL Configuration', () => {
     // This test requires manipulating environment variables, which is complex in a single test file.
     // We will manually verify this for now.
-    // eslint-disable-next-line no-console
+
     console.info('Skipping LOG_LEVEL test in e2e suite.');
     expect(true).toBe(true);
   });

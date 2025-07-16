@@ -8,12 +8,12 @@ dotenv.config({ path: '.test.env' });
 import { json } from 'express';
 import request from 'supertest';
 
-import { AppModule } from './../src/app.module';
 import { ConfigService } from './../src/config/config.service';
 import {
   CreateAssessorDto,
   TaskType,
 } from './../src/v1/assessor/dto/create-assessor.dto';
+import { TestAppModule } from './test-app.module';
 
 // Helper function to load a file and convert it to a data URI
 const loadFileAsDataURI = (filePath: string): string => {
@@ -51,7 +51,7 @@ describe('AssessorController (e2e)', () => {
   beforeAll(async () => {
     // Environment variables are loaded from .test.env
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [TestAppModule],
     }).compile();
     app = moduleFixture.createNestApplication({ bodyParser: false });
     configService = moduleFixture.get<ConfigService>(ConfigService);

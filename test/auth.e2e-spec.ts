@@ -7,10 +7,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as dotenv from 'dotenv';
 import request from 'supertest';
 
-import { AppModule } from './../src/app.module';
 import { HttpExceptionFilter } from './../src/common/http-exception.filter';
 import { ZodValidationPipe } from './../src/common/zod-validation.pipe';
 import { ConfigService } from './../src/config/config.service';
+import { TestAppModule } from './test-app.module';
 
 dotenv.config({ path: '.test.env' });
 
@@ -25,7 +25,7 @@ describe('Authentication E2E Tests', () => {
   beforeEach(async () => {
     // Environment variables are loaded from .test.env
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [TestAppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();

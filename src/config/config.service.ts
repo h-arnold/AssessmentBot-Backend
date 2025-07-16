@@ -51,7 +51,7 @@ const configSchema = z.object({
   GEMINI_API_KEY: z.string().min(1),
   LOG_LEVEL: z
     .enum(['log', 'error', 'warn', 'debug', 'verbose', 'fatal'])
-    .default(process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
+    .default('info'),
 });
 
 // Infer the type from the schema
