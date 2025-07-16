@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Logger } from '@nestjs/common';
 import { ZodError } from 'zod';
 
 import { GeminiService } from './gemini.service';
@@ -25,6 +26,7 @@ describe('GeminiService', () => {
   let service: GeminiService;
   let configService: ConfigService;
   let jsonParserUtil: JsonParserUtil;
+  let logger: Logger;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -42,7 +44,9 @@ describe('GeminiService', () => {
       parse: jest.fn((json: string) => JSON.parse(json)),
     } as unknown as JsonParserUtil;
 
-    service = new GeminiService(configService, jsonParserUtil);
+    logger = new Logger();
+
+    service = new GeminiService(configService, jsonParserUtil, logger);
   });
 
   it('should be defined', () => {

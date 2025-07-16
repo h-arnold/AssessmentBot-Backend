@@ -20,8 +20,8 @@ This document outlines the tasks required to implement structured logging and AP
 
 ### Red Phase: Failing Tests
 
-- [ ] **Implement Logging E2E Tests**: Create `test/logging.e2e-spec.ts` and implement all test cases as defined in `docs/ImplementationPlan/Stage7/TestCases.md`.
-- [ ] **Commit Red Phase changes and record commit ID here:** (commit: )
+- [x] **Implement Logging E2E Tests**: Create `test/logging.e2e-spec.ts` and implement all test cases as defined in `docs/ImplementationPlan/Stage7/TestCases.md`.
+- [ ] **Commit Red Phase changes and record commit ID here:** (commit: 86901b0cb676602c8fbabcaa226e08ecb46f55e4)
 - [ ] **Note any issues or changes that might affect future steps below.**
 
 #### Issues and Solutions Log (Red Phase)

@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { ImagePrompt } from './image.prompt';
@@ -14,7 +15,7 @@ describe('PromptFactory', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PromptFactory],
+      providers: [PromptFactory, Logger],
     }).compile();
 
     factory = module.get<PromptFactory>(PromptFactory);

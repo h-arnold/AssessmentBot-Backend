@@ -20,16 +20,10 @@ import { ConfigService } from '../config/config.service';
 @Injectable()
 export class GeminiService implements LLMService {
   private readonly client: GoogleGenerativeAI;
-  private readonly logger = new Logger(GeminiService.name);
-
-  /**
-   * Initializes the GeminiService.
-   * @param configService The configuration service for accessing environment variables.
-   * @param jsonParserUtil The utility for parsing JSON strings.
-   */
   constructor(
     private readonly configService: ConfigService,
     private readonly jsonParserUtil: JsonParserUtil,
+    private readonly logger: Logger,
   ) {
     const apiKey = this.configService.get('GEMINI_API_KEY');
     if (!apiKey) {

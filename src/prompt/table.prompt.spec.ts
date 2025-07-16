@@ -5,6 +5,7 @@ jest.mock('fs/promises', () => ({
 import * as fs from 'fs/promises';
 import path from 'path';
 
+import { Logger } from '@nestjs/common';
 import * as mustache from 'mustache';
 
 import { TablePrompt } from './table.prompt';
@@ -37,6 +38,12 @@ beforeAll(async () => {
 });
 
 describe('TablePrompt', () => {
+  let logger: Logger;
+
+  beforeEach(() => {
+    logger = new Logger();
+  });
+
   it('should build the final prompt object correctly', async () => {
     const inputs = {
       referenceTask: tableTask.referenceTask,
@@ -56,6 +63,7 @@ describe('TablePrompt', () => {
 
     const prompt = new TablePrompt(
       inputs,
+      logger,
       'table.user.prompt.md',
       systemTemplate,
     );

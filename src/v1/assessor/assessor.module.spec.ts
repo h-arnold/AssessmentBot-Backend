@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { AssessorController } from './assessor.controller';
@@ -35,6 +36,7 @@ describe('AssessorModule', () => {
   beforeEach(async () => {
     module = await Test.createTestingModule({
       imports: [AssessorModule],
+      providers: [Logger],
     })
       .overrideProvider(ConfigService)
       .useValue(mockConfigService)

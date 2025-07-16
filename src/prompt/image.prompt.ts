@@ -1,6 +1,8 @@
 import * as fs from 'fs/promises';
 import path from 'path';
 
+import { Logger } from '@nestjs/common';
+
 import { Prompt, PromptInput } from './prompt.base';
 import { getCurrentDirname } from '../common/file-utils';
 import { LlmPayload } from '../llm/llm.service.interface';
@@ -21,15 +23,17 @@ export class ImagePrompt extends Prompt {
   /**
    * Initializes the ImagePrompt instance.
    * @param inputs The prompt inputs.
+   * @param logger The logger instance.
    * @param images An array of image objects.
    * @param systemPrompt The system prompt string.
    */
   constructor(
     inputs: PromptInput,
+    logger: Logger,
     images?: { path: string; mimeType: string }[],
     systemPrompt?: string,
   ) {
-    super(inputs, undefined, systemPrompt);
+    super(inputs, logger, undefined, systemPrompt);
     this.images = images || [];
   }
 

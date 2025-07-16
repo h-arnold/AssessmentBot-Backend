@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 
 import { HttpExceptionFilter } from './http-exception.filter';
 import { JsonParserUtil } from './json-parser.util';
@@ -14,7 +14,7 @@ import { JsonParserUtil } from './json-parser.util';
  * making them available for use in other modules that import `CommonModule`.
  */
 @Module({
-  providers: [HttpExceptionFilter, JsonParserUtil],
-  exports: [HttpExceptionFilter, JsonParserUtil],
+  providers: [HttpExceptionFilter, JsonParserUtil, Logger],
+  exports: [HttpExceptionFilter, JsonParserUtil, Logger],
 })
 export class CommonModule {}

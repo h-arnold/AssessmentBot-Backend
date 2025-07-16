@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import { z } from 'zod';
 
@@ -50,12 +50,8 @@ const configSchema = z.object({
     .transform((val) => val.split(',').map((s) => s.trim())),
   GEMINI_API_KEY: z.string().min(1),
   LOG_LEVEL: z
-    .string()
-    .default(process.env.NODE_ENV === 'production' ? 'log' : 'debug')
-    .transform((val) => val.split(',').map((s) => s.trim()))
-    .pipe(
-      z.array(z.enum(['log', 'error', 'warn', 'debug', 'verbose', 'fatal'])),
-    ),
+    .enum(['log', 'error', 'warn', 'debug', 'verbose', 'fatal'])
+    .default(process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
 });
 
 // Infer the type from the schema
@@ -79,7 +75,6 @@ export type Config = z.infer<typeof configSchema>;
 @Injectable()
 export class ConfigService {
   private readonly config: Config;
-  private readonly logger = new Logger(ConfigService.name);
 
   constructor() {
     let loadedEnv = {};
@@ -96,11 +91,7 @@ export class ConfigService {
       this.config = configSchema.parse(combinedEnv);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        this.logger.error(
-          'Environment variable validation failed:',
-          error.errors,
-        );
-        throw new Error('Invalid environment configuration.');
+        throw new Error(`Invalid environment configuration: ${error.message}`);
       }
       throw error;
     }

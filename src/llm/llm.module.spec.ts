@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { LlmModule } from './llm.module';
@@ -13,6 +14,7 @@ const defaults = {
   API_KEYS: 'test-api-key',
   MAX_IMAGE_UPLOAD_SIZE_MB: '5',
   ALLOWED_IMAGE_MIME_TYPES: 'image/png,image/jpeg',
+  LOG_LEVEL: 'debug',
 };
 
 const mockConfigService = {
@@ -42,6 +44,7 @@ describe('LlmModule', () => {
   it('should compile the module', async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [LlmModule],
+      providers: [Logger],
     })
       .overrideProvider(ConfigService)
       .useValue(mockConfigService)
@@ -54,6 +57,7 @@ describe('LlmModule', () => {
   it('should provide the LLMService', async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [LlmModule],
+      providers: [Logger],
     })
       .overrideProvider(ConfigService)
       .useValue(mockConfigService)

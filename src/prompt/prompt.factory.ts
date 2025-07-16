@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { ImagePrompt } from './image.prompt';
 import { Prompt } from './prompt.base';
@@ -15,6 +15,8 @@ import {
  */
 @Injectable()
 export class PromptFactory {
+  constructor(private readonly logger: Logger) {}
+
   /**
    * Creates a prompt instance based on the provided DTO.
    * @param dto The DTO containing the task type and other data.
@@ -98,9 +100,19 @@ export class PromptFactory {
   ): Prompt {
     switch (dto.taskType) {
       case TaskType.TEXT:
-        return new TextPrompt(inputs, userTemplateFile, systemPrompt);
+        return new TextPrompt(
+          inputs,
+          this.logger,
+          userTemplateFile,
+          systemPrompt,
+        );
       case TaskType.TABLE:
-        return new TablePrompt(inputs, userTemplateFile, systemPrompt);
+        return new TablePrompt(
+          inputs,
+          this.logger,
+          userTemplateFile,
+          systemPrompt,
+        );
       case TaskType.IMAGE: {
         const imageInputs = {
           referenceTask: Buffer.isBuffer(dto.reference)
@@ -113,7 +125,12 @@ export class PromptFactory {
             ? dto.template.toString()
             : dto.template,
         };
-        return new ImagePrompt(imageInputs, dto.images, systemPrompt);
+        return new ImagePrompt(
+          imageInputs,
+          this.logger,
+          dto.images,
+          systemPrompt,
+        );
       }
       default:
         throw new Error('Unsupported task type');

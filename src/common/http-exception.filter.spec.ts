@@ -9,9 +9,11 @@ import { HttpExceptionFilter } from './http-exception.filter';
 
 describe('HttpExceptionFilter', () => {
   let filter: HttpExceptionFilter;
+  let logger: Logger;
 
   beforeEach(() => {
-    filter = new HttpExceptionFilter();
+    logger = new Logger();
+    filter = new HttpExceptionFilter(logger);
   });
 
   it('should be defined', () => {

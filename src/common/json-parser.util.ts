@@ -16,7 +16,7 @@ import { jsonrepair } from 'jsonrepair';
  */
 @Injectable()
 export class JsonParserUtil {
-  private logger = new Logger(JsonParserUtil.name);
+  constructor(private readonly logger: Logger) {}
 
   /**
    * Parses and repairs a JSON string into a structured object or array.

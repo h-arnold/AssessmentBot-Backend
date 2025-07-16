@@ -20,6 +20,7 @@
 import { NestFactory } from '@nestjs/core';
 import * as dotenv from 'dotenv';
 import { json } from 'express';
+import { Logger } from 'nestjs-pino';
 
 dotenv.config();
 
@@ -48,12 +49,11 @@ async function bootstrap(): Promise<void> {
 
   const configService = app.get(ConfigService);
   const payloadLimit = configService.getGlobalPayloadLimit();
-  const logLevel = configService.get('LOG_LEVEL'); // Already an array due to config schema transform
 
   app.use(json({ limit: payloadLimit }));
 
-  app.useGlobalFilters(new HttpExceptionFilter());
-  app.useLogger(logLevel);
+  app.useGlobalFilters(new HttpExceptionFilter(app.get(Logger)));
+  app.useLogger(app.get(Logger));
   await app.listen(3000);
 }
 bootstrap();

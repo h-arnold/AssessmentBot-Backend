@@ -1,10 +1,14 @@
+import { IncomingMessage } from 'http';
+
 import { Module } from '@nestjs/common';
+import { LoggerModule, Params } from 'nestjs-pino';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { ConfigModule } from './config/config.module';
+import { ConfigService } from './config/config.service';
 import { AssessorModule } from './v1/assessor/assessor.module';
 
 /**
@@ -28,7 +32,35 @@ import { AssessorModule } from './v1/assessor/assessor.module';
  * - `AppService`: The primary service for application-level business logic.
  */
 @Module({
-  imports: [ConfigModule, CommonModule, AuthModule, AssessorModule],
+  imports: [
+    ConfigModule,
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService): Params => ({
+        pinoHttp: {
+          level: configService.get('LOG_LEVEL'),
+          transport: {
+            target: 'pino-pretty',
+            options: {
+              singleLine: true,
+            },
+          },
+          serializers: {
+            req: (req: IncomingMessage): IncomingMessage => {
+              if (req.headers.authorization) {
+                req.headers.authorization = 'Bearer <redacted>';
+              }
+              return req;
+            },
+          },
+        },
+      }),
+    }),
+    CommonModule,
+    AuthModule,
+    AssessorModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

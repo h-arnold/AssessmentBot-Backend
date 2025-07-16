@@ -27,6 +27,7 @@ describe('ConfigService', () => {
     process.env.API_KEYS = 'test-api-key';
     process.env.MAX_IMAGE_UPLOAD_SIZE_MB = '5';
     process.env.ALLOWED_IMAGE_MIME_TYPES = 'image/png,image/jpeg';
+    process.env.LOG_LEVEL = 'debug';
   });
 
   afterAll(() => {
@@ -169,7 +170,7 @@ describe('ConfigService', () => {
     it('should fail when API_KEYS contains malformed keys', () => {
       process.env.API_KEYS = 'key1,key2_with_invalid_chars-@,key3';
       expect(() => new ConfigService()).toThrow(
-        'Invalid environment configuration.',
+        /Invalid environment configuration/,
       );
     });
 
@@ -261,12 +262,18 @@ describe('ConfigService', () => {
       ]);
     });
 
-    it('ConfigService should handle single ALLOWED_IMAGE_MIME_TYPES', () => {
+    it('should handle single ALLOWED_IMAGE_MIME_TYPES', () => {
       process.env.ALLOWED_IMAGE_MIME_TYPES = 'image/gif';
       const configService = new ConfigService();
       expect(configService.get('ALLOWED_IMAGE_MIME_TYPES')).toEqual([
         'image/gif',
       ]);
+    });
+
+    it('ConfigService should load LOG_LEVEL as a string', () => {
+      process.env.LOG_LEVEL = 'debug';
+      const configService = new ConfigService();
+      expect(configService.get('LOG_LEVEL')).toBe('debug');
     });
   });
 

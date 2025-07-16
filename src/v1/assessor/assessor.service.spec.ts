@@ -25,6 +25,7 @@ describe('AssessorService', () => {
     process.env.ALLOWED_IMAGE_MIME_TYPES = 'image/png,image/jpeg';
     process.env.APP_NAME = 'AssessmentBot-Backend';
     process.env.APP_VERSION = 'test-version';
+    process.env.LOG_LEVEL = 'debug';
   });
   beforeEach(async () => {
     const mockLlmService = { send: jest.fn() };

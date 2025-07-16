@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { ZodError } from 'zod';
 
 import { Prompt, PromptInput, PromptInputSchema } from './prompt.base';
@@ -6,6 +7,9 @@ import { LlmPayload } from '../llm/llm.service.interface';
 
 // Mock implementation of the abstract class for testing
 class TestPrompt extends Prompt {
+  constructor(inputs: unknown) {
+    super(inputs, new Logger());
+  }
   public async buildMessage(): Promise<LlmPayload> {
     return { system: '', images: [], messages: [] } as LlmPayload;
   }
