@@ -4,7 +4,6 @@ import { LoggerModule } from 'nestjs-pino';
 
 import { HttpExceptionFilter } from './http-exception.filter';
 import { JsonParserUtil } from './json-parser.util';
-
 /**
  * The `CommonModule` is a NestJS module that provides common utilities and filters
  * to be used across the application. It includes the following:
