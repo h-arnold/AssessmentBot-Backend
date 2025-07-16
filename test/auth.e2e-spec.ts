@@ -32,9 +32,9 @@ describe('Authentication E2E Tests', () => {
     configService = moduleFixture.get<ConfigService>(ConfigService);
     // Use console logger to ensure debug output is visible
     const logger = new ConsoleLogger();
-    logger.setLogLevels(configService.get('LOG_LEVEL'));
+    logger.setLogLevels([configService.get('LOG_LEVEL')]);
     app.useLogger(logger);
-    app.useGlobalFilters(new HttpExceptionFilter());
+    app.useGlobalFilters(new HttpExceptionFilter(logger));
     app.useGlobalPipes(new ZodValidationPipe());
     await app.init();
   });

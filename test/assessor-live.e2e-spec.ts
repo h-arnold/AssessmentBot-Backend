@@ -5,7 +5,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { json } from 'express';
 import request from 'supertest';
 
-import { ConfigService } from './../src/config/config.service';
 import {
   CreateAssessorDto,
   TaskType,
@@ -61,7 +60,7 @@ describe('AssessorController (e2e-live)', () => {
     configService = moduleFixture.get<ConfigService>(ConfigService);
     // Use console logger to ensure debug output is visible
     const logger = new ConsoleLogger();
-    logger.setLogLevels(configService.get('LOG_LEVEL'));
+    logger.setLogLevels([configService.get('LOG_LEVEL')]);
     app.useLogger(logger);
 
     const apiKeys = configService.get('API_KEYS');

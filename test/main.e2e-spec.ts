@@ -25,9 +25,9 @@ describe('Global Setup and E2E Tests', () => {
     const configService = moduleFixture.get(ConfigService);
     // Use console logger to ensure debug output is visible
     const logger = new ConsoleLogger();
-    logger.setLogLevels(configService.get('LOG_LEVEL'));
+    logger.setLogLevels([configService.get('LOG_LEVEL')]);
     app.useLogger(logger);
-    app.useGlobalFilters(new HttpExceptionFilter());
+    app.useGlobalFilters(new HttpExceptionFilter(logger));
     app.useGlobalPipes(new ZodValidationPipe());
     await app.init();
   });

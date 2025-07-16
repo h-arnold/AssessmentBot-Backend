@@ -57,7 +57,7 @@ describe('AssessorController (e2e)', () => {
     configService = moduleFixture.get<ConfigService>(ConfigService);
     // Use console logger to ensure debug output is visible
     const logger = new ConsoleLogger();
-    logger.setLogLevels(configService.get('LOG_LEVEL'));
+    logger.setLogLevels([configService.get('LOG_LEVEL')]);
     app.useLogger(logger);
     const apiKeys = configService.get('API_KEYS');
     if (!apiKeys || apiKeys.length === 0) {
