@@ -24,7 +24,7 @@ import { User } from './user.interface';
  * @throws {UnauthorizedException} - If the API key is invalid or no user is found.
  */
 @Injectable()
-export class ApiKeyStrategy extends PassportStrategy(Strategy) {
+export class ApiKeyStrategy extends PassportStrategy(Strategy, 'bearer') {
   constructor(private readonly apiKeyService: ApiKeyService) {
     super();
   }

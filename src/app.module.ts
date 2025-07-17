@@ -1,4 +1,15 @@
-import { IncomingMessage } from 'http';
+import { IncomingMessage, ServerResponse } from 'http';
+
+// Type guard to check if req has an id property of type string or number
+function hasReqId(
+  req: IncomingMessage,
+): req is IncomingMessage & { id: string | number } {
+  const maybeReq = req as unknown as { id?: unknown };
+  return (
+    Object.prototype.hasOwnProperty.call(maybeReq, 'id') &&
+    (typeof maybeReq.id === 'string' || typeof maybeReq.id === 'number')
+  );
+}
 
 import { Module } from '@nestjs/common';
 import { LoggerModule, Params } from 'nestjs-pino';
@@ -56,6 +67,31 @@ import { AssessorModule } from './v1/assessor/assessor.module';
               serializers: {
                 req: (req: IncomingMessage): IncomingMessage =>
                   LogRedactor.redactRequest(req),
+              },
+              formatters: {
+                level: (label: string): { level: string } => {
+                  return { level: label };
+                },
+                log: (
+                  object: Record<string, unknown>,
+                ): Record<string, unknown> => {
+                  return {
+                    ...object,
+                    timestamp: new Date(Date.now()).toISOString(),
+                  };
+                },
+              },
+              customProps: (
+                req: IncomingMessage,
+                _res: ServerResponse<IncomingMessage>,
+              ): { reqId: string | number | undefined } => {
+                let reqId: string | number | undefined = undefined;
+                if (hasReqId(req)) {
+                  reqId = req.id;
+                }
+                return {
+                  reqId,
+                };
               },
             },
           };

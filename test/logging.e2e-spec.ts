@@ -59,32 +59,40 @@ describe('Logging (True E2E)', () => {
     });
 
     appUrl = 'http://localhost:3001';
-    apiKey = process.env.API_KEY || 'test-api-key';
+    apiKey = process.env.API_KEY || 'test_api_key_123';
 
     // Wait for the app to be ready by polling for the log file to contain the startup message
-    await new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        clearInterval(interval);
-        reject(new Error('App startup timed out'));
-      }, 30000);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          clearInterval(interval);
+          reject(new Error('App startup timed out'));
+        }, 30000);
 
-      const interval = setInterval(() => {
-        if (fs.existsSync(logFilePath)) {
-          const logContent = fs.readFileSync(logFilePath, 'utf-8');
-          // Check for the startup message in JSON format
-          if (
-            logContent.includes('"msg":"Nest application successfully started"')
-          ) {
-            clearInterval(interval);
-            clearTimeout(timeout);
-            resolve();
+        const interval = setInterval(() => {
+          if (fs.existsSync(logFilePath)) {
+            const logContent = fs.readFileSync(logFilePath, 'utf-8');
+            // Check for the startup message in JSON format
+            if (
+              logContent.includes(
+                '"msg":"Nest application successfully started"',
+              )
+            ) {
+              clearInterval(interval);
+              clearTimeout(timeout);
+              resolve();
+            }
           }
-        }
-      }, 500);
-    });
-  }, 30000);
+        }, 500);
+      });
+    } catch (error) {
+      console.error('Error during app startup:', error);
+      throw error;
+    }
+  }, 10000);
 
   afterAll(() => {
+    console.log('Shutting down app...');
     if (appProcess) {
       appProcess.kill('SIGTERM');
     }
@@ -106,6 +114,7 @@ describe('Logging (True E2E)', () => {
   async function waitForLog(
     predicate: (log: LogObject) => boolean,
   ): Promise<void> {
+    console.log(`Waiting for log with predicate: ${predicate.toString()}`);
     return new Promise((resolve, reject) => {
       const interval = setInterval(() => {
         const logs = getLogObjects();
@@ -168,9 +177,12 @@ describe('Logging (True E2E)', () => {
   });
 
   it('4. Should Propagate Request Context to Injected Loggers', async () => {
+    console.log(
+      'Running test: 4. Should Propagate Request Context to Injected Loggers',
+    );
     await request(appUrl)
       .post('/v1/assessor')
-      .set('Authorization', 'Bearer test_api_key_123')
+      .set('Authorization', `Bearer ${apiKey}`)
       .send({
         taskType: 'TEXT',
         reference: 'The quick brown fox jumps over the lazy dog.',
@@ -179,7 +191,11 @@ describe('Logging (True E2E)', () => {
       });
 
     await waitForLog(
-      (log) => !!(log.msg && log.msg.includes('authentication attempt')),
+      (log) =>
+        !!(
+          log.msg &&
+          log.msg.includes('API key authentication attempt successful')
+        ),
     );
 
     const logObjects = getLogObjects();
@@ -187,7 +203,9 @@ describe('Logging (True E2E)', () => {
       (obj) => obj.msg && obj.msg.includes('request completed'),
     );
     const serviceLog = logObjects.find(
-      (obj) => obj.msg && obj.msg.includes('authentication attempt'),
+      (obj) =>
+        obj.msg &&
+        obj.msg.includes('API key authentication attempt successful'),
     );
 
     expect(requestCompletedLog?.req?.id).toBeDefined();
@@ -196,7 +214,7 @@ describe('Logging (True E2E)', () => {
 
   it('5. Should Log Errors with Stack Traces', async () => {
     await request(appUrl)
-      .post('/v1/assessor/text')
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({});
     await waitForLog((log) => !!log.err);
@@ -231,7 +249,7 @@ describe('Logging (True E2E)', () => {
     };
 
     await request(appUrl)
-      .post('/v1/assessor/text')
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send(largePayload);
     await waitForLog(

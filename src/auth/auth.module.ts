@@ -29,7 +29,10 @@ import { ConfigModule } from '../config/config.module';
  * - `ApiKeyService`: Enables other modules to utilize API key management services.
  */
 @Module({
-  imports: [PassportModule, ConfigModule],
+  imports: [
+    PassportModule.register({ defaultStrategy: 'bearer' }),
+    ConfigModule,
+  ],
   providers: [ApiKeyStrategy, ApiKeyGuard, ApiKeyService],
   exports: [ApiKeyStrategy, ApiKeyGuard, ApiKeyService],
 })

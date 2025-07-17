@@ -1,52 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { Scope } from '@nestjs/common';
-import { PinoLogger } from 'nestjs-pino';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { z } from 'zod';
 
 import { User } from './user.interface';
-import { ConfigService, Config } from '../config/config.service';
+import { ConfigService } from '../config/config.service';
 
-/**
- * Service responsible for managing and validating API keys for authentication.
- *
- * @class ApiKeyService
- * @decorator `@Injectable`
- *
- * @constructor
- * Initializes the service with API keys retrieved from the configuration.
- * Logs a warning if no API keys are configured.
- *
- * @param {ConfigService} configService - Service for accessing application configuration.
- * @param {Logger} logger - Service for logging messages and warnings.
- *
- * @property {string[]} apiKeys - Array of valid API keys retrieved from the configuration.
- *
- * @method validate
- * Validates the provided API key against the configured API keys.
- *
- * @param {unknown} apiKey - The API key to validate.
- * @returns {User | null} - Returns a user object containing the valid API key if authentication is successful, or `null` otherwise.
- *
- * @throws {UnauthorizedException} Throws an exception if the API key is invalid or missing.
- *
- * @example
- * ```typescript
- * const user = apiKeyService.validate('validApiKey123');
- * if (user) {
- *   Logger.debug('Authentication successful:', user);
- * } else {
- *   Logger.debug('Authentication failed');
- * }
- * ```
- */
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class ApiKeyService {
+  private readonly logger = new Logger(ApiKeyService.name);
   private readonly apiKeys: string[];
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly logger: PinoLogger,
-  ) {
+  constructor(private readonly configService: ConfigService) {
     const apiKeysFromConfig = this.configService.get('API_KEYS');
     this.apiKeys = Array.isArray(apiKeysFromConfig) ? apiKeysFromConfig : [];
     this.logger.debug(`Loaded API keys: ${JSON.stringify(this.apiKeys)}`);
@@ -75,7 +38,7 @@ export class ApiKeyService {
     const validKey = parsed.data;
     const isValid = this.apiKeys.includes(validKey);
     if (isValid) {
-      this.logger.info('API key authentication attempt successful');
+      this.logger.log('API key authentication attempt successful');
       return { apiKey: validKey };
     }
     this.logger.warn(`Invalid API key: ${JSON.stringify(validKey)}`);
