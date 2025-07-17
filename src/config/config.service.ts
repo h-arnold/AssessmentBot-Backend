@@ -78,7 +78,11 @@ export class ConfigService {
 
   constructor() {
     let loadedEnv = {};
-    const envFilePath = path.resolve(process.cwd(), '.env');
+
+    // Determine which env file to load based on NODE_ENV
+    const envFileName = process.env.NODE_ENV === 'test' ? '.test.env' : '.env';
+    const envFilePath = path.resolve(process.cwd(), envFileName);
+
     if (fs.existsSync(envFilePath)) {
       loadedEnv = dotenv.parse(fs.readFileSync(envFilePath));
     }

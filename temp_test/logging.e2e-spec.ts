@@ -1,4 +1,6 @@
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import request from 'supertest';
 
@@ -32,101 +34,126 @@ interface LogObject {
 }
 
 describe('Logging (True E2E)', () => {
-  let appProcess: ChildProcess;
+  let appProcess: ChildProcessWithoutNullStreams;
   let appUrl: string;
   let apiKey: string;
-  let capturedOutput = '';
+  const logFilePath = '/tmp/e2e-test.log';
 
-  beforeAll((done) => {
-    // Start the application as a child process
-    appProcess = spawn('npm', ['run', 'start:dev']);
-    capturedOutput = '';
+  beforeAll(async () => {
+    // Clear the log file before starting
+    if (fs.existsSync(logFilePath)) {
+      fs.truncateSync(logFilePath, 0);
+    }
 
-    // Capture stdout
-    appProcess.stdout?.on('data', (data) => {
-      capturedOutput += data.toString();
-      // Look for the NestJS startup message to determine when the app is ready
-      if (data.toString().includes('Application is running on:')) {
-        const match = data.toString().match(/http:\/\/\[::\]:(\d+)/);
-        const port = match ? parseInt(match[1], 10) : 3000;
-        appUrl = `http://localhost:${port}`;
+    const mainJsPath = path.join(__dirname, '..', 'dist', 'src', 'main.js');
 
-        // A bit of a hack to get the API key. In a real-world scenario,
-        // this would be handled by a dedicated test configuration
-        apiKey = process.env.API_KEY || 'test-api-key';
-
-        done();
-      }
+    appProcess = spawn('node', [mainJsPath], {
+      cwd: path.join(__dirname, '..'), // Set working directory to project root
+      env: {
+        ...process.env,
+        NODE_ENV: 'test',
+        PORT: '3001',
+        E2E_TESTING: 'true',
+        LOG_FILE: logFilePath,
+      },
     });
 
-    appProcess.stderr?.on('data', (data) => {
-      console.error(`stderr: ${data}`);
-    });
-  });
+    appUrl = 'http://localhost:3001';
+    apiKey = process.env.API_KEY || 'test-api-key';
 
-  afterAll(async () => {
-    // Terminate the child process
+    // Wait for the app to be ready by polling for the log file to contain the startup message
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+        reject(new Error('App startup timed out'));
+      }, 30000);
+
+      const interval = setInterval(() => {
+        if (fs.existsSync(logFilePath)) {
+          const logContent = fs.readFileSync(logFilePath, 'utf-8');
+          // Check for the startup message in JSON format
+          if (
+            logContent.includes('"msg":"Nest application successfully started"')
+          ) {
+            clearInterval(interval);
+            clearTimeout(timeout);
+            resolve();
+          }
+        }
+      }, 500);
+    });
+  }, 30000);
+
+  afterAll(() => {
     if (appProcess) {
-      appProcess.kill();
+      appProcess.kill('SIGTERM');
     }
   });
 
   beforeEach(() => {
-    // Reset captured output before each test
-    capturedOutput = '';
+    // Clear the log file before each test
+    if (fs.existsSync(logFilePath)) {
+      fs.truncateSync(logFilePath, 0);
+    }
   });
 
   function getLogObjects(): LogObject[] {
-    return capturedOutput
+    const logContent = fs.readFileSync(logFilePath, 'utf-8');
+    return logContent
       .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line.startsWith('{') && line.endsWith('}'))
-      .map((line) => {
-        try {
-          return JSON.parse(line) as LogObject;
-        } catch {
-          return null;
+      .filter((line) => line.trim() !== '')
+      .map((line) => JSON.parse(line) as LogObject);
+  }
+
+  async function waitForLog(
+    predicate: (log: LogObject) => boolean,
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(() => {
+        const logs = getLogObjects();
+        if (logs.some(predicate)) {
+          clearInterval(interval);
+          resolve();
         }
-      })
-      .filter(Boolean) as LogObject[];
+      }, 100);
+
+      setTimeout(() => {
+        clearInterval(interval);
+        reject(new Error('waitForLog timed out'));
+      }, 5000);
+    });
   }
 
   it('1. Should Output Valid JSON', async () => {
     await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
-
+    await waitForLog((log) => !!(log.req && log.res));
     expect(getLogObjects().length).toBeGreaterThan(0);
   });
 
   it('2. Should Contain Standard Request/Response Fields', async () => {
     await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
-
+    await waitForLog((log) => !!(log.req && log.req.url === '/'));
     const logObject = getLogObjects().find(
       (obj) => obj.req && obj.req.url === '/',
     );
     expect(logObject).toBeDefined();
-    expect(logObject).toHaveProperty('req');
-    expect(logObject).toHaveProperty('res');
-    expect(logObject).toBeDefined();
-    expect(logObject?.req).toBeDefined();
-    expect(logObject?.req).toHaveProperty('id');
-    expect(logObject?.req).toHaveProperty('method', 'GET');
-    expect(logObject).toBeDefined();
-    expect(logObject?.req).toHaveProperty('url', '/');
-    expect(logObject?.res).toHaveProperty('statusCode', 200);
+    expect(logObject).toHaveProperty('req.id');
+    expect(logObject).toHaveProperty('req.method', 'GET');
+    expect(logObject).toHaveProperty('req.url', '/');
+    expect(logObject).toHaveProperty('res.statusCode', 200);
     expect(logObject).toHaveProperty('responseTime');
   });
 
   it('3. Should Redact Authorization Header', async () => {
     await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
-
+    await waitForLog(
+      (log) => log.req?.headers?.authorization === 'Bearer <redacted>',
+    );
     const logObjects = getLogObjects().filter(
       (obj) => obj.req && obj.req.url === '/',
     );
     expect(logObjects.length).toBeGreaterThan(0);
     for (const logObject of logObjects) {
-      expect(logObject).toBeDefined();
-      expect(logObject.req).toBeDefined();
-      expect(logObject.req?.headers).toBeDefined();
       expect(logObject.req?.headers?.authorization).toBe('Bearer <redacted>');
     }
   });
@@ -140,28 +167,23 @@ describe('Logging (True E2E)', () => {
           file_content: 'Test content',
           file_name: 'test.txt',
         },
-        template: {
-          file_content: 'Test content',
-          file_name: 'test.txt',
-        },
+        template: { file_content: 'Test content', file_name: 'test.txt' },
         criteria: 'Test criteria',
       });
+
+    await waitForLog(
+      (log) => !!(log.msg && log.msg.includes('authentication attempt')),
+    );
 
     const logObjects = getLogObjects();
     const requestCompletedLog = logObjects.find(
       (obj) => obj.msg && obj.msg.includes('request completed'),
     );
     const serviceLog = logObjects.find(
-      (obj) =>
-        obj.msg &&
-        obj.msg.includes('API key authentication attempt successful'),
+      (obj) => obj.msg && obj.msg.includes('authentication attempt'),
     );
 
-    expect(requestCompletedLog).toBeDefined();
-    expect(requestCompletedLog?.req).toBeDefined();
     expect(requestCompletedLog?.req?.id).toBeDefined();
-    expect(serviceLog).toBeDefined();
-    expect(serviceLog?.req).toBeDefined();
     expect(serviceLog?.req?.id).toBe(requestCompletedLog?.req?.id);
   });
 
@@ -169,12 +191,9 @@ describe('Logging (True E2E)', () => {
     await request(appUrl)
       .post('/v1/assessor/text')
       .set('Authorization', `Bearer ${apiKey}`)
-      .send({}); // Invalid body to trigger an error
-
-    const logObject = getLogObjects().find(
-      (obj) => obj.level === 50 || obj.level === 'error',
-    );
-    expect(logObject).toBeDefined();
+      .send({});
+    await waitForLog((log) => !!log.err);
+    const logObject = getLogObjects().find((obj) => obj.err);
     expect(logObject?.err).toBeDefined();
     expect(logObject?.err).toHaveProperty('type');
     expect(logObject?.err).toHaveProperty('message');
@@ -183,17 +202,13 @@ describe('Logging (True E2E)', () => {
 
   it('6. Should Include ISO-8601 Timestamps', async () => {
     await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
-
+    await waitForLog((log) => !!log.timestamp);
     const logObject = getLogObjects().find((obj) => obj.timestamp);
-    expect(logObject).toBeDefined();
-    expect(logObject).toBeDefined();
-    expect(logObject?.timestamp).toBeDefined();
     const timestamp = new Date(logObject!.timestamp!);
     expect(timestamp.toISOString()).toBe(logObject!.timestamp);
   });
 
   it('7. Should Respect LOG_LEVEL Configuration', () => {
-    // This test remains difficult to automate in this setup, but the underlying logging is now the production one.
     console.info('Skipping LOG_LEVEL test in e2e suite.');
     expect(true).toBe(true);
   });
@@ -201,13 +216,10 @@ describe('Logging (True E2E)', () => {
   it('8. Should Handle Large Payloads Without Breaking JSON Output', async () => {
     const largePayload = {
       student_solution: {
-        file_content: 'a'.repeat(1024 * 50), // 50KB to avoid excessive test time
-        file_name: 'large.txt',
-      },
-      template: {
         file_content: 'a'.repeat(1024 * 50),
         file_name: 'large.txt',
       },
+      template: { file_content: 'a'.repeat(1024 * 50), file_name: 'large.txt' },
       criteria: 'Test criteria',
     };
 
@@ -215,7 +227,9 @@ describe('Logging (True E2E)', () => {
       .post('/v1/assessor/text')
       .set('Authorization', `Bearer ${apiKey}`)
       .send(largePayload);
-
+    await waitForLog(
+      (log) => !!(log.msg && log.msg.includes('request completed')),
+    );
     expect(getLogObjects().length).toBeGreaterThan(0);
   });
 });

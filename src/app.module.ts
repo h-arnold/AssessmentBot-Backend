@@ -1,11 +1,14 @@
+import { IncomingMessage } from 'http';
+
 import { Module } from '@nestjs/common';
-import { LoggerModule } from 'nestjs-pino';
+import { LoggerModule, Params } from 'nestjs-pino';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { ConfigModule } from './config/config.module';
+import { ConfigService } from './config/config.service';
 import { AssessorModule } from './v1/assessor/assessor.module';
 
 /**
@@ -31,17 +34,56 @@ import { AssessorModule } from './v1/assessor/assessor.module';
 @Module({
   imports: [
     ConfigModule,
-    LoggerModule.forRoot({
-      pinoHttp: {
-        customProps: () => ({
-          context: 'HTTP',
-        }),
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            singleLine: true,
-          },
-        },
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService): Params => {
+        const logLevel = configService.get('LOG_LEVEL');
+        const logFile = process.env.LOG_FILE;
+
+        if (logFile) {
+          // For E2E tests: write JSON logs to file
+          return {
+            pinoHttp: {
+              level: logLevel,
+              transport: {
+                target: 'pino/file',
+                options: {
+                  destination: logFile,
+                },
+              },
+              serializers: {
+                req: (req: IncomingMessage): IncomingMessage => {
+                  if (req.headers.authorization) {
+                    req.headers.authorization = 'Bearer <redacted>';
+                  }
+                  return req;
+                },
+              },
+            },
+          };
+        } else {
+          // For development: use pino-pretty for console output
+          return {
+            pinoHttp: {
+              level: logLevel,
+              transport: {
+                target: 'pino-pretty',
+                options: {
+                  singleLine: true,
+                },
+              },
+              serializers: {
+                req: (req: IncomingMessage): IncomingMessage => {
+                  if (req.headers.authorization) {
+                    req.headers.authorization = 'Bearer <redacted>';
+                  }
+                  return req;
+                },
+              },
+            },
+          };
+        }
       },
     }),
     CommonModule,
