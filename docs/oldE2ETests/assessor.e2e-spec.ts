@@ -8,12 +8,12 @@ dotenv.config({ path: '.test.env' });
 import { json } from 'express';
 import request from 'supertest';
 
-import { ConfigService } from './../src/config/config.service';
+import { TestAppModule } from './test-app.module';
+import { ConfigService } from '../../src/config/config.service';
 import {
   CreateAssessorDto,
   TaskType,
-} from './../src/v1/assessor/dto/create-assessor.dto';
-import { TestAppModule } from './test-app.module';
+} from '../../src/v1/assessor/dto/create-assessor.dto';
 
 // Helper function to load a file and convert it to a data URI
 const loadFileAsDataURI = (filePath: string): string => {

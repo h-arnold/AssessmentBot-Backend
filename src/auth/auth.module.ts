@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 
 import { ApiKeyGuard } from './api-key.guard';
@@ -30,7 +30,7 @@ import { ConfigModule } from '../config/config.module';
  */
 @Module({
   imports: [PassportModule, ConfigModule],
-  providers: [ApiKeyStrategy, ApiKeyGuard, ApiKeyService, Logger],
+  providers: [ApiKeyStrategy, ApiKeyGuard, ApiKeyService],
   exports: [ApiKeyStrategy, ApiKeyGuard, ApiKeyService],
 })
 export class AuthModule {}

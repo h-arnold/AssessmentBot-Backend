@@ -5,12 +5,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { json } from 'express';
 import request from 'supertest';
 
+import { TestAppModule } from './test-app.module';
+import { ConfigService } from '../../src/config/config.service';
 import {
   CreateAssessorDto,
   TaskType,
-} from './../src/v1/assessor/dto/create-assessor.dto';
-import { TestAppModule } from './test-app.module';
-import { ConfigService } from '../src/config/config.service';
+} from '../../src/v1/assessor/dto/create-assessor.dto';
 
 // --- Synchronous Top-Level File Loading with Hardcoded Paths ---
 

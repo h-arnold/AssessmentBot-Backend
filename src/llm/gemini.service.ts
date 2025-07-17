@@ -1,6 +1,5 @@
 import { GoogleGenerativeAI, ModelParams, Part } from '@google/generative-ai';
 import { Injectable, Logger } from '@nestjs/common';
-import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
 import { ZodError } from 'zod';
 
 import {
@@ -21,16 +20,12 @@ import { ConfigService } from '../config/config.service';
 @Injectable()
 export class GeminiService implements LLMService {
   private readonly client: GoogleGenerativeAI;
-  private readonly logger: PinoLogger;
+  private readonly logger = new Logger(GeminiService.name);
+
   constructor(
     private readonly configService: ConfigService,
     private readonly jsonParserUtil: JsonParserUtil,
-    @InjectPinoLogger(GeminiService.name) logger: PinoLogger,
   ) {
-    this.logger = logger;
-    if (typeof this.logger.setContext === 'function') {
-      this.logger.setContext('GeminiService');
-    }
     const apiKey = this.configService.get('GEMINI_API_KEY');
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY is not set in environment');

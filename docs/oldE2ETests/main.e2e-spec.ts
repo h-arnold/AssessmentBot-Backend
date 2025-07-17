@@ -8,10 +8,10 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: '.test.env' });
 import request from 'supertest';
 
-import { HttpExceptionFilter } from './../src/common/http-exception.filter';
-import { ZodValidationPipe } from './../src/common/zod-validation.pipe';
-import { ConfigService } from './../src/config/config.service';
 import { TestAppModule } from './test-app.module';
+import { HttpExceptionFilter } from '../../src/common/http-exception.filter';
+import { ZodValidationPipe } from '../../src/common/zod-validation.pipe';
+import { ConfigService } from '../../src/config/config.service';
 
 describe('Global Setup and E2E Tests', () => {
   let app: INestApplication;

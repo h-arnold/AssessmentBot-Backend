@@ -1,6 +1,6 @@
 module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
-  rootDir: '.',
+  rootDir: 'test',
   testEnvironment: 'node',
   transform: {
     '^.+\.(t|j)s$': 'ts-jest',
@@ -9,7 +9,6 @@ module.exports = {
     '^src/(.*)$': '<rootDir>/../src/$1',
   },
   testRegex: '.+\.e2e-spec\.ts$',
-  setupFiles: ['<rootDir>/../jest.setup.ts'],
+  setupFiles: ['<rootDir>/test/jest.setup.ts'],
   detectOpenHandles: true,
-  testTimeout: 30000,
 };

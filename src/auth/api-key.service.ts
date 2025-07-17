@@ -39,12 +39,10 @@ import { ConfigService, Config } from '../config/config.service';
  */
 @Injectable()
 export class ApiKeyService {
+  private readonly logger = new Logger(ApiKeyService.name);
   private readonly apiKeys: string[];
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly logger: Logger,
-  ) {
+  constructor(private readonly configService: ConfigService) {
     const apiKeysFromConfig = this.configService.get('API_KEYS');
     this.apiKeys = Array.isArray(apiKeysFromConfig) ? apiKeysFromConfig : [];
     this.logger.debug(`Loaded API keys: ${JSON.stringify(this.apiKeys)}`);
@@ -73,7 +71,7 @@ export class ApiKeyService {
     const validKey = parsed.data;
     const isValid = this.apiKeys.includes(validKey);
     if (isValid) {
-      this.logger.log('API key authentication attempt successful');
+      this.logger.info('API key authentication attempt successful');
       return { apiKey: validKey };
     }
     this.logger.warn(`Invalid API key: ${JSON.stringify(validKey)}`);

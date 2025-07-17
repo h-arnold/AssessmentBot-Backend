@@ -7,10 +7,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as dotenv from 'dotenv';
 import request from 'supertest';
 
-import { HttpExceptionFilter } from './../src/common/http-exception.filter';
-import { ZodValidationPipe } from './../src/common/zod-validation.pipe';
-import { ConfigService } from './../src/config/config.service';
 import { TestAppModule } from './test-app.module';
+import { HttpExceptionFilter } from '../../src/common/http-exception.filter';
+import { ZodValidationPipe } from '../../src/common/zod-validation.pipe';
+import { ConfigService } from '../../src/config/config.service';
 
 dotenv.config({ path: '.test.env' });
 

@@ -169,15 +169,13 @@ describe('Logging (True E2E)', () => {
 
   it('4. Should Propagate Request Context to Injected Loggers', async () => {
     await request(appUrl)
-      .post('/v1/assessor/text')
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({
-        student_solution: {
-          file_content: 'Test content',
-          file_name: 'test.txt',
-        },
-        template: { file_content: 'Test content', file_name: 'test.txt' },
-        criteria: 'Test criteria',
+        taskType: 'TEXT',
+        reference: 'The quick brown fox jumps over the lazy dog.',
+        template: 'Write a sentence about a fox.',
+        studentResponse: 'A fox is a mammal.',
       });
 
     await waitForLog(
