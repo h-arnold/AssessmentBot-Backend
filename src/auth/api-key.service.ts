@@ -1,9 +1,8 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
-import { PinoLogger } from 'nestjs-pino';
 import { z } from 'zod';
 
 import { User } from './user.interface';
-import { ConfigService } from '../config/config.service';
+import { ConfigService, Config } from '../config/config.service';
 
 /**
  * Service responsible for managing and validating API keys for authentication.
@@ -44,9 +43,8 @@ export class ApiKeyService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly logger: PinoLogger,
+    private readonly logger: Logger,
   ) {
-    this.logger.setContext(ApiKeyService.name);
     const apiKeysFromConfig = this.configService.get('API_KEYS');
     this.apiKeys = Array.isArray(apiKeysFromConfig) ? apiKeysFromConfig : [];
     this.logger.debug(`Loaded API keys: ${JSON.stringify(this.apiKeys)}`);
@@ -75,7 +73,7 @@ export class ApiKeyService {
     const validKey = parsed.data;
     const isValid = this.apiKeys.includes(validKey);
     if (isValid) {
-      this.logger.info('API key authentication attempt successful');
+      this.logger.log('API key authentication attempt successful');
       return { apiKey: validKey };
     }
     this.logger.warn(`Invalid API key: ${JSON.stringify(validKey)}`);
