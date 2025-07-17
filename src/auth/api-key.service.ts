@@ -1,4 +1,6 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Scope } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 import { z } from 'zod';
 
 import { User } from './user.interface';
@@ -37,12 +39,14 @@ import { ConfigService, Config } from '../config/config.service';
  * }
  * ```
  */
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class ApiKeyService {
-  private readonly logger = new Logger(ApiKeyService.name);
   private readonly apiKeys: string[];
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly logger: PinoLogger,
+  ) {
     const apiKeysFromConfig = this.configService.get('API_KEYS');
     this.apiKeys = Array.isArray(apiKeysFromConfig) ? apiKeysFromConfig : [];
     this.logger.debug(`Loaded API keys: ${JSON.stringify(this.apiKeys)}`);

@@ -9,7 +9,7 @@ module.exports = {
     '^src/(.*)$': '<rootDir>/../src/$1',
   },
   testRegex: '.+\.e2e-spec\.ts$',
-  setupFiles: ['<rootDir>/test/jest.setup.ts'],
+  setupFiles: ['<rootDir>/jest.setup.ts'],
   detectOpenHandles: true,
   testTimeout: 30000,
 };
