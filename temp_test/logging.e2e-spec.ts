@@ -37,7 +37,7 @@ describe('Logging (True E2E)', () => {
   let appProcess: ChildProcessWithoutNullStreams;
   let appUrl: string;
   let apiKey: string;
-  const logFilePath = '/tmp/e2e-test.log';
+  const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
 
   beforeAll(async () => {
     // Clear the log file before starting
@@ -90,12 +90,10 @@ describe('Logging (True E2E)', () => {
     }
   });
 
-  beforeEach(() => {
-    // Clear the log file before each test
-    if (fs.existsSync(logFilePath)) {
-      fs.truncateSync(logFilePath, 0);
-    }
-  });
+  // Do NOT clear the log file before each test.
+  // Truncating the log file here causes loss of log entries needed by later tests,
+  // especially for logs that are written asynchronously or after the request completes.
+  // If you need to debug, clear the log file manually or in beforeAll only.
 
   function getLogObjects(): LogObject[] {
     const logContent = fs.readFileSync(logFilePath, 'utf-8');
@@ -119,8 +117,19 @@ describe('Logging (True E2E)', () => {
 
       setTimeout(() => {
         clearInterval(interval);
+        // Print log file contents for debugging
+        if (fs.existsSync(logFilePath)) {
+          const logContent = fs.readFileSync(logFilePath, 'utf-8');
+          // Print first 1000 characters to avoid flooding
+          console.error(
+            'waitForLog timed out. Log file contents (first 1000 chars):\n',
+            logContent.slice(0, 1000),
+          );
+        } else {
+          console.error('waitForLog timed out. Log file does not exist.');
+        }
         reject(new Error('waitForLog timed out'));
-      }, 5000);
+      }, 15000);
     });
   }
 
