@@ -8,6 +8,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
+import { LogRedactor } from './common/utils/log-redactor.util';
 import { ConfigModule } from './config/config.module';
 import { ConfigService } from './config/config.service';
 import { AssessorModule } from './v1/assessor/assessor.module';
@@ -55,12 +56,8 @@ import { AssessorModule } from './v1/assessor/assessor.module';
                 },
               },
               serializers: {
-                req: (req: IncomingMessage): IncomingMessage => {
-                  if (req.headers.authorization) {
-                    req.headers.authorization = 'Bearer <redacted>';
-                  }
-                  return req;
-                },
+                req: (req: IncomingMessage): IncomingMessage =>
+                  LogRedactor.redactRequest(req),
               },
             },
           };
@@ -77,12 +74,8 @@ import { AssessorModule } from './v1/assessor/assessor.module';
                 },
               },
               serializers: {
-                req: (req: IncomingMessage): IncomingMessage => {
-                  if (req.headers.authorization) {
-                    req.headers.authorization = 'Bearer <redacted>';
-                  }
-                  return req;
-                },
+                req: (req: IncomingMessage): IncomingMessage =>
+                  LogRedactor.redactRequest(req),
               },
             },
           };

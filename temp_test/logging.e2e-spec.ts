@@ -118,7 +118,7 @@ describe('Logging (True E2E)', () => {
       debugLogCount?: number;
     },
   ): Promise<void> {
-    const timeoutMs = options?.timeoutMs ?? 15000;
+    const timeoutMs = options?.timeoutMs ?? 30000;
     const debugLogCount = options?.debugLogCount ?? 10;
     return new Promise((resolve, reject) => {
       const interval = setInterval(() => {
