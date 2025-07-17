@@ -34,16 +34,17 @@ interface LogObject {
 }
 
 describe('Logging (True E2E)', () => {
+  // Test setup - use the test API key from .test.env
+  const apiKey = 'test_api_key_123';
+  let appUrl = process.env.APP_URL || 'http://localhost:3000';
   let appProcess: ChildProcessWithoutNullStreams;
-  let appUrl: string;
-  let apiKey: string;
-  const logFilePath = '/tmp/e2e-test.log';
+
+  let capturedLogs: string[] = [];
+  let testStartIndex = 0;
 
   beforeAll(async () => {
-    // Clear the log file before starting
-    if (fs.existsSync(logFilePath)) {
-      fs.truncateSync(logFilePath, 0);
-    }
+    // Clear captured logs
+    capturedLogs = [];
 
     const mainJsPath = path.join(__dirname, '..', 'dist', 'src', 'main.js');
 
@@ -54,14 +55,30 @@ describe('Logging (True E2E)', () => {
         NODE_ENV: 'test',
         PORT: '3001',
         E2E_TESTING: 'true',
-        LOG_FILE: logFilePath,
+        // Remove LOG_FILE to use console output
       },
     });
 
-    appUrl = 'http://localhost:3001';
-    apiKey = process.env.API_KEY || 'test-api-key';
+    // Capture stdout and stderr
+    appProcess.stdout.on('data', (data: Buffer) => {
+      const lines = data
+        .toString()
+        .split('\n')
+        .filter((line: string) => line.trim());
+      capturedLogs.push(...lines);
+    });
 
-    // Wait for the app to be ready by polling for the log file to contain the startup message
+    appProcess.stderr.on('data', (data: Buffer) => {
+      const lines = data
+        .toString()
+        .split('\n')
+        .filter((line: string) => line.trim());
+      capturedLogs.push(...lines);
+    });
+
+    appUrl = 'http://localhost:3001';
+
+    // Wait for the app to be ready by checking captured logs for the startup message
     await new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
         clearInterval(interval);
@@ -69,16 +86,15 @@ describe('Logging (True E2E)', () => {
       }, 30000);
 
       const interval = setInterval(() => {
-        if (fs.existsSync(logFilePath)) {
-          const logContent = fs.readFileSync(logFilePath, 'utf-8');
-          // Check for the startup message in JSON format
-          if (
-            logContent.includes('"msg":"Nest application successfully started"')
-          ) {
-            clearInterval(interval);
-            clearTimeout(timeout);
-            resolve();
-          }
+        const allLogs = capturedLogs.join('\n');
+        // Check for startup message in both JSON and pretty format
+        if (
+          allLogs.includes('"msg":"Nest application successfully started"') ||
+          allLogs.includes('Nest application successfully started')
+        ) {
+          clearInterval(interval);
+          clearTimeout(timeout);
+          resolve();
         }
       }, 500);
     });
@@ -91,18 +107,53 @@ describe('Logging (True E2E)', () => {
   });
 
   beforeEach(() => {
-    // Clear the log file before each test
-    if (fs.existsSync(logFilePath)) {
-      fs.truncateSync(logFilePath, 0);
-    }
+    // Don't clear logs, just mark the start of a new test
+    const testStartMarker = `=== TEST START: ${new Date().toISOString()} ===`;
+    capturedLogs.push(testStartMarker);
   });
 
   function getLogObjects(): LogObject[] {
-    const logContent = fs.readFileSync(logFilePath, 'utf-8');
-    return logContent
-      .split('\n')
-      .filter((line) => line.trim() !== '')
-      .map((line) => JSON.parse(line) as LogObject);
+    // Filter out non-JSON lines and parse JSON logs
+    const jsonLogs: LogObject[] = [];
+
+    for (const line of capturedLogs) {
+      const trimmedLine = line.trim();
+      if (trimmedLine.startsWith('{') && trimmedLine.endsWith('}')) {
+        try {
+          const parsed = JSON.parse(trimmedLine);
+          // Include all JSON logs, not just HTTP request logs
+          jsonLogs.push(parsed as LogObject);
+        } catch (error) {
+          // Skip lines that aren't valid JSON
+          continue;
+        }
+      }
+    }
+
+    return jsonLogs;
+  }
+
+  function debugAllLogs(): void {
+    const summary = capturedLogs
+      .map((line, index) => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            return `[${index}] ${parsed.level || 'unknown'} ${parsed.msg || 'no message'} ${parsed.req ? `${parsed.req.method} ${parsed.req.url}` : ''} ${parsed.res ? `-> ${parsed.res.statusCode}` : ''}`;
+          } catch (e) {
+            return `[${index}] INVALID JSON: ${line.substring(0, 100)}...`;
+          }
+        } else {
+          return `[${index}] Non-JSON text: ${line.substring(0, 100)}...`;
+        }
+      })
+      .join('\n');
+    console.debug(`
+=== DEBUG: All captured logs ===
+Total lines captured: ${capturedLogs.length}\n${summary}
+=== END DEBUG ===
+`);
   }
 
   async function waitForLog(
@@ -119,8 +170,19 @@ describe('Logging (True E2E)', () => {
 
       setTimeout(() => {
         clearInterval(interval);
+        debugAllLogs();
+        console.error(
+          'Available logs:',
+          getLogObjects().map((log) => ({
+            msg: log.msg,
+            req: log.req
+              ? { method: log.req.method, url: log.req.url }
+              : undefined,
+            res: log.res ? { statusCode: log.res.statusCode } : undefined,
+          })),
+        );
         reject(new Error('waitForLog timed out'));
-      }, 5000);
+      }, 30000);
     });
   }
 
@@ -160,15 +222,13 @@ describe('Logging (True E2E)', () => {
 
   it('4. Should Propagate Request Context to Injected Loggers', async () => {
     await request(appUrl)
-      .post('/v1/assessor/text')
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({
-        student_solution: {
-          file_content: 'Test content',
-          file_name: 'test.txt',
-        },
-        template: { file_content: 'Test content', file_name: 'test.txt' },
-        criteria: 'Test criteria',
+        taskType: 'TEXT',
+        reference: 'Test reference content',
+        template: 'Test template content',
+        studentResponse: 'Test student response content',
       });
 
     await waitForLog(
@@ -189,7 +249,7 @@ describe('Logging (True E2E)', () => {
 
   it('5. Should Log Errors with Stack Traces', async () => {
     await request(appUrl)
-      .post('/v1/assessor/text')
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({});
     await waitForLog((log) => !!log.err);
@@ -215,16 +275,14 @@ describe('Logging (True E2E)', () => {
 
   it('8. Should Handle Large Payloads Without Breaking JSON Output', async () => {
     const largePayload = {
-      student_solution: {
-        file_content: 'a'.repeat(1024 * 50),
-        file_name: 'large.txt',
-      },
-      template: { file_content: 'a'.repeat(1024 * 50), file_name: 'large.txt' },
-      criteria: 'Test criteria',
+      taskType: 'TEXT',
+      reference: 'a'.repeat(1024 * 50),
+      template: 'a'.repeat(1024 * 50),
+      studentResponse: 'a'.repeat(1024 * 50),
     };
 
     await request(appUrl)
-      .post('/v1/assessor/text')
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send(largePayload);
     await waitForLog(

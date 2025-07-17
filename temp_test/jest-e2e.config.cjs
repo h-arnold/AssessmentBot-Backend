@@ -12,4 +12,6 @@ module.exports = {
   setupFiles: ['<rootDir>/../jest.setup.ts'],
   detectOpenHandles: true,
   testTimeout: 30000,
+  silent: false,
+  verbose: true,
 };

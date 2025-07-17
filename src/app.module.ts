@@ -12,6 +12,30 @@ import { ConfigService } from './config/config.service';
 import { AssessorModule } from './v1/assessor/assessor.module';
 
 /**
+ * Helper function to create a sanitized copy of the request for logging purposes.
+ * This ensures that sensitive information like authorization headers are redacted
+ * in logs without modifying the original request object.
+ *
+ * @param req - The original IncomingMessage request object
+ * @returns A sanitized copy of the request suitable for logging
+ */
+function createSanitizedRequestForLogging(
+  req: IncomingMessage,
+): Partial<IncomingMessage> {
+  const sanitizedReq = { ...req };
+
+  // Create a copy of headers to avoid modifying the original
+  if (req.headers) {
+    sanitizedReq.headers = { ...req.headers };
+    if (sanitizedReq.headers.authorization) {
+      sanitizedReq.headers.authorization = 'Bearer <redacted>';
+    }
+  }
+
+  return sanitizedReq;
+}
+
+/**
  * The main application module that serves as the entry point for the backend application.
  *
  * @module AppModule
@@ -40,9 +64,10 @@ import { AssessorModule } from './v1/assessor/assessor.module';
       useFactory: (configService: ConfigService): Params => {
         const logLevel = configService.get('LOG_LEVEL');
         const logFile = process.env.LOG_FILE;
+        const e2eTesting = process.env.E2E_TESTING;
 
         if (logFile) {
-          // For E2E tests: write JSON logs to file
+          // For E2E tests with file output: write JSON logs to file
           return {
             pinoHttp: {
               level: logLevel,
@@ -53,12 +78,17 @@ import { AssessorModule } from './v1/assessor/assessor.module';
                 },
               },
               serializers: {
-                req: (req: IncomingMessage): IncomingMessage => {
-                  if (req.headers.authorization) {
-                    req.headers.authorization = 'Bearer <redacted>';
-                  }
-                  return req;
-                },
+                req: createSanitizedRequestForLogging,
+              },
+            },
+          };
+        } else if (e2eTesting) {
+          // For E2E tests with console output: write JSON logs to console
+          return {
+            pinoHttp: {
+              level: logLevel,
+              serializers: {
+                req: createSanitizedRequestForLogging,
               },
             },
           };
@@ -74,12 +104,7 @@ import { AssessorModule } from './v1/assessor/assessor.module';
                 },
               },
               serializers: {
-                req: (req: IncomingMessage): IncomingMessage => {
-                  if (req.headers.authorization) {
-                    req.headers.authorization = 'Bearer <redacted>';
-                  }
-                  return req;
-                },
+                req: createSanitizedRequestForLogging,
               },
             },
           };
