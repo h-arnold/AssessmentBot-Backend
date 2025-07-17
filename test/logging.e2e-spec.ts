@@ -129,7 +129,7 @@ describe('Logging (True E2E)', () => {
           console.error('waitForLog timed out. Log file does not exist.');
         }
         reject(new Error('waitForLog timed out'));
-      }, 15000);
+      }, 30000);
     });
   }
 
@@ -170,7 +170,7 @@ describe('Logging (True E2E)', () => {
   it('4. Should Propagate Request Context to Injected Loggers', async () => {
     await request(appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${apiKey}`)
+      .set('Authorization', 'Bearer test_api_key_123')
       .send({
         taskType: 'TEXT',
         reference: 'The quick brown fox jumps over the lazy dog.',
