@@ -37,9 +37,11 @@ describe('Logging (True E2E)', () => {
   let appProcess: ChildProcessWithoutNullStreams;
   let appUrl: string;
   let apiKey: string;
-  const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
+  const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.json';
 
   beforeAll(async () => {
+    // Determine the test API key and pass into the app process
+    apiKey = process.env.API_KEY || 'test-api-key';
     // Clear the log file before starting
     if (fs.existsSync(logFilePath)) {
       fs.truncateSync(logFilePath, 0);
@@ -103,33 +105,57 @@ describe('Logging (True E2E)', () => {
       .map((line) => JSON.parse(line) as LogObject);
   }
 
+  /**
+   * Waits for a log entry matching the predicate, with optional early failure and better debug output.
+   * @param predicate Function to match the desired log entry.
+   * @param options Optional: { failPredicate, timeoutMs, debugLogCount }
+   */
   async function waitForLog(
     predicate: (log: LogObject) => boolean,
+    options?: {
+      failPredicate?: (log: LogObject) => boolean;
+      timeoutMs?: number;
+      debugLogCount?: number;
+    },
   ): Promise<void> {
+    const timeoutMs = options?.timeoutMs ?? 15000;
+    const debugLogCount = options?.debugLogCount ?? 10;
     return new Promise((resolve, reject) => {
       const interval = setInterval(() => {
         const logs = getLogObjects();
         if (logs.some(predicate)) {
           clearInterval(interval);
+          clearTimeout(timeout);
           resolve();
+        }
+        if (options?.failPredicate && logs.some(options.failPredicate)) {
+          clearInterval(interval);
+          clearTimeout(timeout);
+          const lastLogs = logs.slice(-debugLogCount);
+          reject(
+            new Error(
+              'waitForLog: failPredicate matched. Last logs:\n' +
+                JSON.stringify(lastLogs, null, 2),
+            ),
+          );
         }
       }, 100);
 
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         clearInterval(interval);
-        // Print log file contents for debugging
+        // Print last N log entries for debugging
         if (fs.existsSync(logFilePath)) {
-          const logContent = fs.readFileSync(logFilePath, 'utf-8');
-          // Print first 1000 characters to avoid flooding
+          const logs = getLogObjects();
+          const lastLogs = logs.slice(-debugLogCount);
           console.error(
-            'waitForLog timed out. Log file contents (first 1000 chars):\n',
-            logContent.slice(0, 1000),
+            `waitForLog timed out. Last ${debugLogCount} log entries:\n`,
+            JSON.stringify(lastLogs, null, 2),
           );
         } else {
           console.error('waitForLog timed out. Log file does not exist.');
         }
         reject(new Error('waitForLog timed out'));
-      }, 15000);
+      }, timeoutMs);
     });
   }
 
@@ -169,15 +195,13 @@ describe('Logging (True E2E)', () => {
 
   it('4. Should Propagate Request Context to Injected Loggers', async () => {
     await request(appUrl)
-      .post('/v1/assessor/text')
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({
-        student_solution: {
-          file_content: 'Test content',
-          file_name: 'test.txt',
-        },
-        template: { file_content: 'Test content', file_name: 'test.txt' },
-        criteria: 'Test criteria',
+        taskType: 'TEXT',
+        reference: 'Test reference',
+        template: 'Test template',
+        studentResponse: 'Test student response',
       });
 
     await waitForLog(
@@ -198,7 +222,7 @@ describe('Logging (True E2E)', () => {
 
   it('5. Should Log Errors with Stack Traces', async () => {
     await request(appUrl)
-      .post('/v1/assessor/text')
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({});
     await waitForLog((log) => !!log.err);
@@ -224,16 +248,14 @@ describe('Logging (True E2E)', () => {
 
   it('8. Should Handle Large Payloads Without Breaking JSON Output', async () => {
     const largePayload = {
-      student_solution: {
-        file_content: 'a'.repeat(1024 * 50),
-        file_name: 'large.txt',
-      },
-      template: { file_content: 'a'.repeat(1024 * 50), file_name: 'large.txt' },
-      criteria: 'Test criteria',
+      taskType: 'TEXT',
+      reference: 'a'.repeat(1024 * 50),
+      template: 'a'.repeat(1024 * 50),
+      studentResponse: 'a'.repeat(1024 * 50),
     };
 
     await request(appUrl)
-      .post('/v1/assessor/text')
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send(largePayload);
     await waitForLog(

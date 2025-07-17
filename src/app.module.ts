@@ -2,6 +2,7 @@ import { IncomingMessage } from 'http';
 
 import { Module } from '@nestjs/common';
 import { LoggerModule, Params } from 'nestjs-pino';
+import pino from 'pino';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -42,10 +43,11 @@ import { AssessorModule } from './v1/assessor/assessor.module';
         const logFile = process.env.LOG_FILE;
 
         if (logFile) {
-          // For E2E tests: write JSON logs to file
+          // For E2E tests: write JSON logs to file with ISO8601 timestamps
           return {
             pinoHttp: {
               level: logLevel,
+              timestamp: pino.stdTimeFunctions.isoTime,
               transport: {
                 target: 'pino/file',
                 options: {
@@ -63,10 +65,11 @@ import { AssessorModule } from './v1/assessor/assessor.module';
             },
           };
         } else {
-          // For development: use pino-pretty for console output
+          // For development: use pino-pretty for console output with ISO8601 timestamps
           return {
             pinoHttp: {
               level: logLevel,
+              timestamp: pino.stdTimeFunctions.isoTime,
               transport: {
                 target: 'pino-pretty',
                 options: {
