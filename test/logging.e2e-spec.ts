@@ -59,7 +59,7 @@ describe('Logging (True E2E)', () => {
     });
 
     appUrl = 'http://localhost:3001';
-    apiKey = process.env.API_KEY || 'test_api_key_123';
+    apiKey = process.env.API_KEY || 'test-api-key';
 
     // Wait for the app to be ready by polling for the log file to contain the startup message
     try {
@@ -177,6 +177,8 @@ describe('Logging (True E2E)', () => {
   });
 
   it('4. Should Propagate Request Context to Injected Loggers', async () => {
+    // The log file is not wiped between tests, so req.id will increment with each request.
+    // The important check is that the req.id matches between the two logs for the same request.
     console.log(
       'Running test: 4. Should Propagate Request Context to Injected Loggers',
     );
@@ -209,6 +211,7 @@ describe('Logging (True E2E)', () => {
     );
 
     expect(requestCompletedLog?.req?.id).toBeDefined();
+    // Only check that the req.id matches between the two logs, not a specific value.
     expect(serviceLog?.req?.id).toBe(requestCompletedLog?.req?.id);
   });
 
