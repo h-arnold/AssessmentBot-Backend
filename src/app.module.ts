@@ -1,14 +1,11 @@
-import { IncomingMessage } from 'http';
-
 import { Module } from '@nestjs/common';
-import { LoggerModule, Params } from 'nestjs-pino';
+import { LoggerModule } from 'nestjs-pino';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { ConfigModule } from './config/config.module';
-import { ConfigService } from './config/config.service';
 import { AssessorModule } from './v1/assessor/assessor.module';
 
 /**
@@ -34,47 +31,18 @@ import { AssessorModule } from './v1/assessor/assessor.module';
 @Module({
   imports: [
     ConfigModule,
-    LoggerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService): Params => ({
-        pinoHttp: {
-          level: configService.get('LOG_LEVEL'),
-          // No transport: output is JSON
-          serializers: {
-            req: (req: IncomingMessage): IncomingMessage => {
-              // Clone the request object shallowly for logging
-              const clonedReq = Object.assign({}, req);
-              if (clonedReq.headers) {
-                // Debug: print incoming authorization header value
-                // eslint-disable-next-line no-console
-                console.log(
-                  '[DEBUG] Incoming authorization header:',
-                  clonedReq.headers.authorization,
-                );
-                if (
-                  Object.prototype.hasOwnProperty.call(
-                    clonedReq.headers,
-                    'authorization',
-                  )
-                ) {
-                  // Always set to 'Bearer <redacted>' regardless of original value
-                  clonedReq.headers = Object.assign({}, clonedReq.headers, {
-                    authorization: 'Bearer <redacted>',
-                  });
-                  // Debug: print outgoing authorization header value
-                  // eslint-disable-next-line no-console
-                  console.log(
-                    '[DEBUG] Outgoing authorization header:',
-                    clonedReq.headers.authorization,
-                  );
-                }
-              }
-              return clonedReq;
-            },
+    LoggerModule.forRoot({
+      pinoHttp: {
+        customProps: () => ({
+          context: 'HTTP',
+        }),
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            singleLine: true,
           },
         },
-      }),
+      },
     }),
     CommonModule,
     AuthModule,

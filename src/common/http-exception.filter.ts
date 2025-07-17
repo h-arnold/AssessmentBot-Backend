@@ -95,11 +95,11 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
     };
 
     if (status >= 400 && status < 500) {
-      this.logger.warn(`HTTP ${status} - ${message}`, logContext);
+      this.logger.warn(logContext, `HTTP ${status} - ${message}`);
     } else if (status >= 500) {
       this.logger.error(
-        `HTTP ${status} - ${message}`,
         logContext,
+        `HTTP ${status} - ${message}`,
         exception instanceof Error ? exception.stack : undefined,
       );
     }

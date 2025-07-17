@@ -7,8 +7,8 @@ import { LlmPayload } from '../llm/llm.service.interface';
 
 // Mock implementation of the abstract class for testing
 class TestPrompt extends Prompt {
-  constructor(inputs: unknown) {
-    super(inputs, new Logger());
+  constructor(inputs: unknown, logger: Logger) {
+    super(inputs, logger);
   }
   public async buildMessage(): Promise<LlmPayload> {
     return { system: '', images: [], messages: [] } as LlmPayload;
@@ -22,6 +22,12 @@ class TestPrompt extends Prompt {
 }
 
 describe('Prompt Base Class', (): void => {
+  let logger: Logger;
+
+  beforeEach(() => {
+    logger = new Logger();
+  });
+
   const validInput: PromptInput = {
     referenceTask: 'This is the reference task.',
     studentTask: 'This is the student task.',
@@ -64,14 +70,14 @@ describe('Prompt Base Class', (): void => {
 
   describe('Prompt Constructor', (): void => {
     it('should instantiate and assign properties with valid input', (): void => {
-      const prompt = new TestPrompt(validInput);
+      const prompt = new TestPrompt(validInput, logger);
       expect(prompt).toBeInstanceOf(TestPrompt);
       // We can't directly access protected members, but we know the schema passed.
     });
 
     it('should throw a ZodError via the constructor with invalid input', (): void => {
       const invalidInput = { ...validInput, studentTask: false };
-      expect(() => new TestPrompt(invalidInput)).toThrow(ZodError);
+      expect(() => new TestPrompt(invalidInput, logger)).toThrow(ZodError);
     });
   });
 
