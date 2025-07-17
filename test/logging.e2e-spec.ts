@@ -177,8 +177,6 @@ describe('Logging (True E2E)', () => {
   });
 
   it('4. Should Propagate Request Context to Injected Loggers', async () => {
-    // The log file is not wiped between tests, so req.id will increment with each request.
-    // The important check is that the req.id matches between the two logs for the same request.
     console.log(
       'Running test: 4. Should Propagate Request Context to Injected Loggers',
     );
@@ -210,8 +208,8 @@ describe('Logging (True E2E)', () => {
         obj.msg.includes('API key authentication attempt successful'),
     );
 
-    expect(requestCompletedLog?.req?.id).toBeDefined();
-    // Only check that the req.id matches between the two logs, not a specific value.
+    expect([4, '4']).toContain(requestCompletedLog?.req?.id);
+    expect([4, '4']).toContain(serviceLog?.req?.id);
     expect(serviceLog?.req?.id).toBe(requestCompletedLog?.req?.id);
   });
 
