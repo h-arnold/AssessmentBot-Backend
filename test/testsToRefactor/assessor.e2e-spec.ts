@@ -1,19 +1,14 @@
+import { ChildProcessWithoutNullStreams } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { ConsoleLogger, INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import * as dotenv from 'dotenv';
-dotenv.config({ path: '.test.env' });
-import { json } from 'express';
 import request from 'supertest';
 
-import { AppModule } from './../src/app.module';
-import { ConfigService } from './../src/config/config.service';
 import {
   CreateAssessorDto,
   TaskType,
-} from './../src/v1/assessor/dto/create-assessor.dto';
+} from '../../src/v1/assessor/dto/create-assessor.dto';
+import { startApp, stopApp } from '../utils/e2e-test-utils';
 
 // Helper function to load a file and convert it to a data URI
 const loadFileAsDataURI = (filePath: string): string => {
@@ -24,60 +19,45 @@ const loadFileAsDataURI = (filePath: string): string => {
 };
 
 describe('AssessorController (e2e)', () => {
-  let app: INestApplication;
-  let configService: ConfigService;
-  let validApiKey: string;
+  let appProcess: ChildProcessWithoutNullStreams;
+  let appUrl: string;
+  let apiKey: string;
+  const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
 
   // Load test data
   const textTask = JSON.parse(
-    fs.readFileSync(path.join(__dirname, 'data', 'textTask.json'), 'utf-8'),
+    fs.readFileSync(path.join(__dirname, '../data', 'textTask.json'), 'utf-8'),
   );
   const tableTask = JSON.parse(
-    fs.readFileSync(path.join(__dirname, 'data', 'tableTask.json'), 'utf-8'),
+    fs.readFileSync(path.join(__dirname, '../data', 'tableTask.json'), 'utf-8'),
   );
   const imageTask = {
     taskType: TaskType.IMAGE,
     reference: loadFileAsDataURI(
-      path.join(__dirname, 'ImageTasks', 'referenceTask.png'),
+      path.join(__dirname, '../ImageTasks', 'referenceTask.png'),
     ),
     template: loadFileAsDataURI(
-      path.join(__dirname, 'ImageTasks', 'templateTask.png'),
+      path.join(__dirname, '../ImageTasks', 'templateTask.png'),
     ),
     studentResponse: loadFileAsDataURI(
-      path.join(__dirname, 'ImageTasks', 'studentTask.png'),
+      path.join(__dirname, '../ImageTasks', 'studentTask.png'),
     ),
   };
 
   beforeAll(async () => {
-    // Environment variables are loaded from .test.env
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    app = moduleFixture.createNestApplication({ bodyParser: false });
-    configService = moduleFixture.get<ConfigService>(ConfigService);
-    // Use console logger to ensure debug output is visible
-    const logger = new ConsoleLogger();
-    logger.setLogLevels(configService.get('LOG_LEVEL'));
-    app.useLogger(logger);
-    const apiKeys = configService.get('API_KEYS');
-    if (!apiKeys || apiKeys.length === 0) {
-      throw new Error(
-        'API_KEYS not found in config. Make sure .test.env is set up correctly.',
-      );
-    }
-    validApiKey = apiKeys[0];
-    const payloadLimit = configService.getGlobalPayloadLimit();
-    app.use(json({ limit: payloadLimit }));
-    await app.init();
-  });
+    const app = await startApp(logFilePath);
+    appProcess = app.appProcess;
+    appUrl = app.appUrl;
+    apiKey = app.apiKey;
+  }, 10000);
 
-  afterAll(async () => {
-    await app.close();
+  afterAll(() => {
+    stopApp(appProcess);
   });
 
   describe('Auth and Validation', () => {
     it('/v1/assessor (POST) should return 401 Unauthorized when no API key is provided', async () => {
-      const res = await request(app.getHttpServer())
+      const res = await request(appUrl)
         .post('/v1/assessor')
         .send(textTask)
         .expect(401);
@@ -85,7 +65,7 @@ describe('AssessorController (e2e)', () => {
     });
 
     it('/v1/assessor (POST) should return 401 Unauthorized when an invalid API key is provided', async () => {
-      const res = await request(app.getHttpServer())
+      const res = await request(appUrl)
         .post('/v1/assessor')
         .set('Authorization', 'Bearer invalid-key')
         .send(textTask)
@@ -95,9 +75,9 @@ describe('AssessorController (e2e)', () => {
 
     it('/v1/assessor (POST) should return 400 Bad Request for invalid DTO', async () => {
       const invalidPayload = { ...textTask, taskType: 'INVALID' };
-      const res = await request(app.getHttpServer())
+      const res = await request(appUrl)
         .post('/v1/assessor')
-        .set('Authorization', `Bearer ${validApiKey}`)
+        .set('Authorization', `Bearer ${apiKey}`)
         .send(invalidPayload)
         .expect(400);
       expect(res.body.message).toBe('Validation failed');
@@ -112,9 +92,9 @@ describe('AssessorController (e2e)', () => {
       studentResponse: 'test',
     };
 
-    const res = await request(app.getHttpServer())
+    const res = await request(appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${validApiKey}`)
+      .set('Authorization', `Bearer ${apiKey}`)
       .send(validPayload)
       .expect(201);
     expect(res.body).toHaveProperty('completeness');

@@ -1,16 +1,13 @@
+import { ChildProcessWithoutNullStreams } from 'child_process';
 import { readFileSync } from 'fs';
 
-import { ConsoleLogger, INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import { json } from 'express';
 import request from 'supertest';
 
-import { AppModule } from './../src/app.module';
-import { ConfigService } from './../src/config/config.service';
 import {
   CreateAssessorDto,
   TaskType,
-} from './../src/v1/assessor/dto/create-assessor.dto';
+} from '../../src/v1/assessor/dto/create-assessor.dto';
+import { startApp, stopApp } from '../utils/e2e-test-utils';
 
 // --- Synchronous Top-Level File Loading with Hardcoded Paths ---
 
@@ -48,38 +45,20 @@ const studentDataUri = `data:image/png;base64,${readFileSync(
 // --- Test Suite ---
 
 describe('AssessorController (e2e-live)', () => {
-  let app: INestApplication;
-  let configService: ConfigService;
-  let validApiKey: string;
+  let appProcess: ChildProcessWithoutNullStreams;
+  let appUrl: string;
+  let apiKey: string;
+  const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    const app = await startApp(logFilePath);
+    appProcess = app.appProcess;
+    appUrl = app.appUrl;
+    apiKey = app.apiKey;
+  }, 10000);
 
-    app = moduleFixture.createNestApplication({ bodyParser: false });
-    configService = moduleFixture.get<ConfigService>(ConfigService);
-    // Use console logger to ensure debug output is visible
-    const logger = new ConsoleLogger();
-    logger.setLogLevels(configService.get('LOG_LEVEL'));
-    app.useLogger(logger);
-
-    const apiKeys = configService.get('API_KEYS');
-    if (!apiKeys || apiKeys.length === 0) {
-      throw new Error(
-        'API_KEYS not found in config. Make sure .test.env is set up correctly.',
-      );
-    }
-    validApiKey = apiKeys[0];
-
-    const payloadLimit = configService.getGlobalPayloadLimit();
-    app.use(json({ limit: payloadLimit }));
-
-    await app.init();
-  });
-
-  afterAll(async () => {
-    await app.close();
+  afterAll(() => {
+    stopApp(appProcess);
   });
 
   it('/v1/assessor (POST) should return a valid assessment for a text task', async () => {
@@ -90,9 +69,9 @@ describe('AssessorController (e2e-live)', () => {
       studentResponse: textData.studentTask,
     };
 
-    const response = await request(app.getHttpServer())
+    const response = await request(appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${validApiKey}`)
+      .set('Authorization', `Bearer ${apiKey}`)
       .send(mappedPayload)
       .expect(201);
 
@@ -110,9 +89,9 @@ describe('AssessorController (e2e-live)', () => {
       studentResponse: tableData.studentTask,
     };
 
-    const response = await request(app.getHttpServer())
+    const response = await request(appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${validApiKey}`)
+      .set('Authorization', `Bearer ${apiKey}`)
       .send(mappedPayload)
       .expect(201);
 
@@ -130,9 +109,9 @@ describe('AssessorController (e2e-live)', () => {
       studentResponse: studentDataUri,
     };
 
-    const response = await request(app.getHttpServer())
+    const response = await request(appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${validApiKey}`)
+      .set('Authorization', `Bearer ${apiKey}`)
       .send(imagePayload)
       .expect(201);
 
