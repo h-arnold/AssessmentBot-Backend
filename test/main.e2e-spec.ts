@@ -2,7 +2,7 @@ import { ChildProcessWithoutNullStreams } from 'child_process';
 
 import request from 'supertest';
 
-import { startApp, stopApp } from '../utils/e2e-test-utils';
+import { startApp, stopApp } from './utils/e2e-test-utils';
 
 describe('Main App (E2E)', () => {
   let appProcess: ChildProcessWithoutNullStreams;
