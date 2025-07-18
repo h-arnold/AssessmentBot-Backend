@@ -85,15 +85,18 @@ export async function waitForLog(
 ): Promise<void> {
   console.info(`Waiting for log with predicate: ${predicate.toString()}`);
   return new Promise((resolve, reject) => {
+    let timeout: NodeJS.Timeout;
+
     const interval = setInterval(() => {
       const logs = getLogObjects(logFilePath);
       if (logs.some(predicate)) {
         clearInterval(interval);
+        clearTimeout(timeout);
         resolve();
       }
     }, 100);
 
-    setTimeout(() => {
+    timeout = setTimeout(() => {
       clearInterval(interval);
       if (fs.existsSync(logFilePath)) {
         const logContent = fs.readFileSync(logFilePath, 'utf-8');

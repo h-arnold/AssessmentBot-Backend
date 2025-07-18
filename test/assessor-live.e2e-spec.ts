@@ -1,5 +1,6 @@
 import { ChildProcessWithoutNullStreams } from 'child_process';
-import { readFileSync } from 'fs';
+import { promises as fs } from 'fs';
+import * as path from 'path';
 
 import request from 'supertest';
 
@@ -9,40 +10,13 @@ import {
 } from '../../src/v1/assessor/dto/create-assessor.dto';
 import { startApp, stopApp } from '../utils/e2e-test-utils';
 
-// --- Synchronous Top-Level File Loading with Hardcoded Paths ---
-
-const tableData = JSON.parse(
-  readFileSync(
-    '/workspaces/AssessmentBot-Backend/test/data/tableTask.json',
-    'utf-8',
-  ),
-);
-const textData = JSON.parse(
-  readFileSync(
-    '/workspaces/AssessmentBot-Backend/test/data/textTask.json',
-    'utf-8',
-  ),
-);
-
-// Load and encode image data
-const referencePath =
-  '/workspaces/AssessmentBot-Backend/test/ImageTasks/referenceTask.png';
-const templatePath =
-  '/workspaces/AssessmentBot-Backend/test/ImageTasks/templateTask.png';
-const studentPath =
-  '/workspaces/AssessmentBot-Backend/test/ImageTasks/studentTask.png';
-
-const referenceDataUri = `data:image/png;base64,${readFileSync(
-  referencePath,
-).toString('base64')}`;
-const templateDataUri = `data:image/png;base64,${readFileSync(
-  templatePath,
-).toString('base64')}`;
-const studentDataUri = `data:image/png;base64,${readFileSync(
-  studentPath,
-).toString('base64')}`;
-
-// --- Test Suite ---
+// Helper function to load a file and convert it to a data URI
+const loadFileAsDataURI = async (filePath: string): Promise<string> => {
+  const fileBuffer = await fs.readFile(filePath);
+  const mimeType =
+    path.extname(filePath) === '.png' ? 'image/png' : 'image/jpeg';
+  return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+};
 
 describe('AssessorController (e2e-live)', () => {
   let appProcess: ChildProcessWithoutNullStreams;
@@ -50,19 +24,45 @@ describe('AssessorController (e2e-live)', () => {
   let apiKey: string;
   const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
 
+  let tableData: CreateAssessorDto;
+  let textData: CreateAssessorDto;
+  let referenceDataUri: string;
+  let templateDataUri: string;
+  let studentDataUri: string;
+
   beforeAll(async () => {
     const app = await startApp(logFilePath);
     appProcess = app.appProcess;
     appUrl = app.appUrl;
     apiKey = app.apiKey;
-  }, 10000);
+
+    // Load test data asynchronously
+    const dataDir = path.join(__dirname, '../data');
+    const imageDir = path.join(__dirname, '../ImageTasks');
+
+    const tableTaskPath = path.join(dataDir, 'tableTask.json');
+    const textTaskPath = path.join(dataDir, 'textTask.json');
+
+    tableData = JSON.parse(await fs.readFile(tableTaskPath, 'utf-8'));
+    textData = JSON.parse(await fs.readFile(textTaskPath, 'utf-8'));
+
+    referenceDataUri = await loadFileAsDataURI(
+      path.join(imageDir, 'referenceTask.png'),
+    );
+    templateDataUri = await loadFileAsDataURI(
+      path.join(imageDir, 'templateTask.png'),
+    );
+    studentDataUri = await loadFileAsDataURI(
+      path.join(imageDir, 'studentTask.png'),
+    );
+  }, 20000); // Increased timeout for file loading
 
   afterAll(() => {
     stopApp(appProcess);
   });
 
   it('/v1/assessor (POST) should return a valid assessment for a text task', async () => {
-    const mappedPayload = {
+    const mappedPayload: CreateAssessorDto = {
       taskType: TaskType.TEXT,
       reference: textData.referenceTask,
       template: textData.emptyTask,
@@ -82,7 +82,7 @@ describe('AssessorController (e2e-live)', () => {
   }, 30000);
 
   it('/v1/assessor (POST) should return a valid assessment for a table task', async () => {
-    const mappedPayload = {
+    const mappedPayload: CreateAssessorDto = {
       taskType: TaskType.TABLE,
       reference: tableData.referenceTask,
       template: tableData.emptyTask,
@@ -102,7 +102,7 @@ describe('AssessorController (e2e-live)', () => {
   }, 30000);
 
   it('/v1/assessor (POST) should return a valid assessment for an image task', async () => {
-    const imagePayload = {
+    const imagePayload: CreateAssessorDto = {
       taskType: TaskType.IMAGE,
       reference: referenceDataUri,
       template: templateDataUri,

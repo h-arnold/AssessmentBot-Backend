@@ -1,5 +1,5 @@
 import { ChildProcessWithoutNullStreams } from 'child_process';
-import * as fs from 'fs';
+import { promises as fs } from 'fs';
 import * as path from 'path';
 
 import request from 'supertest';
@@ -11,8 +11,8 @@ import {
 import { startApp, stopApp } from '../utils/e2e-test-utils';
 
 // Helper function to load a file and convert it to a data URI
-const loadFileAsDataURI = (filePath: string): string => {
-  const fileBuffer = fs.readFileSync(filePath);
+const loadFileAsDataURI = async (filePath: string): Promise<string> => {
+  const fileBuffer = await fs.readFile(filePath);
   const mimeType =
     path.extname(filePath) === '.png' ? 'image/png' : 'image/jpeg';
   return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
@@ -24,32 +24,39 @@ describe('AssessorController (e2e)', () => {
   let apiKey: string;
   const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
 
-  // Load test data
-  const textTask = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '../data', 'textTask.json'), 'utf-8'),
-  );
-  const tableTask = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '../data', 'tableTask.json'), 'utf-8'),
-  );
-  const imageTask = {
-    taskType: TaskType.IMAGE,
-    reference: loadFileAsDataURI(
-      path.join(__dirname, '../ImageTasks', 'referenceTask.png'),
-    ),
-    template: loadFileAsDataURI(
-      path.join(__dirname, '../ImageTasks', 'templateTask.png'),
-    ),
-    studentResponse: loadFileAsDataURI(
-      path.join(__dirname, '../ImageTasks', 'studentTask.png'),
-    ),
-  };
+  let textTask: CreateAssessorDto;
+  let tableTask: CreateAssessorDto;
+  let imageTask: CreateAssessorDto;
 
   beforeAll(async () => {
     const app = await startApp(logFilePath);
     appProcess = app.appProcess;
     appUrl = app.appUrl;
     apiKey = app.apiKey;
-  }, 10000);
+
+    // Load test data asynchronously
+    const dataDir = path.join(__dirname, '../data');
+    const imageDir = path.join(__dirname, '../ImageTasks');
+
+    const textTaskPath = path.join(dataDir, 'textTask.json');
+    const tableTaskPath = path.join(dataDir, 'tableTask.json');
+
+    textTask = JSON.parse(await fs.readFile(textTaskPath, 'utf-8'));
+    tableTask = JSON.parse(await fs.readFile(tableTaskPath, 'utf-8'));
+
+    imageTask = {
+      taskType: TaskType.IMAGE,
+      reference: await loadFileAsDataURI(
+        path.join(imageDir, 'referenceTask.png'),
+      ),
+      template: await loadFileAsDataURI(
+        path.join(imageDir, 'templateTask.png'),
+      ),
+      studentResponse: await loadFileAsDataURI(
+        path.join(imageDir, 'studentTask.png'),
+      ),
+    };
+  }, 20000); // Increased timeout for file loading
 
   afterAll(() => {
     stopApp(appProcess);
