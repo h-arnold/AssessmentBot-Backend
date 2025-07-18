@@ -142,44 +142,11 @@ describe('Logging (True E2E)', () => {
     });
   }
 
-  it('1. Should Output Valid JSON', async () => {
-    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
-    await waitForLog((log) => !!(log.req && log.res));
-    expect(getLogObjects().length).toBeGreaterThan(0);
-  });
-
-  it('2. Should Contain Standard Request/Response Fields', async () => {
-    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
-    await waitForLog((log) => !!(log.req && log.req.url === '/'));
-    const logObject = getLogObjects().find(
-      (obj) => obj.req && obj.req.url === '/',
-    );
-    expect(logObject).toBeDefined();
-    expect(logObject).toHaveProperty('req.id');
-    expect(logObject).toHaveProperty('req.method', 'GET');
-    expect(logObject).toHaveProperty('req.url', '/');
-    expect(logObject).toHaveProperty('res.statusCode', 200);
-    expect(logObject).toHaveProperty('responseTime');
-  });
-
-  it('3. Should Redact Authorization Header', async () => {
-    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
-    await waitForLog(
-      (log) => log.req?.headers?.authorization === 'Bearer <redacted>',
-    );
-    const logObjects = getLogObjects().filter(
-      (obj) => obj.req && obj.req.url === '/',
-    );
-    expect(logObjects.length).toBeGreaterThan(0);
-    for (const logObject of logObjects) {
-      expect(logObject.req?.headers?.authorization).toBe('Bearer <redacted>');
-    }
-  });
-
-  it('4. Should Propagate Request Context to Injected Loggers', async () => {
-    console.log(
-      'Running test: 4. Should Propagate Request Context to Injected Loggers',
-    );
+  it('1. Should Propagate Request Context to Injected Loggers', async () => {
+    // The log file is not wiped between tests, so req.id will increment with each request.
+    // As such, this test needs to run first because the way the test tracks when a request begins is when we get the message
+    // `API key authentication attempt successful` which you will get in most of the tests. Should it be necessary to create
+    // more request tracking type tests, I'll need to implement a more robust solution to this, but for now, this works.
     await request(appUrl)
       .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
@@ -199,18 +166,69 @@ describe('Logging (True E2E)', () => {
     );
 
     const logObjects = getLogObjects();
+    // Find the latest POST /v1/assessor log to get the correct req.id
+    const latestPostLog = [...logObjects]
+      .reverse()
+      .find(
+        (obj) =>
+          obj.req &&
+          obj.req.method === 'POST' &&
+          obj.req.url === '/v1/assessor',
+      );
+    const expectedReqId = latestPostLog?.req?.id;
+    expect(expectedReqId).toBeDefined();
+
+    // Find the logs for this request id
     const requestCompletedLog = logObjects.find(
-      (obj) => obj.msg && obj.msg.includes('request completed'),
+      (obj) =>
+        obj.msg &&
+        obj.msg.includes('request completed') &&
+        obj.req?.id === expectedReqId,
     );
     const serviceLog = logObjects.find(
       (obj) =>
         obj.msg &&
-        obj.msg.includes('API key authentication attempt successful'),
+        obj.msg.includes('API key authentication attempt successful') &&
+        obj.req?.id === expectedReqId,
     );
 
-    expect([4, '4']).toContain(requestCompletedLog?.req?.id);
-    expect([4, '4']).toContain(serviceLog?.req?.id);
+    expect(requestCompletedLog).toBeDefined();
+    expect(serviceLog).toBeDefined();
     expect(serviceLog?.req?.id).toBe(requestCompletedLog?.req?.id);
+  });
+
+  it('2. Should Output Valid JSON', async () => {
+    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
+    await waitForLog((log) => !!(log.req && log.res));
+    expect(getLogObjects().length).toBeGreaterThan(0);
+  });
+
+  it('3. Should Contain Standard Request/Response Fields', async () => {
+    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
+    await waitForLog((log) => !!(log.req && log.req.url === '/'));
+    const logObject = getLogObjects().find(
+      (obj) => obj.req && obj.req.url === '/',
+    );
+    expect(logObject).toBeDefined();
+    expect(logObject).toHaveProperty('req.id');
+    expect(logObject).toHaveProperty('req.method', 'GET');
+    expect(logObject).toHaveProperty('req.url', '/');
+    expect(logObject).toHaveProperty('res.statusCode', 200);
+    expect(logObject).toHaveProperty('responseTime');
+  });
+
+  it('4. Should Redact Authorization Header', async () => {
+    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
+    await waitForLog(
+      (log) => log.req?.headers?.authorization === 'Bearer <redacted>',
+    );
+    const logObjects = getLogObjects().filter(
+      (obj) => obj.req && obj.req.url === '/',
+    );
+    expect(logObjects.length).toBeGreaterThan(0);
+    for (const logObject of logObjects) {
+      expect(logObject.req?.headers?.authorization).toBe('Bearer <redacted>');
+    }
   });
 
   it('5. Should Log Errors with Stack Traces', async () => {

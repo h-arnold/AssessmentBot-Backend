@@ -32,7 +32,8 @@
         "mermaidchart.vscode-mermaid-chart",
         "GitHub.vscode-pull-request-github",
         "GitHub.copilot-chat",
-        "Google.gemini-code-assist"
+        "Google.gemini-code-assist",
+        "google.geminicodeassist"
       ]
     }
   },
