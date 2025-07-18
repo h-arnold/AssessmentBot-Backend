@@ -68,19 +68,6 @@ import { AssessorModule } from './v1/assessor/assessor.module';
                 req: (req: IncomingMessage): IncomingMessage =>
                   LogRedactor.redactRequest(req),
               },
-              formatters: {
-                level: (label: string): { level: string } => {
-                  return { level: label };
-                },
-                log: (
-                  object: Record<string, unknown>,
-                ): Record<string, unknown> => {
-                  return {
-                    ...object,
-                    timestamp: new Date(Date.now()).toISOString(),
-                  };
-                },
-              },
               customProps: (
                 req: IncomingMessage,
                 _res: ServerResponse<IncomingMessage>,

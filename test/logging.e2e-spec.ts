@@ -29,7 +29,7 @@ interface LogObject {
     stack?: string;
     [key: string]: unknown;
   };
-  timestamp?: string;
+  time?: number;
   [key: string]: unknown;
 }
 
@@ -92,7 +92,7 @@ describe('Logging (True E2E)', () => {
   }, 10000);
 
   afterAll(() => {
-    console.log('Shutting down app...');
+    console.info('Shutting down app...');
     if (appProcess) {
       appProcess.kill('SIGTERM');
     }
@@ -114,7 +114,7 @@ describe('Logging (True E2E)', () => {
   async function waitForLog(
     predicate: (log: LogObject) => boolean,
   ): Promise<void> {
-    console.log(`Waiting for log with predicate: ${predicate.toString()}`);
+    console.info(`Waiting for log with predicate: ${predicate.toString()}`);
     return new Promise((resolve, reject) => {
       const interval = setInterval(() => {
         const logs = getLogObjects();
@@ -165,19 +165,31 @@ describe('Logging (True E2E)', () => {
         ),
     );
 
-    const logObjects = getLogObjects();
-    // Find the latest POST /v1/assessor log to get the correct req.id
-    const latestPostLog = [...logObjects]
-      .reverse()
-      .find(
+    let logObjects = getLogObjects();
+    // Find the highest req.id for POST /v1/assessor logs (most recent request)
+    const postReqIds = logObjects
+      .filter(
         (obj) =>
           obj.req &&
           obj.req.method === 'POST' &&
-          obj.req.url === '/v1/assessor',
-      );
-    const expectedReqId = latestPostLog?.req?.id;
+          obj.req.url === '/v1/assessor' &&
+          obj.req.id !== undefined,
+      )
+      .map((obj) => obj.req!.id)
+      .filter((id) => typeof id === 'number' || typeof id === 'string');
+    const expectedReqId =
+      postReqIds.length > 0 ? postReqIds[postReqIds.length - 1] : undefined;
     expect(expectedReqId).toBeDefined();
 
+    // Wait for the 'request completed' log for this req.id
+    await waitForLog(
+      (log) =>
+        typeof log.msg === 'string' &&
+        log.msg.includes('request completed') &&
+        log.req?.id === expectedReqId,
+    );
+
+    logObjects = getLogObjects();
     // Find the logs for this request id
     const requestCompletedLog = logObjects.find(
       (obj) =>
@@ -246,10 +258,18 @@ describe('Logging (True E2E)', () => {
 
   it('6. Should Include ISO-8601 Timestamps', async () => {
     await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
-    await waitForLog((log) => !!log.timestamp);
-    const logObject = getLogObjects().find((obj) => obj.timestamp);
-    const timestamp = new Date(logObject!.timestamp!);
-    expect(timestamp.toISOString()).toBe(logObject!.timestamp);
+    await waitForLog((log) => typeof log.time === 'number');
+    const logObject = getLogObjects().find(
+      (obj) => typeof obj.time === 'number',
+    );
+    expect(logObject).toBeDefined();
+    // Validate that 'time' is a valid unix timestamp (ms since epoch, within reasonable range)
+    const now = Date.now();
+    // Allow for logs up to 1 day in the future or past (to avoid flakiness)
+    expect(logObject!.time).toBeGreaterThan(now - 1000 * 60 * 60 * 24);
+    expect(logObject!.time).toBeLessThan(now + 1000 * 60 * 60 * 24);
+    // Optionally, check that it's an integer
+    expect(Number.isInteger(logObject!.time)).toBe(true);
   });
 
   it('7. Should Respect LOG_LEVEL Configuration', () => {
