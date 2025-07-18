@@ -1,43 +1,31 @@
-import {
-  ConsoleLogger,
-  INestApplication,
-  ValidationPipe,
-} from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import * as dotenv from 'dotenv';
-dotenv.config({ path: '.test.env' });
+import { ChildProcessWithoutNullStreams } from 'child_process';
+
 import request from 'supertest';
 
-import { AppModule } from './../src/app.module';
-import { HttpExceptionFilter } from './../src/common/http-exception.filter';
-import { ZodValidationPipe } from './../src/common/zod-validation.pipe';
-import { ConfigService } from './../src/config/config.service';
+import { startApp, stopApp } from '../utils/e2e-test-utils';
 
-describe('Global Setup and E2E Tests', () => {
-  let app: INestApplication;
+describe('Main App (E2E)', () => {
+  let appProcess: ChildProcessWithoutNullStreams;
+  let appUrl: string;
+  let apiKey: string;
+  const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    const app = await startApp(logFilePath);
+    appProcess = app.appProcess;
+    appUrl = app.appUrl;
+    apiKey = app.apiKey;
+  }, 10000);
 
-    app = moduleFixture.createNestApplication();
-    const configService = moduleFixture.get(ConfigService);
-    // Use console logger to ensure debug output is visible
-    const logger = new ConsoleLogger();
-    logger.setLogLevels(configService.get('LOG_LEVEL'));
-    app.useLogger(logger);
-    app.useGlobalFilters(new HttpExceptionFilter());
-    app.useGlobalPipes(new ZodValidationPipe());
-    await app.init();
+  afterAll(() => {
+    stopApp(appProcess);
   });
 
-  afterAll(async () => {
-    await app.close();
-  });
-
-  it('CommonModule should integrate properly with existing ConfigModule', async () => {
-    // This test implicitly passes if the application starts without errors and previous tests pass.
-    expect(app).toBeDefined();
+  it('should return a greeting from the root endpoint', async () => {
+    const response = await request(appUrl)
+      .get('/')
+      .set('Authorization', `Bearer ${apiKey}`);
+    expect(response.status).toBe(200);
+    expect(response.text).toBe('Hello World!');
   });
 });

@@ -55,7 +55,8 @@ async function bootstrap(): Promise<void> {
   app.useGlobalInterceptors(new LoggerErrorInterceptor());
 
   // Set Express query parser to 'extended' for compatibility with qs-style query strings
-  app.set('query parser', 'extended');
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.set('query parser', 'extended');
 
   const configService = app.get(ConfigService);
   const payloadLimit = configService.getGlobalPayloadLimit();
