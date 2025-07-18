@@ -1,9 +1,9 @@
 export default {
-  setupFiles: ['<rootDir>/../jest.setup.ts'],
+  setupFiles: ['<rootDir>/jest.setup.ts'],
   preset: 'ts-jest/presets/default-esm',
   moduleFileExtensions: ['js', 'json', 'ts'],
-  rootDir: 'src',
-  testRegex: '.*\\.spec\\.ts$',
+  rootDir: '.',
+  testMatch: ['<rootDir>/src/**/*.spec.ts', '<rootDir>/test/**/*.spec.ts'],
   transform: {
     '^.+\\.(t|j)s$': [
       'ts-jest',
@@ -27,7 +27,8 @@ export default {
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
-    'src/(.*)': '<rootDir>/$1',
+    '^src/(.*)$': '<rootDir>/src/$1',
+    '^test/(.*)$': '<rootDir>/test/$1',
   },
   extensionsToTreatAsEsm: ['.ts'],
 };

@@ -1,4 +1,10 @@
-import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  Logger,
+  Inject,
+  Optional,
+} from '@nestjs/common';
 import { z } from 'zod';
 
 import { User } from './user.interface';
@@ -6,10 +12,14 @@ import { ConfigService } from '../config/config.service';
 
 @Injectable()
 export class ApiKeyService {
-  private readonly logger = new Logger(ApiKeyService.name);
   private readonly apiKeys: string[];
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    @Optional()
+    @Inject(Logger)
+    private readonly logger: Logger = new Logger(ApiKeyService.name),
+  ) {
     const apiKeysFromConfig = this.configService.get('API_KEYS');
     this.apiKeys = Array.isArray(apiKeysFromConfig) ? apiKeysFromConfig : [];
     this.logger.debug(`Loaded API keys: ${JSON.stringify(this.apiKeys)}`);
