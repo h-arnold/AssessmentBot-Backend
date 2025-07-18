@@ -1,37 +1,14 @@
-import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
+import { ChildProcessWithoutNullStreams } from 'child_process';
 
 import request from 'supertest';
 
-// Define the LogObject interface as in the original test
-interface LogObject {
-  req?: {
-    id?: string;
-    method?: string;
-    url?: string;
-    headers?: {
-      authorization?: string;
-      [key: string]: unknown;
-    };
-    [key: string]: unknown;
-  };
-  res?: {
-    statusCode?: number;
-    [key: string]: unknown;
-  };
-  responseTime?: number;
-  msg?: string;
-  level?: number | string;
-  err?: {
-    type?: string;
-    message?: string;
-    stack?: string;
-    [key: string]: unknown;
-  };
-  time?: number;
-  [key: string]: unknown;
-}
+import {
+  LogObject,
+  getLogObjects,
+  waitForLog,
+  startApp,
+  stopApp,
+} from './utils/e2e-test-utils';
 
 describe('Logging (True E2E)', () => {
   let appProcess: ChildProcessWithoutNullStreams;
@@ -40,107 +17,20 @@ describe('Logging (True E2E)', () => {
   const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
 
   beforeAll(async () => {
-    // Clear the log file before starting
-    if (fs.existsSync(logFilePath)) {
-      fs.truncateSync(logFilePath, 0);
-    }
-
-    const mainJsPath = path.join(__dirname, '..', 'dist', 'src', 'main.js');
-
-    appProcess = spawn('node', [mainJsPath], {
-      cwd: path.join(__dirname, '..'), // Set working directory to project root
-      env: {
-        ...process.env,
-        NODE_ENV: 'test',
-        PORT: '3001',
-        E2E_TESTING: 'true',
-        LOG_FILE: logFilePath,
-      },
-    });
-
-    appUrl = 'http://localhost:3001';
-    apiKey = process.env.API_KEY || 'test-api-key';
-
-    // Wait for the app to be ready by polling for the log file to contain the startup message
-    try {
-      await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          clearInterval(interval);
-          reject(new Error('App startup timed out'));
-        }, 30000);
-
-        const interval = setInterval(() => {
-          if (fs.existsSync(logFilePath)) {
-            const logContent = fs.readFileSync(logFilePath, 'utf-8');
-            // Check for the startup message in JSON format
-            if (
-              logContent.includes(
-                '"msg":"Nest application successfully started"',
-              )
-            ) {
-              clearInterval(interval);
-              clearTimeout(timeout);
-              resolve();
-            }
-          }
-        }, 500);
-      });
-    } catch (error) {
-      console.error('Error during app startup:', error);
-      throw error;
-    }
+    const app = await startApp(logFilePath);
+    appProcess = app.appProcess;
+    appUrl = app.appUrl;
+    apiKey = app.apiKey;
   }, 10000);
 
   afterAll(() => {
-    console.info('Shutting down app...');
-    if (appProcess) {
-      appProcess.kill('SIGTERM');
-    }
+    stopApp(appProcess);
   });
 
   // Do NOT clear the log file before each test.
   // Truncating the log file here causes loss of log entries needed by later tests,
   // especially for logs that are written asynchronously or after the request completes.
   // If you need to debug, clear the log file manually or in beforeAll only.
-
-  function getLogObjects(): LogObject[] {
-    const logContent = fs.readFileSync(logFilePath, 'utf-8');
-    return logContent
-      .split('\n')
-      .filter((line) => line.trim() !== '')
-      .map((line) => JSON.parse(line) as LogObject);
-  }
-
-  async function waitForLog(
-    predicate: (log: LogObject) => boolean,
-  ): Promise<void> {
-    console.info(`Waiting for log with predicate: ${predicate.toString()}`);
-    return new Promise((resolve, reject) => {
-      const interval = setInterval(() => {
-        const logs = getLogObjects();
-        if (logs.some(predicate)) {
-          clearInterval(interval);
-          resolve();
-        }
-      }, 100);
-
-      setTimeout(() => {
-        clearInterval(interval);
-        // Print log file contents for debugging
-        if (fs.existsSync(logFilePath)) {
-          const logContent = fs.readFileSync(logFilePath, 'utf-8');
-          // Print first 1000 characters to avoid flooding
-          console.error(
-            'waitForLog timed out. Log file contents (first 1000 chars):\n',
-            logContent.slice(0, 1000),
-          );
-        } else {
-          console.error('waitForLog timed out. Log file does not exist.');
-        }
-        reject(new Error('waitForLog timed out'));
-      }, 30000);
-    });
-  }
 
   it('1. Should Propagate Request Context to Injected Loggers', async () => {
     // The log file is not wiped between tests, so req.id will increment with each request.
@@ -158,6 +48,7 @@ describe('Logging (True E2E)', () => {
       });
 
     await waitForLog(
+      logFilePath,
       (log) =>
         !!(
           log.msg &&
@@ -165,7 +56,7 @@ describe('Logging (True E2E)', () => {
         ),
     );
 
-    let logObjects = getLogObjects();
+    let logObjects = getLogObjects(logFilePath);
     // Find the highest req.id for POST /v1/assessor logs (most recent request)
     const postReqIds = logObjects
       .filter(
@@ -183,13 +74,14 @@ describe('Logging (True E2E)', () => {
 
     // Wait for the 'request completed' log for this req.id
     await waitForLog(
+      logFilePath,
       (log) =>
         typeof log.msg === 'string' &&
         log.msg.includes('request completed') &&
         log.req?.id === expectedReqId,
     );
 
-    logObjects = getLogObjects();
+    logObjects = getLogObjects(logFilePath);
     // Find the logs for this request id
     const requestCompletedLog = logObjects.find(
       (obj) =>
@@ -211,14 +103,14 @@ describe('Logging (True E2E)', () => {
 
   it('2. Should Output Valid JSON', async () => {
     await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
-    await waitForLog((log) => !!(log.req && log.res));
-    expect(getLogObjects().length).toBeGreaterThan(0);
+    await waitForLog(logFilePath, (log) => !!(log.req && log.res));
+    expect(getLogObjects(logFilePath).length).toBeGreaterThan(0);
   });
 
   it('3. Should Contain Standard Request/Response Fields', async () => {
     await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
-    await waitForLog((log) => !!(log.req && log.req.url === '/'));
-    const logObject = getLogObjects().find(
+    await waitForLog(logFilePath, (log) => !!(log.req && log.req.url === '/'));
+    const logObject = getLogObjects(logFilePath).find(
       (obj) => obj.req && obj.req.url === '/',
     );
     expect(logObject).toBeDefined();
@@ -232,9 +124,10 @@ describe('Logging (True E2E)', () => {
   it('4. Should Redact Authorization Header', async () => {
     await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
     await waitForLog(
+      logFilePath,
       (log) => log.req?.headers?.authorization === 'Bearer <redacted>',
     );
-    const logObjects = getLogObjects().filter(
+    const logObjects = getLogObjects(logFilePath).filter(
       (obj) => obj.req && obj.req.url === '/',
     );
     expect(logObjects.length).toBeGreaterThan(0);
@@ -248,8 +141,8 @@ describe('Logging (True E2E)', () => {
       .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({});
-    await waitForLog((log) => !!log.err);
-    const logObject = getLogObjects().find((obj) => obj.err);
+    await waitForLog(logFilePath, (log) => !!log.err);
+    const logObject = getLogObjects(logFilePath).find((obj) => obj.err);
     expect(logObject?.err).toBeDefined();
     expect(logObject?.err).toHaveProperty('type');
     expect(logObject?.err).toHaveProperty('message');
@@ -258,8 +151,8 @@ describe('Logging (True E2E)', () => {
 
   it('6. Should Include ISO-8601 Timestamps', async () => {
     await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
-    await waitForLog((log) => typeof log.time === 'number');
-    const logObject = getLogObjects().find(
+    await waitForLog(logFilePath, (log) => typeof log.time === 'number');
+    const logObject = getLogObjects(logFilePath).find(
       (obj) => typeof obj.time === 'number',
     );
     expect(logObject).toBeDefined();
@@ -292,8 +185,9 @@ describe('Logging (True E2E)', () => {
       .set('Authorization', `Bearer ${apiKey}`)
       .send(largePayload);
     await waitForLog(
+      logFilePath,
       (log) => !!(log.msg && log.msg.includes('request completed')),
     );
-    expect(getLogObjects().length).toBeGreaterThan(0);
+    expect(getLogObjects(logFilePath).length).toBeGreaterThan(0);
   });
 });
