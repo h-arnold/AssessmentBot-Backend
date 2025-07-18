@@ -4,11 +4,7 @@ import * as path from 'path';
 
 import request from 'supertest';
 
-import {
-  CreateAssessorDto,
-  TaskType,
-} from '../../src/v1/assessor/dto/create-assessor.dto';
-import { startApp, stopApp } from '../utils/e2e-test-utils';
+import { startApp, stopApp } from './utils/e2e-test-utils';
 
 // Helper function to load a file and convert it to a data URI
 const loadFileAsDataURI = async (filePath: string): Promise<string> => {
@@ -18,15 +14,22 @@ const loadFileAsDataURI = async (filePath: string): Promise<string> => {
   return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
 };
 
+interface TaskData {
+  taskType: string;
+  referenceTask: string;
+  emptyTask: string;
+  studentTask: string;
+}
+
 describe('AssessorController (e2e)', () => {
   let appProcess: ChildProcessWithoutNullStreams;
   let appUrl: string;
   let apiKey: string;
   const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
 
-  let textTask: CreateAssessorDto;
-  let tableTask: CreateAssessorDto;
-  let imageTask: CreateAssessorDto;
+  let textTask: TaskData;
+  let tableTask: TaskData;
+  let imageTask: TaskData;
 
   beforeAll(async () => {
     const app = await startApp(logFilePath);
@@ -35,8 +38,8 @@ describe('AssessorController (e2e)', () => {
     apiKey = app.apiKey;
 
     // Load test data asynchronously
-    const dataDir = path.join(__dirname, '../data');
-    const imageDir = path.join(__dirname, '../ImageTasks');
+    const dataDir = path.join(__dirname, 'data');
+    const imageDir = path.join(__dirname, 'ImageTasks');
 
     const textTaskPath = path.join(dataDir, 'textTask.json');
     const tableTaskPath = path.join(dataDir, 'tableTask.json');
@@ -45,7 +48,7 @@ describe('AssessorController (e2e)', () => {
     tableTask = JSON.parse(await fs.readFile(tableTaskPath, 'utf-8'));
 
     imageTask = {
-      taskType: TaskType.IMAGE,
+      taskType: 'IMAGE',
       reference: await loadFileAsDataURI(
         path.join(imageDir, 'referenceTask.png'),
       ),
@@ -92,8 +95,8 @@ describe('AssessorController (e2e)', () => {
   });
 
   it('/v1/assessor (POST) should return 201 Created for valid DTO', async () => {
-    const validPayload: CreateAssessorDto = {
-      taskType: TaskType.TEXT,
+    const validPayload = {
+      taskType: 'TEXT',
       reference: 'test',
       template: 'test',
       studentResponse: 'test',

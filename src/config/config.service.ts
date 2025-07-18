@@ -83,7 +83,10 @@ export class ConfigService {
     const envFileName = process.env.NODE_ENV === 'test' ? '.test.env' : '.env';
     const envFilePath = path.resolve(process.cwd(), envFileName);
 
+    // envFilePath is constructed from cwd and a fixed filename, safe to use
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (fs.existsSync(envFilePath)) {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       loadedEnv = dotenv.parse(fs.readFileSync(envFilePath));
     }
 

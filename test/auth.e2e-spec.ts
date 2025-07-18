@@ -2,7 +2,7 @@ import { ChildProcessWithoutNullStreams } from 'child_process';
 
 import request from 'supertest';
 
-import { startApp, stopApp, waitForLog } from '../utils/e2e-test-utils';
+import { startApp, stopApp, waitForLog } from './utils/e2e-test-utils';
 
 describe('Authentication E2E Tests', () => {
   let appProcess: ChildProcessWithoutNullStreams;

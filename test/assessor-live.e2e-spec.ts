@@ -4,11 +4,7 @@ import * as path from 'path';
 
 import request from 'supertest';
 
-import {
-  CreateAssessorDto,
-  TaskType,
-} from '../../src/v1/assessor/dto/create-assessor.dto';
-import { startApp, stopApp } from '../utils/e2e-test-utils';
+import { startApp, stopApp } from './utils/e2e-test-utils';
 
 // Helper function to load a file and convert it to a data URI
 const loadFileAsDataURI = async (filePath: string): Promise<string> => {
@@ -18,14 +14,21 @@ const loadFileAsDataURI = async (filePath: string): Promise<string> => {
   return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
 };
 
+interface TaskData {
+  taskType: string;
+  referenceTask: string;
+  emptyTask: string;
+  studentTask: string;
+}
+
 describe('AssessorController (e2e-live)', () => {
   let appProcess: ChildProcessWithoutNullStreams;
   let appUrl: string;
   let apiKey: string;
   const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
 
-  let tableData: CreateAssessorDto;
-  let textData: CreateAssessorDto;
+  let tableData: TaskData;
+  let textData: TaskData;
   let referenceDataUri: string;
   let templateDataUri: string;
   let studentDataUri: string;
@@ -37,8 +40,8 @@ describe('AssessorController (e2e-live)', () => {
     apiKey = app.apiKey;
 
     // Load test data asynchronously
-    const dataDir = path.join(__dirname, '../data');
-    const imageDir = path.join(__dirname, '../ImageTasks');
+    const dataDir = path.join(__dirname, 'data');
+    const imageDir = path.join(__dirname, 'ImageTasks');
 
     const tableTaskPath = path.join(dataDir, 'tableTask.json');
     const textTaskPath = path.join(dataDir, 'textTask.json');
@@ -62,8 +65,8 @@ describe('AssessorController (e2e-live)', () => {
   });
 
   it('/v1/assessor (POST) should return a valid assessment for a text task', async () => {
-    const mappedPayload: CreateAssessorDto = {
-      taskType: TaskType.TEXT,
+    const mappedPayload = {
+      taskType: 'TEXT',
       reference: textData.referenceTask,
       template: textData.emptyTask,
       studentResponse: textData.studentTask,
@@ -82,8 +85,8 @@ describe('AssessorController (e2e-live)', () => {
   }, 30000);
 
   it('/v1/assessor (POST) should return a valid assessment for a table task', async () => {
-    const mappedPayload: CreateAssessorDto = {
-      taskType: TaskType.TABLE,
+    const mappedPayload = {
+      taskType: 'TABLE',
       reference: tableData.referenceTask,
       template: tableData.emptyTask,
       studentResponse: tableData.studentTask,
@@ -102,8 +105,8 @@ describe('AssessorController (e2e-live)', () => {
   }, 30000);
 
   it('/v1/assessor (POST) should return a valid assessment for an image task', async () => {
-    const imagePayload: CreateAssessorDto = {
-      taskType: TaskType.IMAGE,
+    const imagePayload = {
+      taskType: 'IMAGE',
       reference: referenceDataUri,
       template: templateDataUri,
       studentResponse: studentDataUri,
