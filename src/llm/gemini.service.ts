@@ -50,7 +50,9 @@ export class GeminiService implements LLMService {
     const contents = this.buildContents(payload);
 
     this.logger.debug(
-      `Sending to Gemini with model: ${modelParams.model}, temperature: ${modelParams.generationConfig.temperature}`,
+      `Sending to Gemini with model: ${modelParams.model}, temperature: ${
+        modelParams.generationConfig?.temperature ?? 0
+      }`,
     );
     this.logPayload(payload, contents);
 
@@ -121,9 +123,14 @@ export class GeminiService implements LLMService {
 
     const systemInstruction = payload.system;
     // Use temperature from payload, default to 0
-    const temperature = typeof payload.temperature === 'number' ? payload.temperature : 0;
+    const temperature =
+      typeof payload.temperature === 'number' ? payload.temperature : 0;
 
-    return { model: modelName, systemInstruction, generationConfig: { temperature } };
+    return {
+      model: modelName,
+      systemInstruction,
+      generationConfig: { temperature },
+    };
   }
 
   /**
