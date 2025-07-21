@@ -95,4 +95,12 @@ export default tseslint.config(
       'import/no-commonjs': 'off',
     },
   },
+  {
+    files: ['**/*.js'],
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/no-var-requires': 'off',
+      'import/no-commonjs': 'off',
+    },
+  },
 );
