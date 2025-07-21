@@ -8,6 +8,8 @@ export type StringPromptPayload = {
   system: string;
   /** The user-provided prompt or question. */
   user: string;
+  /** Optional temperature for sampling (default: 0) */
+  temperature?: number;
 };
 
 /**
@@ -20,6 +22,8 @@ export type ImagePromptPayload = {
   images: Array<{ mimeType: string; data?: string; uri?: string }>;
   /** Optional messages array. */
   messages?: Array<{ content: string }>;
+  /** Optional temperature for sampling (default: 0) */
+  temperature?: number;
 };
 
 /**
@@ -37,6 +41,7 @@ export abstract class LLMService {
    *
    * @param payload The content to be sent to the LLM. This can be a simple string
    * or a complex object for multimodal inputs (e.g., text and images).
+   * The payload may include an optional `temperature` parameter (default: 0).
    * @returns A Promise that resolves to a validated LlmResponse object.
    */
   abstract send(payload: LlmPayload): Promise<LlmResponse>;

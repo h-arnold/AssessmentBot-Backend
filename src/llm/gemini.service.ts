@@ -49,7 +49,9 @@ export class GeminiService implements LLMService {
     const modelParams = this.buildModelParams(payload);
     const contents = this.buildContents(payload);
 
-    this.logger.debug(`Sending to Gemini with model: ${modelParams.model}`);
+    this.logger.debug(
+      `Sending to Gemini with model: ${modelParams.model}, temperature: ${modelParams.generationConfig.temperature}`,
+    );
     this.logPayload(payload, contents);
 
     try {
@@ -114,12 +116,14 @@ export class GeminiService implements LLMService {
    */
   private buildModelParams(payload: LlmPayload): ModelParams {
     const modelName = this.isImagePromptPayload(payload)
-      ? 'gemini-2.5-flash'
-      : 'gemini-2.0-flash-lite';
+      ? 'gemini-1.5-flash'
+      : 'gemini-1.5-flash-latest';
 
     const systemInstruction = payload.system;
+    // Use temperature from payload, default to 0
+    const temperature = typeof payload.temperature === 'number' ? payload.temperature : 0;
 
-    return { model: modelName, systemInstruction };
+    return { model: modelName, systemInstruction, generationConfig: { temperature } };
   }
 
   /**

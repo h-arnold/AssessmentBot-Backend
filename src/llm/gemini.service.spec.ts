@@ -46,7 +46,7 @@ describe('GeminiService', () => {
 
     logger = new Logger();
 
-    service = new GeminiService(configService, jsonParserUtil, logger);
+    service = new GeminiService(configService, jsonParserUtil);
   });
 
   it('should be defined', () => {
@@ -74,6 +74,7 @@ describe('GeminiService', () => {
     expect(mockGetGenerativeModel).toHaveBeenCalledWith({
       model: 'gemini-2.0-flash-lite',
       systemInstruction: 'system prompt',
+      temperature: 0,
     });
     expect(mockGenerateContent).toHaveBeenCalledWith(['test prompt']);
   });
@@ -89,6 +90,7 @@ describe('GeminiService', () => {
     });
 
     const payload: ImagePromptPayload = {
+      system: 'system prompt',
       messages: [{ content: 'Test message' }],
       images: [{ mimeType: 'image/png', data: 'test-data' }],
     };
@@ -98,6 +100,8 @@ describe('GeminiService', () => {
     // PNG files should be read with base64 encoding
     expect(mockGetGenerativeModel).toHaveBeenCalledWith({
       model: 'gemini-2.5-flash',
+      systemInstruction: undefined,
+      temperature: 0,
     });
     expect(mockGenerateContent).toHaveBeenCalledWith([
       'Test message',
