@@ -1,47 +1,44 @@
-import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import * as request from 'supertest';
+import { ChildProcessWithoutNullStreams } from 'child_process';
 
-import { AppModule } from '../src/app.module';
-import { ConfigService } from '../src/config/config.service';
+import request from 'supertest';
+
+import { startApp, stopApp } from './utils/e2e-test-utils';
 
 describe('Throttler (e2e)', () => {
-  let app: INestApplication;
-  let configService: ConfigService;
+  let appProcess: ChildProcessWithoutNullStreams;
+  let appUrl: string;
   let apiKey: string;
   let apiKey2: string;
   let limit: number;
   let ttl: number;
+  const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    const testConfig = await startApp(logFilePath);
+    appProcess = testConfig.appProcess;
+    appUrl = testConfig.appUrl;
+    apiKey = testConfig.apiKey;
+    apiKey2 = testConfig.apiKey2;
+    limit = testConfig.throttlerLimit;
+    ttl = testConfig.throttlerTtl;
+  }, 30000);
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
-
-    configService = app.get<ConfigService>(ConfigService);
-    apiKey = configService.get('API_KEY');
-    apiKey2 = configService.get('API_KEY_2');
-    limit = configService.get('THROTTLER_LIMIT');
-    ttl = configService.get('THROTTLER_TTL');
-  });
-
-  afterAll(async () => {
-    await app.close();
+  afterAll(() => {
+    stopApp(appProcess);
   });
 
   it('should allow requests below limit', async () => {
     const requests = Array(limit - 1)
       .fill(0)
       .map(() => {
-        return request(app.getHttpServer())
-          .post('/v1/assessor/text')
+        return request(appUrl)
+          .post('/v1/assessor')
           .set('Authorization', `Bearer ${apiKey}`)
           .send({
-            student_solution: 'The quick brown fox jumps over the lazy dog.',
-            rubric: 'The student must use the word "fox".',
+            taskType: 'TEXT',
+            reference: 'The quick brown fox jumps over the lazy dog.',
+            template: 'Write a sentence about a fox.',
+            studentResponse: 'A fox is a mammal.',
           })
           .expect(201);
       });
@@ -53,34 +50,40 @@ describe('Throttler (e2e)', () => {
     const requests = Array(limit)
       .fill(0)
       .map(() => {
-        return request(app.getHttpServer())
-          .post('/v1/assessor/text')
+        return request(appUrl)
+          .post('/v1/assessor')
           .set('Authorization', `Bearer ${apiKey}`)
           .send({
-            student_solution: 'The quick brown fox jumps over the lazy dog.',
-            rubric: 'The student must use the word "fox".',
+            taskType: 'TEXT',
+            reference: 'The quick brown fox jumps over the lazy dog.',
+            template: 'Write a sentence about a fox.',
+            studentResponse: 'A fox is a mammal.',
           })
           .expect(201);
       });
     await Promise.all(requests);
 
-    const response = await request(app.getHttpServer())
-      .post('/v1/assessor/text')
+    const response = await request(appUrl)
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({
-        student_solution: 'The quick brown fox jumps over the lazy dog.',
-        rubric: 'The student must use the word "fox".',
+        taskType: 'TEXT',
+        reference: 'The quick brown fox jumps over the lazy dog.',
+        template: 'Write a sentence about a fox.',
+        studentResponse: 'A fox is a mammal.',
       });
     expect(response.status).toBe(429);
   });
 
   it('should include Retry-After header on throttled response', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/v1/assessor/text')
+    const response = await request(appUrl)
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({
-        student_solution: 'The quick brown fox jumps over the lazy dog.',
-        rubric: 'The student must use the word "fox".',
+        taskType: 'TEXT',
+        reference: 'The quick brown fox jumps over the lazy dog.',
+        template: 'Write a sentence about a fox.',
+        studentResponse: 'A fox is a mammal.',
       });
 
     expect(response.status).toBe(429);
@@ -90,12 +93,14 @@ describe('Throttler (e2e)', () => {
 
   it('should reset limit after TTL expires', async () => {
     await new Promise((resolve) => setTimeout(resolve, ttl * 1000));
-    const response = await request(app.getHttpServer())
-      .post('/v1/assessor/text')
+    const response = await request(appUrl)
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({
-        student_solution: 'The quick brown fox jumps over the lazy dog.',
-        rubric: 'The student must use the word "fox".',
+        taskType: 'TEXT',
+        reference: 'The quick brown fox jumps over the lazy dog.',
+        template: 'Write a sentence about a fox.',
+        studentResponse: 'A fox is a mammal.',
       });
     expect(response.status).toBe(201);
   }, 70000);
@@ -104,32 +109,38 @@ describe('Throttler (e2e)', () => {
     const requests = Array(limit)
       .fill(0)
       .map(() => {
-        return request(app.getHttpServer())
-          .post('/v1/assessor/text')
+        return request(appUrl)
+          .post('/v1/assessor')
           .set('Authorization', `Bearer ${apiKey}`)
           .send({
-            student_solution: 'The quick brown fox jumps over the lazy dog.',
-            rubric: 'The student must use the word "fox".',
+            taskType: 'TEXT',
+            reference: 'The quick brown fox jumps over the lazy dog.',
+            template: 'Write a sentence about a fox.',
+            studentResponse: 'A fox is a mammal.',
           })
           .expect(201);
       });
     await Promise.all(requests);
 
-    const throttledResponse = await request(app.getHttpServer())
-      .post('/v1/assessor/text')
+    const throttledResponse = await request(appUrl)
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({
-        student_solution: 'The quick brown fox jumps over the lazy dog.',
-        rubric: 'The student must use the word "fox".',
+        taskType: 'TEXT',
+        reference: 'The quick brown fox jumps over the lazy dog.',
+        template: 'Write a sentence about a fox.',
+        studentResponse: 'A fox is a mammal.',
       });
     expect(throttledResponse.status).toBe(429);
 
-    const independentResponse = await request(app.getHttpServer())
-      .post('/v1/assessor/text')
+    const independentResponse = await request(appUrl)
+      .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey2}`)
       .send({
-        student_solution: 'The quick brown fox jumps over the lazy dog.',
-        rubric: 'The student must use the word "fox".',
+        taskType: 'TEXT',
+        reference: 'The quick brown fox jumps over the lazy dog.',
+        template: 'Write a sentence about a fox.',
+        studentResponse: 'A fox is a mammal.',
       });
     expect(independentResponse.status).toBe(201);
   });
@@ -138,22 +149,24 @@ describe('Throttler (e2e)', () => {
     const requests = Array(limit)
       .fill(0)
       .map(() => {
-        return request(app.getHttpServer())
-          .post('/v1/assessor/text')
+        return request(appUrl)
+          .post('/v1/assessor')
           .send({
-            student_solution: 'The quick brown fox jumps over the lazy dog.',
-            rubric: 'The student must use the word "fox".',
+            taskType: 'TEXT',
+            reference: 'The quick brown fox jumps over the lazy dog.',
+            template: 'Write a sentence about a fox.',
+            studentResponse: 'A fox is a mammal.',
           })
           .expect(401); // Unauthorized
       });
     await Promise.all(requests);
 
-    const response = await request(app.getHttpServer())
-      .post('/v1/assessor/text')
-      .send({
-        student_solution: 'The quick brown fox jumps over the lazy dog.',
-        rubric: 'The student must use the word "fox".',
-      });
+    const response = await request(appUrl).post('/v1/assessor').send({
+      taskType: 'TEXT',
+      reference: 'The quick brown fox jumps over the lazy dog.',
+      template: 'Write a sentence about a fox.',
+      studentResponse: 'A fox is a mammal.',
+    });
     expect(response.status).toBe(429);
   });
 

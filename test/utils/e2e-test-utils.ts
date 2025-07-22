@@ -123,6 +123,9 @@ export async function startApp(logFilePath: string): Promise<{
   appProcess: ChildProcessWithoutNullStreams;
   appUrl: string;
   apiKey: string;
+  apiKey2: string;
+  throttlerTtl: number;
+  throttlerLimit: number;
 }> {
   if (fs.existsSync(logFilePath)) {
     fs.truncateSync(logFilePath, 0);
@@ -130,19 +133,37 @@ export async function startApp(logFilePath: string): Promise<{
 
   const mainJsPath = path.join(__dirname, '..', '..', 'dist', 'src', 'main.js');
 
+  // Define the keys and other settings for the test run.
+  const apiKey = 'test-api-key';
+  const apiKey2 = 'test-api-key-2';
+  const throttlerTtl = 60;
+  const throttlerLimit = 10;
+  const apiKeys = [apiKey, apiKey2].join(',');
+
+  const testEnv: NodeJS.ProcessEnv = {
+    ...process.env,
+    NODE_ENV: 'test',
+    PORT: '3001',
+    E2E_TESTING: 'true',
+    LOG_FILE: logFilePath,
+    API_KEYS: apiKeys,
+    THROTTLER_TTL: throttlerTtl.toString(),
+    THROTTLER_LIMIT: throttlerLimit.toString(),
+  };
+
+  // Provide a dummy key ONLY if a real one isn't already in the environment.
+  // This allows live tests to run with a real key from .test.env,
+  // while ensuring other tests can run in CI/CD without a real key.
+  if (!testEnv.GEMINI_API_KEY) {
+    testEnv.GEMINI_API_KEY = 'dummy-key-for-testing';
+  }
+
   const appProcess = spawn('node', [mainJsPath], {
     cwd: path.join(__dirname, '..', '..'),
-    env: {
-      ...process.env,
-      NODE_ENV: 'test',
-      PORT: '3001',
-      E2E_TESTING: 'true',
-      LOG_FILE: logFilePath,
-    },
+    env: testEnv,
   });
 
   const appUrl = 'http://localhost:3001';
-  const apiKey = process.env.API_KEY || 'test-api-key';
 
   try {
     await new Promise<void>((resolve, reject) => {
@@ -169,7 +190,8 @@ export async function startApp(logFilePath: string): Promise<{
     throw error;
   }
 
-  return { appProcess, appUrl, apiKey };
+  // Return the values used in this specific test run
+  return { appProcess, appUrl, apiKey, apiKey2, throttlerTtl, throttlerLimit };
 }
 
 /**
