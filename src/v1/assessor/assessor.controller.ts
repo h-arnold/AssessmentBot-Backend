@@ -2,12 +2,10 @@ import {
   Body,
   Controller,
   Post,
-  UseGuards,
   UsePipes,
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { ApiKeyGuard } from 'src/auth/api-key.guard';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import { ZodValidationPipe } from 'src/common/zod-validation.pipe';
 import { ConfigService } from 'src/config/config.service';
@@ -45,7 +43,6 @@ import { LlmResponse } from '../../llm/types';
  * (`reference`, `template`, and `studentResponse`) using the `ImageValidationPipe`.
  */
 @Controller('v1/assessor')
-@UseGuards(ApiKeyGuard)
 export class AssessorController {
   constructor(
     private readonly assessorService: AssessorService,

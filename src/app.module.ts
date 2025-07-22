@@ -19,6 +19,7 @@ import { LoggerModule, Params } from 'nestjs-pino';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ApiKeyThrottlerGuard } from './auth/api-key-throttler.guard';
+import { ApiKeyGuard } from './auth/api-key.guard';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { LogRedactor } from './common/utils/log-redactor.util';
@@ -125,6 +126,10 @@ import { AssessorModule } from './v1/assessor/assessor.module';
     {
       provide: APP_GUARD,
       useClass: ApiKeyThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ApiKeyGuard,
     },
   ],
 })

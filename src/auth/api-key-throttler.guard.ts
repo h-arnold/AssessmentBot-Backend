@@ -1,20 +1,50 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ExecutionContext, Injectable, Logger } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
+
+import { ApiKeyGuard } from './api-key.guard';
 
 @Injectable()
 export class ApiKeyThrottlerGuard extends ThrottlerGuard {
   private readonly logger = new Logger(ApiKeyThrottlerGuard.name);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected async getTracker(req: Record<string, any>): Promise<string> {
-    const headers = (req as { headers?: { authorization?: string } }).headers;
-    const ip = (req as { ip?: string }).ip;
-    const authHeader = headers?.authorization;
+  constructor(
+    private readonly apiKeyGuard: ApiKeyGuard,
+    reflector: Reflector,
+  ) {
+    super(
+      {
+        // @ts-expect-error - We are not using the options object
+        storage: null,
+        throttlers: [],
+      },
+      null,
+      reflector,
+    );
+  }
+
+  protected async getTracker(req: {
+    headers?: { authorization?: string };
+    ip?: string;
+  }): Promise<string> {
+    const authHeader = req.headers?.authorization;
     if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-      // Return the API key as the tracker
-      return authHeader.substring(7);
+      const apiKey = authHeader.substring(7);
+      this.logger.debug(`Using API Key for throttling: ${apiKey}`);
+      return apiKey;
     }
-    // Fallback to IP if no key is present
-    return typeof ip === 'string' ? ip : '';
+
+    const ip = req.ip;
+    this.logger.debug(`Using IP for throttling: ${ip}`);
+    return ip;
+  }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const canActivate = await this.apiKeyGuard.canActivate(context);
+    if (!canActivate) {
+      return false;
+    }
+
+    return super.canActivate(context);
   }
 }
