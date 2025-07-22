@@ -12,10 +12,13 @@ function hasReqId(
 }
 
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule, Params } from 'nestjs-pino';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ApiKeyThrottlerGuard } from './auth/api-key-throttler.guard';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { LogRedactor } from './common/utils/log-redactor.util';
@@ -102,11 +105,27 @@ import { AssessorModule } from './v1/assessor/assessor.module';
         }
       },
     }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => [
+        {
+          ttl: configService.get('THROTTLER_TTL'),
+          limit: configService.get('THROTTLER_LIMIT'),
+        },
+      ],
+    }),
     CommonModule,
     AuthModule,
     AssessorModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ApiKeyThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

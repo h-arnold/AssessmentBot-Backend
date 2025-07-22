@@ -6,7 +6,7 @@ module.exports = {
     '^.+\.(t|j)s$': 'ts-jest',
   },
   moduleNameMapper: {
-    '^src/(.*)$': '<rootDir>/../src/$1',
+    '^src/(.*)$': '<rootDir>/src/$1',
   },
   testRegex: '.+\.e2e-spec\.ts$',
   setupFiles: ['<rootDir>/jest.setup.ts'],

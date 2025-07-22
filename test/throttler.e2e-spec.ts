@@ -45,7 +45,8 @@ describe('Throttler (e2e)', () => {
           })
           .expect(201);
       });
-    await Promise.all(requests);
+    const responses = await Promise.all(requests);
+    expect(responses.length).toBe(limit - 1);
   });
 
   it('should reject requests exceeding limit', async () => {
@@ -63,14 +64,14 @@ describe('Throttler (e2e)', () => {
       });
     await Promise.all(requests);
 
-    return request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .post('/v1/assessor/text')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({
         student_solution: 'The quick brown fox jumps over the lazy dog.',
         rubric: 'The student must use the word "fox".',
-      })
-      .expect(429);
+      });
+    expect(response.status).toBe(429);
   });
 
   it('should include Retry-After header on throttled response', async () => {
@@ -89,15 +90,15 @@ describe('Throttler (e2e)', () => {
 
   it('should reset limit after TTL expires', async () => {
     await new Promise((resolve) => setTimeout(resolve, ttl * 1000));
-    return request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .post('/v1/assessor/text')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({
         student_solution: 'The quick brown fox jumps over the lazy dog.',
         rubric: 'The student must use the word "fox".',
-      })
-      .expect(201);
-  });
+      });
+    expect(response.status).toBe(201);
+  }, 70000);
 
   it('should throttle keys independently', async () => {
     const requests = Array(limit)
@@ -114,23 +115,23 @@ describe('Throttler (e2e)', () => {
       });
     await Promise.all(requests);
 
-    await request(app.getHttpServer())
+    const throttledResponse = await request(app.getHttpServer())
       .post('/v1/assessor/text')
       .set('Authorization', `Bearer ${apiKey}`)
       .send({
         student_solution: 'The quick brown fox jumps over the lazy dog.',
         rubric: 'The student must use the word "fox".',
-      })
-      .expect(429);
+      });
+    expect(throttledResponse.status).toBe(429);
 
-    return request(app.getHttpServer())
+    const independentResponse = await request(app.getHttpServer())
       .post('/v1/assessor/text')
       .set('Authorization', `Bearer ${apiKey2}`)
       .send({
         student_solution: 'The quick brown fox jumps over the lazy dog.',
         rubric: 'The student must use the word "fox".',
-      })
-      .expect(201);
+      });
+    expect(independentResponse.status).toBe(201);
   });
 
   it('should fallback to IP throttling if no key provided', async () => {
@@ -147,17 +148,14 @@ describe('Throttler (e2e)', () => {
       });
     await Promise.all(requests);
 
-    return request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .post('/v1/assessor/text')
       .send({
         student_solution: 'The quick brown fox jumps over the lazy dog.',
         rubric: 'The student must use the word "fox".',
-      })
-      .expect(429);
+      });
+    expect(response.status).toBe(429);
   });
 
-  it.skip('should log throttled requests', async () => {
-    // This test requires a more complex setup to capture and inspect logs.
-    // It is skipped for now.
-  });
+  it.todo('should log throttled requests (requires log capture setup)');
 });

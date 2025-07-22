@@ -4,6 +4,7 @@
   "description": "The backend for Assessment Bot, which provides LLM services.",
   "author": "Hamish Arnold",
   "private": true,
+  "type": "module",
   "license": "ISC",
   "scripts": {
     "build": "nest build",

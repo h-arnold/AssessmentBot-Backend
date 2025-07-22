@@ -8,6 +8,9 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - THROTTLER_TTL=${THROTTLER_TTL:-60}
+      - THROTTLER_LIMIT=${THROTTLER_LIMIT:-10}
     expose:
       - "3000"
     networks:
