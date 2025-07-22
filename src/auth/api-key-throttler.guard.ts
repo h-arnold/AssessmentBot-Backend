@@ -34,7 +34,7 @@ export class ApiKeyThrottlerGuard extends ThrottlerGuard {
       return apiKey;
     }
 
-    const ip = req.ip;
+    const ip = req.ip || 'unknown-ip'; // Fallback to 'unknown-ip' if req.ip is undefined
     this.logger.debug(`Using IP for throttling: ${ip}`);
     return ip;
   }

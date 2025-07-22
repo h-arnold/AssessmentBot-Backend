@@ -124,8 +124,10 @@ export async function startApp(logFilePath: string): Promise<{
   appUrl: string;
   apiKey: string;
   apiKey2: string;
-  throttlerTtl: number;
-  throttlerLimit: number;
+  anonymousThrottlerTtl: number;
+  anonymousThrottlerLimit: number;
+  authenticatedThrottlerTtl: number;
+  authenticatedThrottlerLimit: number;
 }> {
   if (fs.existsSync(logFilePath)) {
     fs.truncateSync(logFilePath, 0);
@@ -136,8 +138,10 @@ export async function startApp(logFilePath: string): Promise<{
   // Define the keys and other settings for the test run.
   const apiKey = 'test-api-key';
   const apiKey2 = 'test-api-key-2';
-  const throttlerTtl = 60;
-  const throttlerLimit = 10;
+  const anonymousThrottlerTtl = 60;
+  const anonymousThrottlerLimit = 5; // Stricter limit for anonymous
+  const authenticatedThrottlerTtl = 60;
+  const authenticatedThrottlerLimit = 10; // More lenient limit for authenticated
   const apiKeys = [apiKey, apiKey2].join(',');
 
   const testEnv: NodeJS.ProcessEnv = {
@@ -147,8 +151,10 @@ export async function startApp(logFilePath: string): Promise<{
     E2E_TESTING: 'true',
     LOG_FILE: logFilePath,
     API_KEYS: apiKeys,
-    THROTTLER_TTL: throttlerTtl.toString(),
-    THROTTLER_LIMIT: throttlerLimit.toString(),
+    THROTTLER_ANONYMOUS_TTL: anonymousThrottlerTtl.toString(),
+    THROTTLER_ANONYMOUS_LIMIT: anonymousThrottlerLimit.toString(),
+    THROTTLER_AUTHENTICATED_TTL: authenticatedThrottlerTtl.toString(),
+    THROTTLER_AUTHENTICATED_LIMIT: authenticatedThrottlerLimit.toString(),
   };
 
   // Provide a dummy key ONLY if a real one isn't already in the environment.
