@@ -77,9 +77,56 @@ This document outlines the tasks required to implement structured logging and AP
 
 **Goal:** Prevent abuse by limiting request rates per API key.
 
+**Research Findings:**
+
+- **Custom Guard Required**: The standard `ThrottlerGuard` tracks requests by IP address. To rate limit by API key, we must create a custom guard that extends `ThrottlerGuard`.
+- **Tracker Overload**: The key to customisation is overriding the `getTracker()` method within our new guard. This method will be responsible for extracting the API key from the `Authorization` header (bearer token).
+- **Logging**: The guard should also override the `handleRequest()` method to log throttled events, providing better visibility into rate-limiting actions.
+- **Global Application**: The custom guard should be applied globally by providing it as a `useClass` for the `APP_GUARD` token in `app.module.ts`.
+
+**Example Custom Guard (`ApiKeyThrottlerGuard`):**
+
+```typescript
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { Injectable, Logger } from '@nestjs/common';
+
+@Injectable()
+export class ApiKeyThrottlerGuard extends ThrottlerGuard {
+  private readonly logger = new Logger(ApiKeyThrottlerGuard.name);
+
+  protected getTracker(req: Record<string, any>): string {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      // Return the API key as the tracker
+      return authHeader.substring(7);
+    }
+    // Fallback to IP if no key is present
+    return req.ip;
+  }
+
+  protected async handleRequest(
+    context,
+    limit: number,
+    ttl: number,
+  ): Promise<boolean> {
+    const request = this.getRequest(context);
+    const tracker = this.getTracker(request);
+    const key = this.generateKey(context, tracker, '');
+    const { totalHits } = await this.storageService.increment(key, ttl);
+
+    if (totalHits > limit) {
+      this.logger.warn(`Throttled request for API key (or IP): ${tracker}`);
+      throw this.throwThrottlingException(context);
+    }
+
+    return true;
+  }
+}
+```
+
 ### Red Phase: Failing Tests
 
-- [ ] **Implement Throttling E2E Tests**: Create `test/throttler.e2e-spec.ts` and implement all test cases as defined in `docs/ImplementationPlan/Stage7/TestCases.md`.
+- [x] **Implement Throttling E2E Tests**: Create `test/throttler.e2e-spec.ts` and implement all test cases as defined in `docs/ImplementationPlan/Stage7/TestCases.md`.
 - [ ] **Commit Red Phase changes and record commit ID here:** (commit: )
 - [ ] **Note any issues or changes that might affect future steps below.**
 
