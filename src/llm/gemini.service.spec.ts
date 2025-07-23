@@ -74,7 +74,7 @@ describe('GeminiService', () => {
     expect(mockGetGenerativeModel).toHaveBeenCalledWith({
       model: 'gemini-2.0-flash-lite',
       systemInstruction: 'system prompt',
-      temperature: 0,
+      generationConfig: { temperature: 0 },
     });
     expect(mockGenerateContent).toHaveBeenCalledWith(['test prompt']);
   });
@@ -100,8 +100,8 @@ describe('GeminiService', () => {
     // PNG files should be read with base64 encoding
     expect(mockGetGenerativeModel).toHaveBeenCalledWith({
       model: 'gemini-2.5-flash',
-      systemInstruction: undefined,
-      temperature: 0,
+      systemInstruction: 'system prompt',
+      generationConfig: { temperature: 0 },
     });
     expect(mockGenerateContent).toHaveBeenCalledWith([
       'Test message',
