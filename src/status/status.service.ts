@@ -3,6 +3,7 @@ import * as os from 'os';
 import { Injectable } from '@nestjs/common';
 
 import * as packageJson from '../../package.json';
+import { User } from '../auth/user.interface';
 
 interface SystemInfo {
   platform: string;
@@ -43,5 +44,9 @@ export class StatusService {
         cpus: os.cpus().length,
       },
     };
+  }
+
+  checkAuth(user: User): { message: string; user: User } {
+    return { message: 'This is a protected endpoint', user };
   }
 }
