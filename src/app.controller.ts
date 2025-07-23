@@ -10,7 +10,6 @@ import type { User } from './auth/user.interface';
  * Controller for handling application routes.
  */
 @Controller()
-@SkipThrottle({ authenticated: true })
 export class AppController {
   /**
    * Constructs the AppController instance.
@@ -51,8 +50,8 @@ export class AppController {
    * @param req - The incoming request object.
    * @returns An object containing a message and the authenticated user.
    */
+
   @UseGuards(ApiKeyGuard)
-  @SkipThrottle({ unauthenticated: true })
   @Get('protected')
   getProtected(@Req() req: Request): { message: string; user: User } {
     return { message: 'This is a protected endpoint', user: req.user as User };

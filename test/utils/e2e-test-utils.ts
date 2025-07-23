@@ -139,9 +139,9 @@ export async function startApp(logFilePath: string): Promise<{
   const apiKey2 = 'test-api-key-2';
   const throttlerTtl = process.env.THROTTLER_TTL
     ? parseInt(process.env.THROTTLER_TTL)
-    : 60;
+    : 36000000;
   const unauthenticatedThrottlerLimit = 5;
-  const authenticatedThrottlerLimit = 20;
+  const authenticatedThrottlerLimit = 10;
   const apiKeys = [apiKey, apiKey2].join(',');
 
   const testEnv: NodeJS.ProcessEnv = {

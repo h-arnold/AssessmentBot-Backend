@@ -52,9 +52,9 @@ const configSchema = z.object({
   LOG_LEVEL: z
     .enum(['info', 'error', 'warn', 'debug', 'verbose', 'fatal'])
     .default('info'),
-  THROTTLER_TTL: z.coerce.number().int().min(0).default(60),
+  THROTTLER_TTL: z.coerce.number().int().min(0).default(10000),
   UNAUTHENTICATED_THROTTLER_LIMIT: z.coerce.number().int().min(0).default(5),
-  AUTHENTICATED_THROTTLER_LIMIT: z.coerce.number().int().min(0).default(20),
+  AUTHENTICATED_THROTTLER_LIMIT: z.coerce.number().int().min(0).default(10),
 });
 
 // Infer the type from the schema

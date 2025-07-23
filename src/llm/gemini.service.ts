@@ -75,7 +75,7 @@ export class GeminiService implements LLMService {
 
       return LlmResponseSchema.parse(dataToValidate);
     } catch (error) {
-      this.logger.error(
+      this.logger.debug(
         'Error communicating with or validating response from Gemini API',
         error,
       );
@@ -83,8 +83,9 @@ export class GeminiService implements LLMService {
         this.logger.error('Zod validation failed', error.errors);
         throw error;
       }
+      const errObj = error as Error;
       throw new Error(
-        'Failed to get a valid and structured response from the LLM.',
+        `Failed to get a valid and structured response from the LLM.\nOriginal error: ${errObj.message || error}\nStack: ${errObj.stack || 'N/A'}`,
       );
     }
   }

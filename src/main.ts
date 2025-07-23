@@ -27,7 +27,6 @@ const envFile = process.env.NODE_ENV === 'test' ? '.test.env' : '.env';
 dotenv.config({ path: envFile });
 
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './common/http-exception.filter';
 import { ConfigService } from './config/config.service';
 
 /**

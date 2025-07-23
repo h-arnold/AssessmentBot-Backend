@@ -15,8 +15,11 @@ describe('Throttler (e2e)', () => {
 
   beforeAll(async () => {
     // As we are not testing the throttler service itself, but rather the implementation of the throttler,
-    // we can use a short ttl to speed up the tests.
-    process.env.THROTTLER_TTL = '10';
+    // we can use a short ttl and custom limits to speed up the tests and ensure config is picked up from process.env.
+    process.env.THROTTLER_TTL = '5000';
+    process.env.UNAUTHENTICATED_THROTTLER_LIMIT = '5';
+    process.env.AUTHENTICATED_THROTTLER_LIMIT = '10';
+
     const testConfig = await startApp(logFilePath);
     appProcess = testConfig.appProcess;
     appUrl = testConfig.appUrl;
@@ -24,42 +27,43 @@ describe('Throttler (e2e)', () => {
     unauthenticatedLimit = testConfig.unauthenticatedThrottlerLimit;
     authenticatedLimit = testConfig.authenticatedThrottlerLimit;
     ttl = testConfig.throttlerTtl;
-  }, 30000);
+  });
 
   afterAll(() => {
     stopApp(appProcess);
   });
 
+  // Pause for the TTL after each test to ensure throttling window resets
+  afterEach(async () => {
+    if (ttl > 0) {
+      await new Promise((resolve) => setTimeout(resolve, ttl));
+    }
+  });
+
   describe('Unauthenticated Routes', () => {
     it('should allow requests below the unauthenticated limit', async () => {
-      const requests = Array(unauthenticatedLimit - 1)
+      const requests = Array(unauthenticatedLimit)
         .fill(0)
-        .map(() => {
-          return request(appUrl).get('/health').expect(200);
-        });
+        .map(() => request(appUrl).get('/health').expect(200));
       const responses = await Promise.all(requests);
-      expect(responses.length).toBe(unauthenticatedLimit - 1);
+      expect(responses.length).toBe(unauthenticatedLimit);
     });
 
     it('should reject requests exceeding the unauthenticated limit', async () => {
-      const requests = Array(unauthenticatedLimit - 1)
+      const successfulRequests = Array(unauthenticatedLimit)
         .fill(0)
-        .map(() => {
-          return request(appUrl).get('/health').expect(200);
-        });
-      await Promise.all(requests);
+        .map(() => request(appUrl).get('/health').expect(200));
+      await Promise.all(successfulRequests);
 
       const response = await request(appUrl).get('/health');
       expect(response.status).toBe(429);
     });
 
     it('should include Retry-After header on throttled response', async () => {
-      const requests = Array(unauthenticatedLimit - 1)
+      const successfulRequests = Array(unauthenticatedLimit)
         .fill(0)
-        .map(() => {
-          return request(appUrl).get('/health').expect(200);
-        });
-      await Promise.all(requests);
+        .map(() => request(appUrl).get('/health').expect(200));
+      await Promise.all(successfulRequests);
 
       const response = await request(appUrl).get('/health');
       expect(response.status).toBe(429);
@@ -68,7 +72,10 @@ describe('Throttler (e2e)', () => {
     });
 
     it('should reset the limit after the TTL expires', async () => {
-      await new Promise((resolve) => setTimeout(resolve, ttl * 1000));
+      // Wait for the TTL to expire
+      await new Promise((resolve) => setTimeout(resolve, ttl));
+
+      // The next request should be successful
       const response = await request(appUrl).get('/health');
       expect(response.status).toBe(200);
     }, 15000);
@@ -78,8 +85,8 @@ describe('Throttler (e2e)', () => {
     it('should allow requests below the authenticated limit', async () => {
       const requests = Array(authenticatedLimit)
         .fill(0)
-        .map(() => {
-          return request(appUrl)
+        .map(() =>
+          request(appUrl)
             .post('/v1/assessor')
             .set('Authorization', `Bearer ${apiKey}`)
             .send({
@@ -88,17 +95,18 @@ describe('Throttler (e2e)', () => {
               template: 'Write a sentence about a fox.',
               studentResponse: 'A fox is a mammal.',
             })
-            .expect(201);
-        });
+            .expect(201),
+        );
       const responses = await Promise.all(requests);
       expect(responses.length).toBe(authenticatedLimit);
     });
 
     it('should reject requests exceeding the authenticated limit', async () => {
-      const requests = Array(authenticatedLimit)
+      // Send only the allowed number of requests in parallel
+      const allowedRequests = Array(authenticatedLimit)
         .fill(0)
-        .map(() => {
-          return request(appUrl)
+        .map(() =>
+          request(appUrl)
             .post('/v1/assessor')
             .set('Authorization', `Bearer ${apiKey}`)
             .send({
@@ -107,10 +115,11 @@ describe('Throttler (e2e)', () => {
               template: 'Write a sentence about a fox.',
               studentResponse: 'A fox is a mammal.',
             })
-            .expect(201);
-        });
-      await Promise.all(requests);
+            .expect(201),
+        );
+      await Promise.all(allowedRequests);
 
+      // Now send the overflow request, which should be throttled
       const response = await request(appUrl)
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${apiKey}`)
@@ -124,7 +133,9 @@ describe('Throttler (e2e)', () => {
     });
 
     it('should reset the limit after the TTL expires', async () => {
-      await new Promise((resolve) => setTimeout(resolve, ttl * 1000));
+      // Wait for the TTL to expire
+      await new Promise((resolve) => setTimeout(resolve, ttl));
+
       const response = await request(appUrl)
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${apiKey}`)

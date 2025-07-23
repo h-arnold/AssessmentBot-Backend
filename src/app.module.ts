@@ -1,16 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
 
-// Type guard to check if req has an id property of type string or number
-function hasReqId(
-  req: IncomingMessage,
-): req is IncomingMessage & { id: string | number } {
-  const maybeReq = req as unknown as { id?: unknown };
-  return (
-    Object.prototype.hasOwnProperty.call(maybeReq, 'id') &&
-    (typeof maybeReq.id === 'string' || typeof maybeReq.id === 'number')
-  );
-}
-
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -25,39 +14,32 @@ import { ConfigModule } from './config/config.module';
 import { ConfigService } from './config/config.service';
 import { AssessorModule } from './v1/assessor/assessor.module';
 
-/**
- * The main application module that serves as the entry point for the backend application.
- *
- * @module AppModule
- * @description
- * This module imports essential feature modules and configuration modules required for the application.
- * It also defines the controllers and providers that will be used throughout the application.
- *
- * @imports
- * - `ConfigModule`: Handles application configuration and environment variables.
- * - `CommonModule`: Provides shared utilities and services across the application.
- * - `AuthModule`: Manages authentication and authorization functionalities.
- * - `AssessorModule`: Contains logic related to assessors and their operations.
- *
- * @controllers
- * - `AppController`: The main controller for handling application-level requests.
- *
- * @providers
- * - `AppService`: The primary service for application-level business logic.
- */
+// Type guard to check if req has an id property of type string or number
+function hasReqId(
+  req: IncomingMessage,
+): req is IncomingMessage & { id: string | number } {
+  const maybeReq = req as unknown as { id?: unknown };
+  return (
+    Object.prototype.hasOwnProperty.call(maybeReq, 'id') &&
+    (typeof maybeReq.id === 'string' || typeof maybeReq.id === 'number')
+  );
+}
+
 @Module({
   imports: [
     ConfigModule,
-    ThrottlerModule.forRoot([{
-      name: 'unauthenticated',
-      ttl: 10000,
-      limit: 5,
-    },
-    {
-      name: 'authenticated',
-      ttl: 10000,
-      limit: 20,
-    }]),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        throttlers: [
+          {
+            ttl: configService.get('THROTTLER_TTL'),
+            limit: configService.get('UNAUTHENTICATED_THROTTLER_LIMIT'),
+          },
+        ],
+      }),
+    }),
     LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
