@@ -1,4 +1,5 @@
 import { Controller, Get, HttpException, UseGuards, Req } from '@nestjs/common';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 
 import { AppService, type HealthCheckResponse } from './app.service';
@@ -9,6 +10,7 @@ import type { User } from './auth/user.interface';
  * Controller for handling application routes.
  */
 @Controller()
+@SkipThrottle({ authenticated: true })
 export class AppController {
   /**
    * Constructs the AppController instance.
@@ -50,6 +52,7 @@ export class AppController {
    * @returns An object containing a message and the authenticated user.
    */
   @UseGuards(ApiKeyGuard)
+  @SkipThrottle({ unauthenticated: true })
   @Get('protected')
   getProtected(@Req() req: Request): { message: string; user: User } {
     return { message: 'This is a protected endpoint', user: req.user as User };

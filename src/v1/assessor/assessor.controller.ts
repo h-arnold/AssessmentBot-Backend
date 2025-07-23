@@ -7,6 +7,7 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { ApiKeyGuard } from 'src/auth/api-key.guard';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import { ZodValidationPipe } from 'src/common/zod-validation.pipe';
@@ -46,6 +47,7 @@ import { LlmResponse } from '../../llm/types';
  */
 @Controller('v1/assessor')
 @UseGuards(ApiKeyGuard)
+@SkipThrottle({ unauthenticated: true })
 export class AssessorController {
   constructor(
     private readonly assessorService: AssessorService,
