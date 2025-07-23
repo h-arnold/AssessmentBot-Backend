@@ -58,7 +58,7 @@ export class ConfigService {
       this.config = configSchema.parse(combinedEnv);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Invalid environment configuration: ${error.message}`);
+        throw new Error(`Invalid environment configuration: ${error.message}`); // Or a custom/NestJS exception
       }
       throw error;
     }

@@ -31,18 +31,14 @@ export class ApiKeyService {
   }
 
   validate(apiKey: unknown): User | null {
-    this.logger.debug(
-      `API key received for validation: ${JSON.stringify(apiKey)}`,
-    );
+    this.logger.debug(`Attempting to validate an API key.`);
     const apiKeySchema = z
       .string()
       .min(10)
       .regex(/^[a-zA-Z0-9_-]+$/);
     const parsed = apiKeySchema.safeParse(apiKey);
     if (!parsed.success) {
-      this.logger.warn(
-        `API key is missing or invalid: ${JSON.stringify(apiKey)}`,
-      );
+      this.logger.warn('API key is missing or invalid.');
       throw new UnauthorizedException('Invalid API key');
     }
     const validKey = parsed.data;

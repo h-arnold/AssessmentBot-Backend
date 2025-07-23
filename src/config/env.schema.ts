@@ -52,8 +52,8 @@ export const configSchema = z.object({
     .enum(['info', 'error', 'warn', 'debug', 'verbose', 'fatal'])
     .default('info'),
   THROTTLER_TTL: z.coerce.number().int().min(0).default(10000),
-  UNAUTHENTICATED_THROTTLER_LIMIT: z.coerce.number().int().min(0).default(5),
-  AUTHENTICATED_THROTTLER_LIMIT: z.coerce.number().int().min(0).default(10),
+  UNAUTHENTICATED_THROTTLER_LIMIT: z.coerce.number().int().min(0).default(10),
+  AUTHENTICATED_THROTTLER_LIMIT: z.coerce.number().int().min(0).default(90), // A full 3 activities from a full class of submissions at once.
 });
 
 /**
