@@ -7,7 +7,7 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { ApiKeyGuard } from 'src/auth/api-key.guard';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import { ZodValidationPipe } from 'src/common/zod-validation.pipe';
@@ -46,7 +46,7 @@ import { LlmResponse } from '../../llm/types';
  * (`reference`, `template`, and `studentResponse`) using the `ImageValidationPipe`.
  */
 @Controller('v1/assessor')
-@UseGuards(ApiKeyGuard)
+@UseGuards(ApiKeyGuard, ThrottlerGuard)
 export class AssessorController {
   constructor(
     private readonly assessorService: AssessorService,

@@ -1,8 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http';
 
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule, Params } from 'nestjs-pino';
 
 import { AppController } from './app.controller';
@@ -28,18 +26,6 @@ function hasReqId(
 @Module({
   imports: [
     ConfigModule,
-    ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        throttlers: [
-          {
-            ttl: configService.get('THROTTLER_TTL'),
-            limit: configService.get('UNAUTHENTICATED_THROTTLER_LIMIT'),
-          },
-        ],
-      }),
-    }),
     LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -96,18 +82,12 @@ function hasReqId(
         }
       },
     }),
-
+    // ThrottlerModule removed to allow per-module throttling configs
     CommonModule,
     AuthModule,
     AssessorModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

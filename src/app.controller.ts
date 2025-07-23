@@ -1,5 +1,4 @@
 import { Controller, Get, HttpException, UseGuards, Req } from '@nestjs/common';
-import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 
 import { AppService, type HealthCheckResponse } from './app.service';
@@ -9,6 +8,9 @@ import type { User } from './auth/user.interface';
 /**
  * Controller for handling application routes.
  */
+
+// Hard code rate limit here because you can't override the throttler module settings elsewhere
+
 @Controller()
 export class AppController {
   /**
