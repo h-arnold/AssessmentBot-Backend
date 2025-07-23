@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 import { AssessorController } from './assessor.controller';
 import { AssessorService } from './assessor.service';
 import { ConfigModule } from '../../config/config.module';
-import { ConfigService } from '../../config/config.service';
 import { LlmModule } from '../../llm/llm.module';
 import { PromptModule } from '../../prompt/prompt.module';
 
@@ -22,24 +20,7 @@ import { PromptModule } from '../../prompt/prompt.module';
  * @providers AssessorService - Contains business logic for assessor functionality.
  */
 @Module({
-  imports: [
-    ConfigModule,
-    LlmModule,
-    PromptModule,
-    ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        // Get the authenticated
-        throttlers: [
-          {
-            ttl: configService.get('THROTTLER_TTL'),
-            limit: configService.get('AUTHENTICATED_THROTTLER_LIMIT'),
-          },
-        ],
-      }),
-    }),
-  ],
+  imports: [ConfigModule, LlmModule, PromptModule],
   controllers: [AssessorController],
   providers: [AssessorService],
 })
