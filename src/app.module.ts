@@ -3,13 +3,12 @@ import { IncomingMessage, ServerResponse } from 'http';
 import { Module } from '@nestjs/common';
 import { LoggerModule, Params } from 'nestjs-pino';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { LogRedactor } from './common/utils/log-redactor.util';
 import { ConfigModule } from './config/config.module';
 import { ConfigService } from './config/config.service';
+import { StatusModule } from './status/status.module';
 import { AssessorModule } from './v1/assessor/assessor.module';
 
 // Type guard to check if req has an id property of type string or number
@@ -86,8 +85,9 @@ function hasReqId(
     CommonModule,
     AuthModule,
     AssessorModule,
+    StatusModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  // controllers: [],
+  // providers: [],
 })
 export class AppModule {}

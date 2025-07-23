@@ -2,7 +2,7 @@ import * as os from 'os';
 
 import { Injectable } from '@nestjs/common';
 
-import * as packageJson from '../package.json';
+import * as packageJson from '../../package.json';
 
 interface SystemInfo {
   platform: string;
@@ -23,7 +23,7 @@ export interface HealthCheckResponse {
 }
 
 @Injectable()
-export class AppService {
+export class StatusService {
   getHello(): string {
     return 'Hello World!';
   }
