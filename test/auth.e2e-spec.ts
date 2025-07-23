@@ -25,7 +25,7 @@ describe('Authentication E2E Tests', () => {
 
   // 2.1 Protected Routes
   it('Protected route without API key returns 401 Unauthorized', async () => {
-    const response = await request(appUrl).get('/protected').expect(401);
+    const response = await request(appUrl).get('/check-auth').expect(401);
 
     expect(response.body).toHaveProperty('statusCode', 401);
     expect(response.body).toHaveProperty('message', 'Unauthorized');
@@ -33,7 +33,7 @@ describe('Authentication E2E Tests', () => {
 
   it('Protected route with invalid API key returns 401 Unauthorized', async () => {
     const response = await request(appUrl)
-      .get('/protected')
+      .get('/check-auth')
       .set('Authorization', `Bearer ${INVALID_API_KEY}`)
       .expect(401);
 
@@ -43,7 +43,7 @@ describe('Authentication E2E Tests', () => {
 
   it('Protected route with valid API key returns 200 OK and includes authenticated user context in the response body', async () => {
     const response = await request(appUrl)
-      .get('/protected')
+      .get('/check-auth')
       .set('Authorization', `Bearer ${apiKey}`)
       .expect(200);
 
@@ -64,24 +64,24 @@ describe('Authentication E2E Tests', () => {
 
   // 2.3 Error Response Format
   it('Unauthorized responses use the consistent error format from HttpExceptionFilter', async () => {
-    const response = await request(appUrl).get('/protected').expect(401);
+    const response = await request(appUrl).get('/check-auth').expect(401);
 
     expect(response.body).toHaveProperty('statusCode', 401);
     expect(response.body).toHaveProperty('message', 'Unauthorized');
     expect(response.body).toHaveProperty('timestamp');
-    expect(response.body).toHaveProperty('path', '/protected');
+    expect(response.body).toHaveProperty('path', '/check-auth');
   });
 
   // 2.4 Header Format and Edge Cases
   it('Request with malformed Authorization header returns 401 Unauthorized', async () => {
     const response1 = await request(appUrl)
-      .get('/protected')
+      .get('/check-auth')
       .set('Authorization', 'invalid-format')
       .expect(401);
     expect(response1.body).toHaveProperty('statusCode', 401);
 
     const response2 = await request(appUrl)
-      .get('/protected')
+      .get('/check-auth')
       .set('Authorization', 'Bearer') // Missing token
       .expect(401);
     expect(response2.body).toHaveProperty('statusCode', 401);
@@ -89,7 +89,7 @@ describe('Authentication E2E Tests', () => {
 
   it('Request with empty Authorization header returns 401 Unauthorized', async () => {
     const response = await request(appUrl)
-      .get('/protected')
+      .get('/check-auth')
       .set('Authorization', 'Bearer ') // Just spaces
       .expect(401);
     expect(response.body).toHaveProperty('statusCode', 401);
@@ -98,7 +98,7 @@ describe('Authentication E2E Tests', () => {
   it('API key validation is case-sensitive', async () => {
     // Assuming API_KEY is 'test_api_key_123'
     const response = await request(appUrl)
-      .get('/protected')
+      .get('/check-auth')
       .set('Authorization', `Bearer ${apiKey.toUpperCase()}`)
       .expect(401); // Should be unauthorized if case-sensitive
     expect(response.body).toHaveProperty('statusCode', 401);
@@ -114,11 +114,11 @@ describe('Authentication E2E Tests', () => {
 
   // 3.2 CommonModule Integration
   it('HttpExceptionFilter from CommonModule correctly handles UnauthorizedException thrown by the ApiKeyGuard', async () => {
-    const response = await request(appUrl).get('/protected').expect(401);
+    const response = await request(appUrl).get('/check-auth').expect(401);
 
     expect(response.body).toHaveProperty('statusCode', 401);
     expect(response.body).toHaveProperty('message', 'Unauthorized');
     expect(response.body).toHaveProperty('timestamp');
-    expect(response.body).toHaveProperty('path', '/protected');
+    expect(response.body).toHaveProperty('path', '/check-auth');
   });
 });

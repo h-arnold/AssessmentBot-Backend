@@ -8,5 +8,6 @@ import { ConfigModule } from '../config/config.module';
   imports: [ConfigModule],
   controllers: [StatusController],
   providers: [StatusService],
+  exports: [StatusService],
 })
 export class StatusModule {}

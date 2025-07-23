@@ -140,8 +140,8 @@ export async function startApp(logFilePath: string): Promise<{
   const throttlerTtl = process.env.THROTTLER_TTL
     ? parseInt(process.env.THROTTLER_TTL)
     : 36000000;
-  const unauthenticatedThrottlerLimit = 5;
-  const authenticatedThrottlerLimit = 10;
+  const unauthenticatedThrottlerLimit = 9; //This seems to be the required limit for all the e2e tests to pass.
+  const authenticatedThrottlerLimit = 12; // Add slightly more so that there is something of a difference between authenticated and unauthenticated request reate limits
   const apiKeys = [apiKey, apiKey2].join(',');
 
   const testEnv: NodeJS.ProcessEnv = {
