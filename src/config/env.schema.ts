@@ -1,32 +1,36 @@
 import { z } from 'zod';
 
-// Define the Zod schema for environment variables
 /**
- * Defines the schema for application configuration using Zod.
+ * @file Defines the Zod schema for environment variables, serving as the single source of truth for configuration validation.
  *
- * This schema validates and transforms environment variables to ensure
- * they meet the expected format and constraints. It includes the following properties:
+ * @remarks
+ * This schema is crucial for ensuring that the application starts with a valid and type-safe configuration.
+ * It is used in two key places:
+ * 1.  `ConfigService`: At runtime, this schema validates the combined environment variables from `process.env`
+ *     and `.env` files, providing a robust, injectable configuration service to the rest of the application.
+ * 2.  `throttler.config.ts`: At compile time, this schema validates `process.env` directly. This is necessary
+ *     because NestJS decorators (like `@Throttle`) are evaluated when the application is compiled, and they cannot
+ *     access runtime services. By using the same schema, we ensure consistent validation rules for all configuration,
+ *     whether it's consumed at runtime or compile time.
  *
- * - `NODE_ENV`: Specifies the environment in which the application is running.
- *   Must be one of 'development', 'production', or 'test'.
+ * This approach centralises validation logic, prevents configuration drift, and adheres to the DRY principle.
+ */
+
+/**
+ * The Zod schema for validating and transforming all environment variables for the application.
  *
- * - `PORT`: The port number on which the application will run.
- *   Must be an integer between 1 and 65535. Defaults to 3000.
- *
- * - `APP_NAME`: The name of the application. Defaults to 'AssessmentBot-Backend'.
- *
- * - `APP_VERSION`: The version of the application. Optional.
- *
- * - `API_KEYS`: A comma-separated list of API keys. Transformed into an array of strings
- *   that match the regex /^[a-zA-Z0-9_-]+$/. Optional.
- *
- * - `MAX_IMAGE_UPLOAD_SIZE_MB`: The maximum allowed size for image uploads in megabytes.
- *   Must be a non-negative integer. Defaults to 1.
- *
- * - `ALLOWED_IMAGE_MIME_TYPES`: A comma-separated list of allowed image MIME types.
- *   Defaults to 'image/png'. Transformed into an array of strings.
- *
- * - `GEMINI_API_KEY`: The API key for Gemini integration. Must be a non-empty string.
+ * @property {string} NODE_ENV - The application environment (e.g., 'development', 'production', 'test').
+ * @property {number} PORT - The port on which the server will run.
+ * @property {string} APP_NAME - The name of the application.
+ * @property {string} [APP_VERSION] - The optional version of the application.
+ * @property {string[]} [API_KEYS] - A comma-separated list of API keys, transformed into an array.
+ * @property {number} MAX_IMAGE_UPLOAD_SIZE_MB - The maximum size for image uploads in megabytes.
+ * @property {string[]} ALLOWED_IMAGE_MIME_TYPES - A comma-separated list of allowed image MIME types, transformed into an array.
+ * @property {string} GEMINI_API_KEY - The API key for the Google Gemini service.
+ * @property {string} LOG_LEVEL - The logging level for the application.
+ * @property {number} THROTTLER_TTL - The time-to-live (in milliseconds) for rate-limiting windows.
+ * @property {number} UNAUTHENTICATED_THROTTLER_LIMIT - The maximum number of requests for unauthenticated routes within the TTL window.
+ * @property {number} AUTHENTICATED_THROTTLER_LIMIT - The maximum number of requests for authenticated routes within the TTL window.
  */
 export const configSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']),
@@ -52,5 +56,8 @@ export const configSchema = z.object({
   AUTHENTICATED_THROTTLER_LIMIT: z.coerce.number().int().min(0).default(10),
 });
 
-// Infer the type from the schema
+/**
+ * Represents the inferred TypeScript type from the `configSchema`.
+ * This provides static type checking for all configuration values throughout the application.
+ */
 export type Config = z.infer<typeof configSchema>;

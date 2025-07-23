@@ -8,19 +8,29 @@ import { z } from 'zod';
 import { configSchema, type Config } from './env.schema';
 
 /**
- * ConfigService
+ * @class ConfigService
  *
- * This service acts as the single source of truth for all environment configuration in the application.
- * It loads environment variables from both process.env and .env files, then validates and transforms them using Zod schemas.
+ * @description
+ * This service is the single source of truth for all **runtime** environment configuration in the application.
+ * It is responsible for loading environment variables from `.env` files and `process.env`, validating them against
+ * the centralized `configSchema`, and making them available to the rest of the application through a clean, injectable service.
  *
- * Architectural reasoning:
- * - Centralises configuration access and validation, ensuring all config is type-safe and robustly validated at startup.
- * - Uses Zod for schema-based validation, catching misconfigurations early and providing clear error messages.
- * - Avoids direct usage of @nestjs/config's ConfigService outside this module, preventing fragmentation and spaghetti code.
- * - All consumers should inject and use this service only, never @nestjs/config directly.
- * - This approach makes configuration easy to mock in tests and ensures consistent behaviour across environments.
+ * @remarks
+ * **Architectural Reasoning:**
+ * - **Centralisation:** All configuration access is channelled through this service, preventing configuration sprawl
+ *   and ensuring consistency. Consumers inject this service rather than accessing `process.env` directly.
+ * - **Validation at Startup:** By using the shared `configSchema`, the service validates the entire application
+ *   configuration when it is instantiated. This catches misconfigurations early and causes the application to fail fast,
+ *   which is a critical practice for robust systems.
+ * - **Decoupling:** It abstracts the source of the configuration (e.g., `.env` vs. `process.env`) from the consumer.
+ * - **Testability:** Centralising configuration makes it significantly easier to mock for unit and integration tests.
  *
- * Maintainers: If you need to add new environment variables, update the Zod schema here and document the expected types/defaults.
+ * **Usage:**
+ * This service should be injected into any module that requires access to configuration values at runtime.
+ * For configuration needed at **compile time** (e.g., in decorators), see `throttler.config.ts`.
+ *
+ * @see env.schema.ts - For the source of truth on validation rules.
+ * @see throttler.config.ts - For an example of compile-time configuration.
  */
 @Injectable()
 export class ConfigService {
@@ -54,10 +64,20 @@ export class ConfigService {
     }
   }
 
+  /**
+   * Retrieves a configuration value by its key.
+   * @param key The key of the configuration value to retrieve.
+   * @returns The typed configuration value.
+   */
   get<T extends keyof Config>(key: T): Config[T] {
     return this.config[key];
   }
 
+  /**
+   * Calculates the global payload limit for the application based on the max image upload size.
+   * This is used to configure the `body-parser` middleware.
+   * @returns A string representing the payload limit (e.g., '9mb').
+   */
   getGlobalPayloadLimit(): string {
     const maxImageSizeMB = this.config.MAX_IMAGE_UPLOAD_SIZE_MB;
     // Formula: ((MAX_IMAGE_UPLOAD_SIZE_MB * 1.33 * 3) + 1) MB
