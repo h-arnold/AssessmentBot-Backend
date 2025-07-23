@@ -63,7 +63,7 @@ export class ZodValidationPipe implements PipeTransform {
             path: issue.path,
           }));
 
-    this.logger.warn('Validation failed', errors);
+    this.logger.warn({ errors }, 'Validation failed');
 
     throw new BadRequestException({
       message: 'Validation failed',

@@ -1,98 +1,80 @@
-import { readFileSync } from 'fs';
+import { ChildProcessWithoutNullStreams } from 'child_process';
+import { promises as fs } from 'fs';
+import * as path from 'path';
 
-import { ConsoleLogger, INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import { json } from 'express';
 import request from 'supertest';
 
-import { AppModule } from './../src/app.module';
-import { ConfigService } from './../src/config/config.service';
-import {
-  CreateAssessorDto,
-  TaskType,
-} from './../src/v1/assessor/dto/create-assessor.dto';
+import { startApp, stopApp } from './utils/e2e-test-utils';
 
-// --- Synchronous Top-Level File Loading with Hardcoded Paths ---
+// Helper function to load a file and convert it to a data URI
+const loadFileAsDataURI = async (filePath: string): Promise<string> => {
+  const fileBuffer = await fs.readFile(filePath);
+  const mimeType =
+    path.extname(filePath) === '.png' ? 'image/png' : 'image/jpeg';
+  return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+};
 
-const tableData = JSON.parse(
-  readFileSync(
-    '/workspaces/AssessmentBot-Backend/test/data/tableTask.json',
-    'utf-8',
-  ),
-);
-const textData = JSON.parse(
-  readFileSync(
-    '/workspaces/AssessmentBot-Backend/test/data/textTask.json',
-    'utf-8',
-  ),
-);
-
-// Load and encode image data
-const referencePath =
-  '/workspaces/AssessmentBot-Backend/test/ImageTasks/referenceTask.png';
-const templatePath =
-  '/workspaces/AssessmentBot-Backend/test/ImageTasks/templateTask.png';
-const studentPath =
-  '/workspaces/AssessmentBot-Backend/test/ImageTasks/studentTask.png';
-
-const referenceDataUri = `data:image/png;base64,${readFileSync(
-  referencePath,
-).toString('base64')}`;
-const templateDataUri = `data:image/png;base64,${readFileSync(
-  templatePath,
-).toString('base64')}`;
-const studentDataUri = `data:image/png;base64,${readFileSync(
-  studentPath,
-).toString('base64')}`;
-
-// --- Test Suite ---
+interface TaskData {
+  taskType: string;
+  referenceTask: string;
+  emptyTask: string;
+  studentTask: string;
+}
 
 describe('AssessorController (e2e-live)', () => {
-  let app: INestApplication;
-  let configService: ConfigService;
-  let validApiKey: string;
+  let appProcess: ChildProcessWithoutNullStreams;
+  let appUrl: string;
+  let apiKey: string;
+  const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
+
+  let tableData: TaskData;
+  let textData: TaskData;
+  let referenceDataUri: string;
+  let templateDataUri: string;
+  let studentDataUri: string;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    const app = await startApp(logFilePath);
+    appProcess = app.appProcess;
+    appUrl = app.appUrl;
+    apiKey = app.apiKey;
 
-    app = moduleFixture.createNestApplication({ bodyParser: false });
-    configService = moduleFixture.get<ConfigService>(ConfigService);
-    // Use console logger to ensure debug output is visible
-    const logger = new ConsoleLogger();
-    logger.setLogLevels(configService.get('LOG_LEVEL'));
-    app.useLogger(logger);
+    // Load test data asynchronously
+    const dataDir = path.join(__dirname, 'data');
+    const imageDir = path.join(__dirname, 'ImageTasks');
 
-    const apiKeys = configService.get('API_KEYS');
-    if (!apiKeys || apiKeys.length === 0) {
-      throw new Error(
-        'API_KEYS not found in config. Make sure .test.env is set up correctly.',
-      );
-    }
-    validApiKey = apiKeys[0];
+    const tableTaskPath = path.join(dataDir, 'tableTask.json');
+    const textTaskPath = path.join(dataDir, 'textTask.json');
 
-    const payloadLimit = configService.getGlobalPayloadLimit();
-    app.use(json({ limit: payloadLimit }));
+    tableData = JSON.parse(await fs.readFile(tableTaskPath, 'utf-8'));
+    textData = JSON.parse(await fs.readFile(textTaskPath, 'utf-8'));
 
-    await app.init();
-  });
+    referenceDataUri = await loadFileAsDataURI(
+      path.join(imageDir, 'referenceTask.png'),
+    );
+    templateDataUri = await loadFileAsDataURI(
+      path.join(imageDir, 'templateTask.png'),
+    );
+    studentDataUri = await loadFileAsDataURI(
+      path.join(imageDir, 'studentTask.png'),
+    );
+  }, 20000); // Increased timeout for file loading
 
-  afterAll(async () => {
-    await app.close();
+  afterAll(() => {
+    stopApp(appProcess);
   });
 
   it('/v1/assessor (POST) should return a valid assessment for a text task', async () => {
     const mappedPayload = {
-      taskType: TaskType.TEXT,
+      taskType: 'TEXT',
       reference: textData.referenceTask,
       template: textData.emptyTask,
       studentResponse: textData.studentTask,
     };
 
-    const response = await request(app.getHttpServer())
+    const response = await request(appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${validApiKey}`)
+      .set('Authorization', `Bearer ${apiKey}`)
       .send(mappedPayload)
       .expect(201);
 
@@ -104,15 +86,15 @@ describe('AssessorController (e2e-live)', () => {
 
   it('/v1/assessor (POST) should return a valid assessment for a table task', async () => {
     const mappedPayload = {
-      taskType: TaskType.TABLE,
+      taskType: 'TABLE',
       reference: tableData.referenceTask,
       template: tableData.emptyTask,
       studentResponse: tableData.studentTask,
     };
 
-    const response = await request(app.getHttpServer())
+    const response = await request(appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${validApiKey}`)
+      .set('Authorization', `Bearer ${apiKey}`)
       .send(mappedPayload)
       .expect(201);
 
@@ -124,15 +106,15 @@ describe('AssessorController (e2e-live)', () => {
 
   it('/v1/assessor (POST) should return a valid assessment for an image task', async () => {
     const imagePayload = {
-      taskType: TaskType.IMAGE,
+      taskType: 'IMAGE',
       reference: referenceDataUri,
       template: templateDataUri,
       studentResponse: studentDataUri,
     };
 
-    const response = await request(app.getHttpServer())
+    const response = await request(appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${validApiKey}`)
+      .set('Authorization', `Bearer ${apiKey}`)
       .send(imagePayload)
       .expect(201);
 

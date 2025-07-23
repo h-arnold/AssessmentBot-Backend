@@ -1,7 +1,11 @@
 node_modules
 .husky
 **.log
-**.env
+**# local env files
+.env
+.test.env
+
+# Log files
 dist/
 .vscode/
 test-path-resolution.js

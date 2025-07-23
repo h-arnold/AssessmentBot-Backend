@@ -8,7 +8,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'node_modules'],
+    ignores: ['dist', 'node_modules', '**/*.cjs'],
   },
   {
     plugins: {
@@ -92,6 +92,14 @@ export default tseslint.config(
   {
     files: ['**/*.cjs'],
     rules: {
+      'import/no-commonjs': 'off',
+    },
+  },
+  {
+    files: ['**/*.js'],
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/no-var-requires': 'off',
       'import/no-commonjs': 'off',
     },
   },

@@ -1,4 +1,7 @@
+import { Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { LoggerModule } from 'nestjs-pino';
 
 import { LlmModule } from './llm.module';
 import { LLMService } from './llm.service.interface';
@@ -13,6 +16,7 @@ const defaults = {
   API_KEYS: 'test-api-key',
   MAX_IMAGE_UPLOAD_SIZE_MB: '5',
   ALLOWED_IMAGE_MIME_TYPES: 'image/png,image/jpeg',
+  LOG_LEVEL: 'debug',
 };
 
 const mockConfigService = {
@@ -41,7 +45,19 @@ const mockJsonParserUtil = {
 describe('LlmModule', () => {
   it('should compile the module', async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [LlmModule],
+      imports: [
+        LlmModule,
+        LoggerModule.forRootAsync({
+          imports: [ConfigModule],
+          inject: [ConfigService],
+          useFactory: (configService: ConfigService) => ({
+            pinoHttp: {
+              level: configService.get('LOG_LEVEL'),
+            },
+          }),
+        }),
+      ],
+      providers: [Logger],
     })
       .overrideProvider(ConfigService)
       .useValue(mockConfigService)
@@ -53,7 +69,19 @@ describe('LlmModule', () => {
 
   it('should provide the LLMService', async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [LlmModule],
+      imports: [
+        LlmModule,
+        LoggerModule.forRootAsync({
+          imports: [ConfigModule],
+          inject: [ConfigService],
+          useFactory: (configService: ConfigService) => ({
+            pinoHttp: {
+              level: configService.get('LOG_LEVEL'),
+            },
+          }),
+        }),
+      ],
+      providers: [Logger],
     })
       .overrideProvider(ConfigService)
       .useValue(mockConfigService)

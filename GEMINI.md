@@ -77,3 +77,29 @@ Complete each step in order. **IMPORTANT**: You must complete each step in the T
 Once you have _fully_ completed a step, check off the step in the `TODO.md` file and update it. It is critical you do this to enable everyone to track the progress of the project accurately.
 
 Where you encounter an issue that will may impact future steps (i.e. anything more substantial than syntax or linting errors), you must document this in the TODO file, in the space provided for you. Ensure you provide detailed commentary on the issue, including your reasoning and the solutions used to inform future work.
+
+## 6. Logging
+
+The project uses `nestjs-pino` for logging. To ensure consistency and maintainability, follow these guidelines:
+
+1.  **Centralised Configuration**: The logger is configured centrally in `app.module.ts` using `LoggerModule.forRootAsync` and initialised in `main.ts` with `app.useLogger(app.get(Logger))`. No further configuration is needed elsewhere.
+
+2.  **Standard Injection**: In any class (service, controller, pipe, etc.), use the standard NestJS `Logger` from `@nestjs/common`. Do **not** use `PinoLogger` or `@InjectPinoLogger` from `nestjs-pino` directly.
+
+3.  **Instantiation**: The recommended way to get a logger instance is to instantiate it directly within the class, providing the class name as the context. This is the most straightforward approach and aligns with NestJS documentation.
+
+    ```typescript
+    // In my.service.ts
+    import { Injectable, Logger } from '@nestjs/common';
+
+    @Injectable()
+    export class MyService {
+      private readonly logger = new Logger(MyService.name);
+
+      doSomething() {
+        this.logger.log('Doing something...');
+      }
+    }
+    ```
+
+By following this pattern, the application remains decoupled from the specific logging library, and all log messages will be correctly processed by `pino` as configured globally.

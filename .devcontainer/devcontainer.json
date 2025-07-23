@@ -9,8 +9,10 @@
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  // Install project dependencies and then install the Gemini CLI globally
-  "postCreateCommand": "npm install && npm run build && npm install -g @google/gemini-cli",
+  // Install Gemini CLI globally when the container is created.
+  "postCreateCommand": "npm install -g @google/gemini-cli",
+  // Install dependencies and build the project every time the container starts.
+  "postStartCommand": "npm install && npm run build",
   "customizations": {
     "vscode": {
       "settings": {
@@ -32,7 +34,7 @@
         "mermaidchart.vscode-mermaid-chart",
         "GitHub.vscode-pull-request-github",
         "GitHub.copilot-chat",
-        "Google.gemini-code-assist"
+        "google.geminicodeassist"
       ]
     }
   },

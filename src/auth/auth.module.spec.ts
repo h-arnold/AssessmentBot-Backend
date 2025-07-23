@@ -18,6 +18,7 @@ describe('AuthModule', () => {
     process.env.API_KEYS = 'test-api-key';
     process.env.MAX_IMAGE_UPLOAD_SIZE_MB = '5';
     process.env.ALLOWED_IMAGE_MIME_TYPES = 'image/png,image/jpeg';
+    process.env.LOG_LEVEL = 'debug';
   });
 
   beforeEach(async () => {

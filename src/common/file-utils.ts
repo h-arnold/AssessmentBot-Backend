@@ -48,6 +48,7 @@ export async function readMarkdown(
     throw new Error('Unauthorised file path');
   }
   // resolvedPath is validated above, safe to use as argument
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   const content = await fs.readFile(resolvedPath, { encoding: 'utf-8' });
   return content;
 }

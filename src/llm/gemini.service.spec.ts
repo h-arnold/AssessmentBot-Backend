@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Logger } from '@nestjs/common';
 import { ZodError } from 'zod';
 
 import { GeminiService } from './gemini.service';
@@ -25,6 +26,7 @@ describe('GeminiService', () => {
   let service: GeminiService;
   let configService: ConfigService;
   let jsonParserUtil: JsonParserUtil;
+  let logger: Logger;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -41,6 +43,8 @@ describe('GeminiService', () => {
     jsonParserUtil = {
       parse: jest.fn((json: string) => JSON.parse(json)),
     } as unknown as JsonParserUtil;
+
+    logger = new Logger();
 
     service = new GeminiService(configService, jsonParserUtil);
   });
@@ -70,6 +74,7 @@ describe('GeminiService', () => {
     expect(mockGetGenerativeModel).toHaveBeenCalledWith({
       model: 'gemini-2.0-flash-lite',
       systemInstruction: 'system prompt',
+      generationConfig: { temperature: 0 },
     });
     expect(mockGenerateContent).toHaveBeenCalledWith(['test prompt']);
   });
@@ -85,6 +90,7 @@ describe('GeminiService', () => {
     });
 
     const payload: ImagePromptPayload = {
+      system: 'system prompt',
       messages: [{ content: 'Test message' }],
       images: [{ mimeType: 'image/png', data: 'test-data' }],
     };
@@ -94,6 +100,8 @@ describe('GeminiService', () => {
     // PNG files should be read with base64 encoding
     expect(mockGetGenerativeModel).toHaveBeenCalledWith({
       model: 'gemini-2.5-flash',
+      systemInstruction: 'system prompt',
+      generationConfig: { temperature: 0 },
     });
     expect(mockGenerateContent).toHaveBeenCalledWith([
       'Test message',

@@ -22,11 +22,6 @@ export class GeminiService implements LLMService {
   private readonly client: GoogleGenerativeAI;
   private readonly logger = new Logger(GeminiService.name);
 
-  /**
-   * Initializes the GeminiService.
-   * @param configService The configuration service for accessing environment variables.
-   * @param jsonParserUtil The utility for parsing JSON strings.
-   */
   constructor(
     private readonly configService: ConfigService,
     private readonly jsonParserUtil: JsonParserUtil,
@@ -54,7 +49,11 @@ export class GeminiService implements LLMService {
     const modelParams = this.buildModelParams(payload);
     const contents = this.buildContents(payload);
 
-    this.logger.debug(`Sending to Gemini with model: ${modelParams.model}`);
+    this.logger.debug(
+      `Sending to Gemini with model: ${modelParams.model}, temperature: ${
+        modelParams.generationConfig?.temperature ?? 0
+      }`,
+    );
     this.logPayload(payload, contents);
 
     try {
@@ -76,7 +75,7 @@ export class GeminiService implements LLMService {
 
       return LlmResponseSchema.parse(dataToValidate);
     } catch (error) {
-      this.logger.error(
+      this.logger.debug(
         'Error communicating with or validating response from Gemini API',
         error,
       );
@@ -84,8 +83,9 @@ export class GeminiService implements LLMService {
         this.logger.error('Zod validation failed', error.errors);
         throw error;
       }
+      const errObj = error as Error;
       throw new Error(
-        'Failed to get a valid and structured response from the LLM.',
+        `Failed to get a valid and structured response from the LLM.\nOriginal error: ${errObj.message || error}\nStack: ${errObj.stack || 'N/A'}`,
       );
     }
   }
@@ -123,8 +123,15 @@ export class GeminiService implements LLMService {
       : 'gemini-2.0-flash-lite';
 
     const systemInstruction = payload.system;
+    // Use temperature from payload, default to 0
+    const temperature =
+      typeof payload.temperature === 'number' ? payload.temperature : 0;
 
-    return { model: modelName, systemInstruction };
+    return {
+      model: modelName,
+      systemInstruction,
+      generationConfig: { temperature },
+    };
   }
 
   /**

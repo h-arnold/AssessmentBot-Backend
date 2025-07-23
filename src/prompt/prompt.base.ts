@@ -29,7 +29,7 @@ export abstract class Prompt {
   protected referenceTask!: string;
   protected studentTask!: string;
   protected emptyTask!: string;
-  protected readonly logger = new Logger(Prompt.name);
+  protected readonly logger: Logger;
   protected userTemplateName?: string;
   protected systemPromptFile?: string;
   protected systemPrompt?: string;
@@ -37,14 +37,17 @@ export abstract class Prompt {
   /**
    * Initializes the Prompt instance.
    * @param inputs The raw, unknown input, which is then validated against the PromptInputSchema.
+   * @param logger The logger instance.
    * @param userTemplateName Optional name of the markdown template for user message parts.
    * @param systemPrompt Optional system prompt string.
    */
   constructor(
     inputs: unknown,
+    logger: Logger,
     userTemplateName?: string,
     systemPrompt?: string,
   ) {
+    this.logger = logger;
     // Prompt constructor received inputs is set to verbose logging because it can output the base64 strings from image prompts, which often isn't particularly helpful for debugging.
     this.logger.verbose(
       `Prompt constructor received inputs: ${JSON.stringify(inputs)}`,

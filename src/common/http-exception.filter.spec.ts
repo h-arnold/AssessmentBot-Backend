@@ -9,9 +9,11 @@ import { HttpExceptionFilter } from './http-exception.filter';
 
 describe('HttpExceptionFilter', () => {
   let filter: HttpExceptionFilter;
+  let logger: Logger;
 
   beforeEach(() => {
-    filter = new HttpExceptionFilter();
+    logger = new Logger();
+    filter = new HttpExceptionFilter(logger);
   });
 
   it('should be defined', () => {
@@ -210,7 +212,6 @@ describe('HttpExceptionFilter', () => {
     filter.catch(exception, mockArgumentsHost);
 
     expect(loggerSpy).toHaveBeenCalledWith(
-      `HTTP ${HttpStatus.NOT_FOUND} - Not Found`,
       {
         method: 'GET',
         path: '/not-found',
@@ -218,6 +219,7 @@ describe('HttpExceptionFilter', () => {
         headers: { 'user-agent': 'jest' },
         userAgent: 'jest',
       },
+      `HTTP ${HttpStatus.NOT_FOUND} - Not Found`,
     );
   });
 
@@ -258,7 +260,6 @@ describe('HttpExceptionFilter', () => {
     // Call the filter's catch method and check that the logger was called with the expected arguments
     filter.catch(exception, mockArgumentsHost);
     expect(loggerSpy).toHaveBeenCalledWith(
-      `HTTP ${HttpStatus.NOT_FOUND} - Not Found`,
       {
         method: 'GET',
         path: '/not-found',
@@ -266,6 +267,7 @@ describe('HttpExceptionFilter', () => {
         headers: { 'user-agent': 'jest' },
         userAgent: 'jest',
       },
+      `HTTP ${HttpStatus.NOT_FOUND} - Not Found`,
     );
   });
 
@@ -311,7 +313,6 @@ describe('HttpExceptionFilter', () => {
     // Call the filter's catch method and check that the logger was called with the expected arguments
     filter.catch(exception, mockArgumentsHost);
     expect(loggerSpy).toHaveBeenCalledWith(
-      `HTTP ${HttpStatus.INTERNAL_SERVER_ERROR} - Internal server error`,
       {
         method: 'GET',
         path: '/error',
@@ -319,6 +320,7 @@ describe('HttpExceptionFilter', () => {
         headers: { 'user-agent': 'jest' },
         userAgent: 'jest',
       },
+      `HTTP ${HttpStatus.INTERNAL_SERVER_ERROR} - Internal server error`,
       expect.any(String), // Accept any stack trace as the third argument
     );
   });

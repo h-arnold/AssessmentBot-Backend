@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { z } from 'zod';
 
@@ -17,6 +18,7 @@ describe('CommonModule', () => {
           useValue: new ZodValidationPipe(z.any()),
         }, // Provide a mock instance with a valid Zod schema
         JsonParserUtil,
+        Logger,
       ],
     }).compile();
   });

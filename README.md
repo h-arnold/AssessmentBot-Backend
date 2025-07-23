@@ -285,3 +285,55 @@ ALLOWED_IMAGE_MIME_TYPES=image/png
 ```
 
 These variables are validated at runtime using Zod and can be changed to suit your deployment requirements. If an uploaded image exceeds the size limit or is of a disallowed type, the API will return a `400 Bad Request` error with a descriptive message.
+
+## Security & Pentesting Utilities
+
+This project includes scripts for automated penetration testing and abuse simulation. These scripts help you proactively test the robustness of the API against brute force, flooding (DoS), and advanced input attacks.
+
+### Pentest Scripts
+
+- **Brute Force API Key Attack**
+  - `scripts/pentest-bruteforce.js`: Attempts to brute force API keys by sending requests with keys from a wordlist.
+  - Usage:
+    ```bash
+    node scripts/pentest-bruteforce.js <url> <wordlist.txt>
+    ```
+
+    - `<url>`: Base URL of your running AssessmentBot instance (e.g., http://localhost:3000)
+    - `<wordlist.txt>`: File with one API key candidate per line
+
+- **Flooding/DoS Attack**
+  - `scripts/pentest-flood.js`: Sends a large number of requests in parallel to simulate a denial-of-service attack.
+  - Usage:
+    ```bash
+    node scripts/pentest-flood.js <url> <apiKey> <count>
+    ```
+
+    - `<url>`: Base URL of your running AssessmentBot instance
+    - `<apiKey>`: A valid API key
+    - `<count>`: Number of requests to send in parallel
+
+- **Unified Pentest Runner**
+  - `scripts/pentest-all.js`: Runs brute force, flood, and/or e2e pentest tests in sequence.
+  - Usage:
+    ```bash
+    npm run test:pentest -- <mode> [args...]
+    ```
+
+    - Modes:
+      - `bruteforce <url> <wordlist.txt>`
+      - `flood <url> <apiKey> <count>`
+      - `e2e`
+      - `all <url> <wordlist.txt> <apiKey> <count>`
+
+### Example
+
+To run all pentests in sequence:
+
+```bash
+npm run test:pentest -- all http://localhost:3000 wordlist.txt your_api_key 100
+```
+
+> **Note:** These scripts are for internal security testing only. Do not use them against production systems without explicit authorization.
+
+---

@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { LoggerModule } from 'nestjs-pino';
 
 import { AssessorService } from './assessor.service';
+import { ConfigModule, ConfigService } from '../../config';
 import { CreateAssessorDto, TaskType } from './dto/create-assessor.dto';
 import { JsonParserUtil } from '../../common/json-parser.util';
-import { ConfigModule } from '../../config/config.module';
-import { ConfigService } from '../../config/config.service';
 import { GeminiService } from '../../llm/gemini.service';
 import { LlmModule } from '../../llm/llm.module';
 import { LLMService } from '../../llm/llm.service.interface';
@@ -25,6 +25,7 @@ describe('AssessorService', () => {
     process.env.ALLOWED_IMAGE_MIME_TYPES = 'image/png,image/jpeg';
     process.env.APP_NAME = 'AssessmentBot-Backend';
     process.env.APP_VERSION = 'test-version';
+    process.env.LOG_LEVEL = 'debug';
   });
   beforeEach(async () => {
     const mockLlmService = { send: jest.fn() };
@@ -37,7 +38,20 @@ describe('AssessorService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [LlmModule, PromptModule, ConfigModule],
+      imports: [
+        LlmModule,
+        PromptModule,
+        ConfigModule,
+        LoggerModule.forRootAsync({
+          imports: [ConfigModule],
+          inject: [ConfigService],
+          useFactory: (configService: ConfigService) => ({
+            pinoHttp: {
+              level: configService.get('LOG_LEVEL'),
+            },
+          }),
+        }),
+      ],
       providers: [
         AssessorService,
         { provide: ConfigService, useValue: mockConfigService },

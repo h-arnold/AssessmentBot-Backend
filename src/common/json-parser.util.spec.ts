@@ -3,7 +3,7 @@ import { BadRequestException, Logger } from '@nestjs/common';
 import { JsonParserUtil } from './json-parser.util';
 
 // Use a real Logger and spy on its methods
-const realLogger = new Logger('JsonParserUtil');
+let logger: Logger;
 let logSpy: jest.SpyInstance;
 let errorSpy: jest.SpyInstance;
 
@@ -11,11 +11,10 @@ describe('JsonParserUtil', () => {
   let util: JsonParserUtil;
 
   beforeEach(() => {
-    util = new JsonParserUtil();
-    // Replace the logger with a real Logger and spy on its methods
-    (util as JsonParserUtil).logger = realLogger;
-    logSpy = jest.spyOn(realLogger, 'log').mockImplementation(() => {});
-    errorSpy = jest.spyOn(realLogger, 'error').mockImplementation(() => {});
+    logger = new Logger('JsonParserUtil');
+    logSpy = jest.spyOn(logger, 'log').mockImplementation(() => {});
+    errorSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
+    util = new JsonParserUtil(logger);
     jest.clearAllMocks();
   });
 

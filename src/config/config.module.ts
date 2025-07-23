@@ -4,17 +4,22 @@ import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { ConfigService } from './config.service';
 
 /**
- * ConfigModule
+ * @module ConfigModule
  *
- * This module wraps NestJS's ConfigModule to load .env files, but only exports the custom ConfigService for use elsewhere.
+ * @description
+ * This module is responsible for providing the application's configuration services.
+ * It imports the underlying `NestConfigModule` to handle the loading of `.env` files but only exports
+ * our custom, validation-aware `ConfigService`.
  *
- * Architectural reasoning:
- * - Ensures that all configuration access and validation is centralised through the custom ConfigService.
- * - Prevents direct usage of @nestjs/config's ConfigService outside this module, reducing risk of spaghetti code and inconsistent config access.
- * - All other modules should import this ConfigModule only, and inject ConfigService for configuration needs.
- * - This approach makes configuration management clear, maintainable, and easy to test.
+ * @remarks
+ * **Architectural Reasoning:**
+ * This module acts as a boundary, ensuring that the rest of the application interacts only with our
+ * custom `ConfigService`. This enforces a consistent pattern for configuration access and prevents
+ * direct, unvalidated use of `process.env` or the standard `NestConfigModule` elsewhere in the codebase.
+ * This centralisation is key to maintainable and testable configuration management.
  *
- * Maintainers: Always import this module (not NestConfigModule) in other modules. Update providers/exports here if you add new config-related services.
+ * **Usage:**
+ * Other modules should import this `ConfigModule` to gain access to the `ConfigService` via dependency injection.
  */
 @Module({
   imports: [

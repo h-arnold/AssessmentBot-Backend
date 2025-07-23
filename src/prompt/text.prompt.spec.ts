@@ -38,6 +38,12 @@ beforeAll(async () => {
 });
 
 describe('TextPrompt', () => {
+  let logger: Logger;
+
+  beforeEach(() => {
+    logger = new Logger();
+  });
+
   it('should build the final prompt object correctly', async () => {
     const inputs = {
       referenceTask: textTask.referenceTask,
@@ -57,6 +63,7 @@ describe('TextPrompt', () => {
 
     const prompt = new TextPrompt(
       inputs,
+      logger,
       'text.user.prompt.md',
       systemTemplate,
     );

@@ -1,11 +1,19 @@
 import * as fs from 'fs/promises';
 
+import { Logger } from '@nestjs/common';
+
 import { ImagePrompt } from './image.prompt';
 import { ImagePromptPayload } from '../llm/llm.service.interface';
 
 jest.mock('fs/promises');
 
 describe('ImagePrompt', () => {
+  let logger: Logger;
+
+  beforeEach(() => {
+    logger = new Logger();
+  });
+
   it('should build a structured payload with text and images', async () => {
     process.env.ALLOWED_IMAGE_MIME_TYPES = 'image/png'; // Ensure allowed MIME type is lowercase
     const inputs = {
@@ -34,7 +42,7 @@ describe('ImagePrompt', () => {
     );
 
     const systemPrompt = 'system prompt';
-    const prompt = new ImagePrompt(inputs, images, systemPrompt);
+    const prompt = new ImagePrompt(inputs, logger, images, systemPrompt);
     const message = (await prompt.buildMessage()) as ImagePromptPayload;
 
     const calls = (fs.readFile as jest.Mock).mock.calls;
@@ -62,7 +70,7 @@ describe('ImagePrompt', () => {
     const images = [
       { path: 'ref.png', mimeType: 'image/gif' }, // Not allowed by default
     ];
-    const prompt = new ImagePrompt(inputs, images);
+    const prompt = new ImagePrompt(inputs, logger, images);
     await expect(prompt.readImageFile('ref.png', 'image/gif')).rejects.toThrow(
       'Disallowed image MIME type',
     );
@@ -77,7 +85,7 @@ describe('ImagePrompt', () => {
     const images = [
       { path: 'ref.png', mimeType: undefined as unknown as string },
     ];
-    const prompt = new ImagePrompt(inputs, images);
+    const prompt = new ImagePrompt(inputs, logger, images);
     await expect(
       prompt.readImageFile('ref.png', undefined as unknown as string),
     ).rejects.toThrow('Disallowed image MIME type');
@@ -90,7 +98,7 @@ describe('ImagePrompt', () => {
       emptyTask: 'Empty text',
     };
     const images = [{ path: '../ref.png', mimeType: 'image/png' }];
-    const prompt = new ImagePrompt(inputs, images);
+    const prompt = new ImagePrompt(inputs, logger, images);
     await expect(
       prompt.readImageFile('../ref.png', 'image/png'),
     ).rejects.toThrow('Invalid image filename');
@@ -104,7 +112,7 @@ describe('ImagePrompt', () => {
       emptyTask: 'Empty text',
     };
     const images = [{ path: 'ref.png', mimeType: 'image/jpeg' }];
-    const prompt = new ImagePrompt(inputs, images);
+    const prompt = new ImagePrompt(inputs, logger, images);
     // Mock fs.readFile to resolve
     (fs.readFile as jest.Mock).mockResolvedValueOnce('base64data');
     await expect(prompt.readImageFile('ref.png', 'image/jpeg')).resolves.toBe(

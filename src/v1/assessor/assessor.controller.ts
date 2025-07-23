@@ -7,10 +7,12 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
+import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { ApiKeyGuard } from 'src/auth/api-key.guard';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import { ZodValidationPipe } from 'src/common/zod-validation.pipe';
 import { ConfigService } from 'src/config/config.service';
+import { authenticatedThrottler } from 'src/config/throttler.config';
 
 import { AssessorService } from './assessor.service';
 import {
@@ -20,32 +22,32 @@ import {
 import { LlmResponse } from '../../llm/types';
 
 /**
- * Controller for handling assessor-related API requests.
- */
-
-/**
- * Controller responsible for handling assessor-related operations.
+ * @class AssessorController
+ * @description Controller responsible for handling all assessment-related API requests.
  *
  * @remarks
- * This controller is part of the v1 API and is protected by the `ApiKeyGuard`.
- * It provides endpoints for creating assessments and validating input data.
+ * This controller is part of the v1 API. It is protected by the `ApiKeyGuard`, ensuring that only
+ * authorised clients can access its endpoints. It provides a single endpoint for creating new assessments.
  *
- * @constructor
- * @param assessorService - Service responsible for assessment-related business logic.
- * @param configService - Service for accessing application configuration settings.
+ * **Rate-Limiting (Throttling):**
+ * This controller demonstrates how to override the global rate-limiting settings for a specific set of routes.
+ * - `@Throttle(authenticatedThrottler)`: This decorator is applied at the controller level, meaning all endpoints
+ *   within this controller will use the specific rate-limiting rules defined in the `authenticatedThrottler` configuration.
+ *   This is a crucial security and performance feature, allowing us to apply stricter limits to authenticated,
+ *   resource-intensive operations compared to the global default for unauthenticated routes.
  *
- * @method create
- * Handles the creation of a new assessment.
+ * **Input Validation:**
+ * - The `create` method uses the `ZodValidationPipe` to validate the incoming request body against the `createAssessorDtoSchema`.
+ * - For tasks of type `IMAGE`, it also programmatically uses the `ImageValidationPipe` to perform more complex,
+ *   asynchronous validation on the image data itself.
  *
- * @param createAssessorDto - The data transfer object containing assessment details.
- * @returns A promise that resolves to the result of the assessment creation.
- *
- * @remarks
- * If the `taskType` is `IMAGE`, additional validation is performed on image-related fields
- * (`reference`, `template`, and `studentResponse`) using the `ImageValidationPipe`.
+ * @see AppModule - Where the global `ThrottlerGuard` is configured.
+ * @see config/throttler.config.ts - Where the `authenticatedThrottler` configuration is defined.
+ * @see auth/api-key.guard.ts - The guard that protects this controller.
  */
 @Controller('v1/assessor')
 @UseGuards(ApiKeyGuard)
+@Throttle(authenticatedThrottler)
 export class AssessorController {
   constructor(
     private readonly assessorService: AssessorService,

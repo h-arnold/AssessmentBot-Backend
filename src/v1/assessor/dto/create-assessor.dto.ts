@@ -33,8 +33,6 @@ export const createAssessorDtoSchema = z
          * @example "A fox is a mammal."
          */
         studentResponse: z.string().min(1),
-        // Removed the `systemPromptFile` property from the schema as it is unused and determined by the factory.
-        systemPromptFile: z.string().optional(),
       })
       .strict(),
     z
@@ -55,7 +53,6 @@ export const createAssessorDtoSchema = z
          * @example "ColA,ColB\nData1,Data2"
          */
         studentResponse: z.string().min(1),
-        systemPromptFile: z.string().optional(),
       })
       .strict(),
     z

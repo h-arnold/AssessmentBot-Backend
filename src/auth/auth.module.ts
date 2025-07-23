@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 
 import { ApiKeyGuard } from './api-key.guard';
@@ -29,8 +29,11 @@ import { ConfigModule } from '../config/config.module';
  * - `ApiKeyService`: Enables other modules to utilize API key management services.
  */
 @Module({
-  imports: [PassportModule, ConfigModule],
-  providers: [ApiKeyStrategy, ApiKeyGuard, ApiKeyService, Logger],
+  imports: [
+    PassportModule.register({ defaultStrategy: 'bearer' }),
+    ConfigModule,
+  ],
+  providers: [ApiKeyStrategy, ApiKeyGuard, ApiKeyService],
   exports: [ApiKeyStrategy, ApiKeyGuard, ApiKeyService],
 })
 export class AuthModule {}

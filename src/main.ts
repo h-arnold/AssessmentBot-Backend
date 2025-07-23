@@ -20,11 +20,13 @@
 import { NestFactory } from '@nestjs/core';
 import * as dotenv from 'dotenv';
 import { json } from 'express';
+import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
 
-dotenv.config();
+// Load environment variables - use .test.env for test environment
+const envFile = process.env.NODE_ENV === 'test' ? '.test.env' : '.env';
+dotenv.config({ path: envFile });
 
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './common/http-exception.filter';
 import { ConfigService } from './config/config.service';
 
 /**
@@ -44,16 +46,23 @@ import { ConfigService } from './config/config.service';
  * - An instance of `HttpExceptionFilter` is applied globally to handle exceptions.
  */
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  const isE2ETesting = process.env.E2E_TESTING === 'true';
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: !isE2ETesting, // Disable bufferLogs during E2E tests
+  });
+  app.useLogger(app.get(Logger));
+  app.useGlobalInterceptors(new LoggerErrorInterceptor());
+
+  // Set Express query parser to 'extended' for compatibility with qs-style query strings
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.set('query parser', 'extended');
 
   const configService = app.get(ConfigService);
   const payloadLimit = configService.getGlobalPayloadLimit();
-  const logLevel = configService.get('LOG_LEVEL'); // Already an array due to config schema transform
+  const port = configService.get('PORT');
 
   app.use(json({ limit: payloadLimit }));
 
-  app.useGlobalFilters(new HttpExceptionFilter());
-  app.useLogger(logLevel);
-  await app.listen(3000);
+  await app.listen(port);
 }
 bootstrap();
