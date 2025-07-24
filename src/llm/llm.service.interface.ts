@@ -69,16 +69,10 @@ export abstract class LLMService {
         if (!isRateLimitError || isLastAttempt) {
           // If it's not a rate limit error, or we've exhausted retries, 
           // wrap the error if it's not already a known error type
-          if (error instanceof ZodError) {
-            throw error;
+          if (isRateLimitError || error instanceof ZodError) {
+            throw error; // Throw original error for rate limits or Zod errors
           }
-          
-          if (isRateLimitError) {
-            // For rate limit errors that exceeded max retries, throw the original error
-            throw error;
-          }
-          
-          // For other errors, wrap them in a generic error message
+
           const errObj = error as Error;
           throw new Error(
             `Failed to get a valid and structured response from the LLM.\nOriginal error: ${errObj.message || error}\nStack: ${errObj.stack || 'N/A'}`,
