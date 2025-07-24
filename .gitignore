@@ -1,9 +1,10 @@
 node_modules
-.husky
+.husky/_
 **.log
-**# local env files
+# local env files
 .env
-.test.env
+# Allow .test.env for CI/CD and testing
+# .test.env
 
 # Log files
 dist/

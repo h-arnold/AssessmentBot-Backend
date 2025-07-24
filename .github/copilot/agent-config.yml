@@ -1,0 +1,127 @@
+version: 1
+
+# Development environment configuration for GitHub Copilot Coding Agent
+# This ensures the agent has the same environment as the repository
+
+environment:
+  # Node.js version to match production
+  node_version: "20"
+  
+  # Environment variables required for development and testing
+  variables:
+    NODE_ENV: "development"
+    APP_NAME: "AssessmentBot-Backend"
+    APP_VERSION: "1.0.0"
+    LOG_LEVEL: "debug"
+    PORT: "3000"
+    
+    # Test environment values
+    DATABASE_URL: "test_database_url"
+    API_KEYS: "test_key_1,test_key_2"
+    MAX_IMAGE_UPLOAD_SIZE_MB: "1"
+    ALLOWED_IMAGE_MIME_TYPES: "image/png,image/jpeg"
+    THROTTLER_TTL: "60"
+    UNAUTHENTICATED_THROTTLER_LIMIT: "5"
+    AUTHENTICATED_THROTTLER_LIMIT: "10"
+
+  # Secrets that should be populated from repository secrets
+  secrets:
+    - GEMINI_API_KEY
+
+# Tools and dependencies
+setup:
+  # Install Node.js dependencies
+  - run: npm ci
+  
+  # Create test environment file
+  - run: |
+      cp .env.example .test.env
+      echo "GEMINI_API_KEY=${GEMINI_API_KEY}" >> .test.env
+      echo "NODE_ENV=development" >> .test.env
+  
+  # Setup Husky hooks
+  - run: npm run prepare
+
+# Development commands that should be available
+commands:
+  # Linting and formatting
+  lint:
+    run: npm run lint
+    description: "Run ESLint to check code quality and British English compliance"
+  
+  lint_fix:
+    run: npm run lint:fix
+    description: "Run ESLint and automatically fix issues"
+  
+  format:
+    run: npm run format
+    description: "Format code using Prettier"
+  
+  # Testing
+  test:
+    run: npm run test
+    description: "Run unit and integration tests"
+  
+  test_watch:
+    run: npm run test:watch
+    description: "Run tests in watch mode"
+  
+  test_coverage:
+    run: npm run test:cov
+    description: "Run tests with coverage report"
+  
+  test_e2e:
+    run: npm run test:e2e
+    description: "Run end-to-end tests"
+  
+  # Building
+  build:
+    run: npm run build
+    description: "Build the application for production"
+  
+  # Development server
+  dev:
+    run: npm run start:dev
+    description: "Start development server with hot reload"
+  
+  debug:
+    run: npm run debug
+    description: "Start server in debug mode"
+
+# Code quality checks that should be enforced
+quality_checks:
+  # Pre-commit hooks via Husky and lint-staged
+  pre_commit:
+    - run: npx lint-staged
+      description: "Run linting and formatting on staged files"
+  
+  # British English compliance check
+  british_english:
+    - run: |
+        if grep -r "color\|flavor\|center\|defense\|authorize\|organize" src/ --include="*.ts" --include="*.js" --exclude-dir=node_modules; then
+          echo "❌ Found American English spellings. Please use British English (colour, flavour, centre, defence, authorise, organise)"
+          exit 1
+        else
+          echo "✅ British English compliance verified"
+        fi
+      description: "Ensure British English spelling is used throughout the codebase"
+
+# File patterns that should be ignored by the agent
+ignore_patterns:
+  - "node_modules/**"
+  - "dist/**"
+  - "coverage/**"
+  - "*.log"
+  - ".env"
+  - ".env.local"
+
+# Extensions and tools that should be available in the development environment
+extensions:
+  - "dbaeumer.vscode-eslint"
+  - "esbenp.prettier-vscode"
+  - "ms-azuretools.vscode-docker"
+  - "ms-vscode.vscode-typescript-next"
+  - "nestjs.nestjs-files"
+  - "Orta.vscode-jest"
+  - "streetsidesoftware.code-spell-checker"
+  - "GitHub.copilot-chat"
