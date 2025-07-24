@@ -99,7 +99,7 @@ describe('ZodValidationPipe', () => {
     it('should handle nested validation schemas with valid data', () => {
       const validData = {
         user: {
-          id: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
+          id: '6f3f94ef-72c4-4f61-aa76-bb1e7d1f8e22',
           name: 'John Doe',
           address: {
             street: '123 Main St',
@@ -169,10 +169,10 @@ describe('ZodValidationPipe', () => {
     expect(response).toHaveProperty('errors');
     expect(Array.isArray(response.errors)).toBe(true);
     expect(response.errors).toHaveLength(2);
-    expect(response.errors[0]).toHaveProperty('message', 'Invalid email');
+    expect(response.errors[0]).toHaveProperty('message', 'Invalid email address');
     expect(response.errors[1]).toHaveProperty(
       'message',
-      'String must contain at least 8 character(s)',
+      'Too small: expected string to have >=8 characters',
     );
   });
 
