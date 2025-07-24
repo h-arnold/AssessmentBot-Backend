@@ -74,7 +74,7 @@ export abstract class LLMService {
             throw error;
           }
           
-          if (isRateLimitError && isLastAttempt) {
+          if (isRateLimitError) {
             // For rate limit errors that exceeded max retries, throw the original error
             throw error;
           }
