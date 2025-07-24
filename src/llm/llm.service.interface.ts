@@ -80,7 +80,7 @@ export abstract class LLMService {
         }
 
         // Calculate exponential backoff delay
-        const delay = baseBackoffMs * Math.pow(2, attempt);
+        const delay = baseBackoffMs * Math.pow(2, attempt) + (Math.random() * 100);
         
         this.logger.warn(
           `Rate limit encountered on attempt ${attempt + 1}/${maxRetries + 1}. ` +
