@@ -15,14 +15,13 @@ environment:
     LOG_LEVEL: "debug"
     PORT: "3000"
     
-    # Test environment values
-    DATABASE_URL: "test_database_url"
-    API_KEYS: "test_key_1,test_key_2"
+    # Test environment values (matching E2E test utils)
+    API_KEYS: "test-api-key,test-api-key-2"
     MAX_IMAGE_UPLOAD_SIZE_MB: "1"
     ALLOWED_IMAGE_MIME_TYPES: "image/png,image/jpeg"
-    THROTTLER_TTL: "60"
-    UNAUTHENTICATED_THROTTLER_LIMIT: "5"
-    AUTHENTICATED_THROTTLER_LIMIT: "10"
+    THROTTLER_TTL: "36000000"
+    UNAUTHENTICATED_THROTTLER_LIMIT: "9"
+    AUTHENTICATED_THROTTLER_LIMIT: "12"
 
   # Secrets that should be populated from repository secrets
   secrets:
@@ -33,11 +32,9 @@ setup:
   # Install Node.js dependencies
   - run: npm ci
   
-  # Create test environment file
+  # Create test environment file with only GEMINI_API_KEY
   - run: |
-      cp .env.example .test.env
-      echo "GEMINI_API_KEY=${GEMINI_API_KEY}" >> .test.env
-      echo "NODE_ENV=development" >> .test.env
+      echo "GEMINI_API_KEY=${GEMINI_API_KEY}" > .test.env
   
   # Setup Husky hooks
   - run: npm run prepare
@@ -114,14 +111,3 @@ ignore_patterns:
   - "*.log"
   - ".env"
   - ".env.local"
-
-# Extensions and tools that should be available in the development environment
-extensions:
-  - "dbaeumer.vscode-eslint"
-  - "esbenp.prettier-vscode"
-  - "ms-azuretools.vscode-docker"
-  - "ms-vscode.vscode-typescript-next"
-  - "nestjs.nestjs-files"
-  - "Orta.vscode-jest"
-  - "streetsidesoftware.code-spell-checker"
-  - "GitHub.copilot-chat"

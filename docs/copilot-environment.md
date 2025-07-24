@@ -11,9 +11,9 @@ The GitHub Copilot Coding Agent environment has been configured to match the rep
 ### Files Added/Modified
 
 1. **`.test.env`** - Test environment variables file
-   - Contains all necessary environment variables for running tests
-   - Includes placeholder for `GEMINI_API_KEY` (populated from GitHub secrets in CI)
-   - Used by Jest tests to avoid environment variable validation errors
+   - Contains only the `GEMINI_API_KEY` environment variable for testing
+   - Other environment variables are set up by the E2E test utils
+   - Used by Jest tests to provide the Gemini API key while other variables are handled dynamically
 
 2. **`.husky/pre-commit`** - Git pre-commit hook
    - Runs `lint-staged` on staged files before commit
@@ -65,7 +65,6 @@ The following environment variables are configured:
 
 #### Application Settings
 
-- `DATABASE_URL`: Database connection string
 - `MAX_IMAGE_UPLOAD_SIZE_MB`: Maximum image upload size
 - `ALLOWED_IMAGE_MIME_TYPES`: Allowed image MIME types
 - `THROTTLER_TTL`: Rate limiting time window
@@ -138,9 +137,10 @@ This ensures that code suggestions and modifications from the agent will be cons
 
 If tests fail due to missing environment variables:
 
-1. Ensure `.test.env` file exists and contains all required variables
+1. Ensure `.test.env` file exists and contains the `GEMINI_API_KEY`
 2. Check that `GEMINI_API_KEY` is properly set in GitHub secrets
 3. Verify all dependencies are installed with `npm ci`
+4. Note that other environment variables are set up automatically by the E2E test utils
 
 ### Linting Issues
 
