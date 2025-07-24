@@ -18,14 +18,15 @@ import { ConfigService } from '../config/config.service';
  * sending requests and validating responses from the Gemini API.
  */
 @Injectable()
-export class GeminiService implements LLMService {
+export class GeminiService extends LLMService {
   private readonly client: GoogleGenerativeAI;
   private readonly logger = new Logger(GeminiService.name);
 
   constructor(
-    private readonly configService: ConfigService,
+    configService: ConfigService,
     private readonly jsonParserUtil: JsonParserUtil,
   ) {
+    super(configService);
     const apiKey = this.configService.get('GEMINI_API_KEY');
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY is not set in environment');
@@ -34,7 +35,8 @@ export class GeminiService implements LLMService {
   }
 
   /**
-   * Sends a payload to the Gemini API to generate an assessment.
+   * Internal method that sends a payload to the Gemini API to generate an assessment.
+   * This method is called by the base class's send method, which handles retry logic.
    *
    * This method dynamically selects the appropriate Gemini model based on the payload type
    * (text-only or multimodal with images). It attempts to repair malformed JSON
@@ -45,7 +47,7 @@ export class GeminiService implements LLMService {
    * @throws ZodError if the response validation fails.
    * @throws Error if the API call fails or the response is invalid.
    */
-  public async send(payload: LlmPayload): Promise<LlmResponse> {
+  protected async _sendInternal(payload: LlmPayload): Promise<LlmResponse> {
     const modelParams = this.buildModelParams(payload);
     const contents = this.buildContents(payload);
 
@@ -83,10 +85,10 @@ export class GeminiService implements LLMService {
         this.logger.error('Zod validation failed', error.errors);
         throw error;
       }
-      const errObj = error as Error;
-      throw new Error(
-        `Failed to get a valid and structured response from the LLM.\nOriginal error: ${errObj.message || error}\nStack: ${errObj.stack || 'N/A'}`,
-      );
+      
+      // Let the original error bubble up - the base class will handle 
+      // retry logic and error wrapping appropriately
+      throw error;
     }
   }
 

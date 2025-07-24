@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, GoogleGenerativeAIFetchError } from '@google/generative-ai';
 import { Logger } from '@nestjs/common';
 import { ZodError } from 'zod';
 
@@ -10,7 +10,14 @@ import {
 import { JsonParserUtil } from '../common/json-parser.util';
 import { ConfigService } from '../config/config.service';
 
-jest.mock('@google/generative-ai');
+// Only mock the GoogleGenerativeAI class, not the error classes
+jest.mock('@google/generative-ai', () => {
+  const actual = jest.requireActual('@google/generative-ai');
+  return {
+    ...actual,
+    GoogleGenerativeAI: jest.fn(),
+  };
+});
 
 const mockGenerateContent = jest.fn();
 const mockGetGenerativeModel = jest.fn(() => ({
@@ -35,6 +42,8 @@ describe('GeminiService', () => {
     configService = {
       get: jest.fn((key: string) => {
         if (key === 'GEMINI_API_KEY') return 'test-api-key';
+        if (key === 'LLM_BACKOFF_BASE_MS') return 100;
+        if (key === 'LLM_MAX_RETRIES') return 2;
         return null;
       }),
     } as unknown as ConfigService;
@@ -178,5 +187,150 @@ describe('GeminiService', () => {
     await expect(service.send(payload)).rejects.toThrow(
       'Failed to get a valid and structured response from the LLM.',
     );
+  });
+
+  describe('retry logic', () => {
+    it('should retry on 429 errors and eventually succeed', async () => {
+      // Don't use fake timers for this test since it's hard to coordinate
+      // with the actual retry mechanism
+      const payload: StringPromptPayload = {
+        system: 'system prompt',
+        user: 'test',
+      };
+
+      // First call fails with 429, second call succeeds
+      mockGenerateContent
+        .mockRejectedValueOnce(new GoogleGenerativeAIFetchError('Rate limited', 429))
+        .mockResolvedValueOnce({
+          response: {
+            text: () =>
+              '{"completeness": {"score": 1, "reasoning": "Test"}, "accuracy": {"score": 1, "reasoning": "Test"}, "spag": {"score": 1, "reasoning": "Test"}}',
+          },
+        });
+
+      const result = await service.send(payload);
+
+      expect(result).toEqual({
+        completeness: { score: 1, reasoning: 'Test' },
+        accuracy: { score: 1, reasoning: 'Test' },
+        spag: { score: 1, reasoning: 'Test' },
+      });
+
+      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+    });
+
+    it('should retry multiple times with exponential backoff', async () => {
+      const payload: StringPromptPayload = {
+        system: 'system prompt',
+        user: 'test',
+      };
+
+      // First two calls fail with 429, third call succeeds
+      mockGenerateContent
+        .mockRejectedValueOnce(new GoogleGenerativeAIFetchError('Rate limited', 429))
+        .mockRejectedValueOnce(new GoogleGenerativeAIFetchError('Rate limited', 429))
+        .mockResolvedValueOnce({
+          response: {
+            text: () =>
+              '{"completeness": {"score": 2, "reasoning": "Test"}, "accuracy": {"score": 2, "reasoning": "Test"}, "spag": {"score": 2, "reasoning": "Test"}}',
+          },
+        });
+
+      const result = await service.send(payload);
+
+      expect(result).toEqual({
+        completeness: { score: 2, reasoning: 'Test' },
+        accuracy: { score: 2, reasoning: 'Test' },
+        spag: { score: 2, reasoning: 'Test' },
+      });
+
+      expect(mockGenerateContent).toHaveBeenCalledTimes(3);
+    });
+
+    it('should throw error after max retries exceeded', async () => {
+      const payload: StringPromptPayload = {
+        system: 'system prompt',
+        user: 'test',
+      };
+
+      // All calls fail with 429 (more than max retries)
+      const rateLimitError = new GoogleGenerativeAIFetchError('Rate limited', 429);
+      mockGenerateContent.mockRejectedValue(rateLimitError);
+
+      await expect(service.send(payload)).rejects.toThrow('Rate limited');
+
+      // Should have called 3 times: initial + 2 retries (based on LLM_MAX_RETRIES=2)
+      expect(mockGenerateContent).toHaveBeenCalledTimes(3);
+    });
+
+    it('should not retry on non-429 errors', async () => {
+      const payload: StringPromptPayload = {
+        system: 'system prompt',
+        user: 'test',
+      };
+
+      // Simulate a 500 error (not rate limiting)
+      const serverError = new GoogleGenerativeAIFetchError('Server error', 500);
+      mockGenerateContent.mockRejectedValue(serverError);
+
+      await expect(service.send(payload)).rejects.toThrow('Failed to get a valid and structured response from the LLM');
+
+      // Should only be called once, no retries
+      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+    });
+
+    it('should detect rate limit errors from error messages', async () => {
+      const payload: StringPromptPayload = {
+        system: 'system prompt',
+        user: 'test',
+      };
+
+      // First call fails with rate limit message, second succeeds
+      mockGenerateContent
+        .mockRejectedValueOnce(new Error('Rate limit exceeded'))
+        .mockResolvedValueOnce({
+          response: {
+            text: () =>
+              '{"completeness": {"score": 3, "reasoning": "Test"}, "accuracy": {"score": 3, "reasoning": "Test"}, "spag": {"score": 3, "reasoning": "Test"}}',
+          },
+        });
+
+      const result = await service.send(payload);
+
+      expect(result).toEqual({
+        completeness: { score: 3, reasoning: 'Test' },
+        accuracy: { score: 3, reasoning: 'Test' },
+        spag: { score: 3, reasoning: 'Test' },
+      });
+
+      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+    });
+
+    it('should detect rate limit errors from "too many requests" message', async () => {
+      const payload: StringPromptPayload = {
+        system: 'system prompt',
+        user: 'test',
+      };
+
+      // First call fails with "too many requests", second succeeds
+      mockGenerateContent
+        .mockRejectedValueOnce(new Error('Too many requests'))
+        .mockResolvedValueOnce({
+          response: {
+            text: () =>
+              '{"completeness": {"score": 4, "reasoning": "Test"}, "accuracy": {"score": 4, "reasoning": "Test"}, "spag": {"score": 4, "reasoning": "Test"}}',
+          },
+        });
+
+      const result = await service.send(payload);
+
+      expect(result).toEqual({
+        completeness: { score: 4, reasoning: 'Test' },
+        accuracy: { score: 4, reasoning: 'Test' },
+        spag: { score: 4, reasoning: 'Test' },
+      });
+
+      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+    });
   });
 });
