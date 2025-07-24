@@ -76,7 +76,7 @@ describe('ZodValidationPipe', () => {
   describe('nested validation', () => {
     const nestedSchema = z.object({
       user: z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
         name: z.string().min(3),
         address: z.object({
           street: z.string(),
@@ -138,7 +138,7 @@ describe('ZodValidationPipe', () => {
 
   it('should format validation errors consistently', () => {
     const schemaWithMultipleErrors = z.object({
-      email: z.string().email(),
+      email: z.email(),
       password: z.string().min(8),
     });
     const pipeWithMultipleErrors = new ZodValidationPipe(
