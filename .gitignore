@@ -1,7 +1,7 @@
 node_modules
-.husky
+.husky/_
 **.log
-**# local env files
+# local env files
 .env
 .test.env
 
