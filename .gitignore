@@ -3,8 +3,7 @@ node_modules
 **.log
 # local env files
 .env
-# Allow .test.env for CI/CD and testing
-# .test.env
+.test.env
 
 # Log files
 dist/

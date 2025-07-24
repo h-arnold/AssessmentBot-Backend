@@ -34,7 +34,10 @@ setup:
   
   # Create test environment file with only GEMINI_API_KEY
   - run: |
-      echo "GEMINI_API_KEY=${GEMINI_API_KEY}" > .test.env
+      if [ ! -f .test.env ]; then
+        cp .test.env.example .test.env
+        echo "GEMINI_API_KEY=${GEMINI_API_KEY}" > .test.env
+      fi
   
   # Setup Husky hooks
   - run: npm run prepare
@@ -95,7 +98,7 @@ quality_checks:
   # British English compliance check
   british_english:
     - run: |
-        if grep -r "color\|flavor\|center\|defense\|authorize\|organize" src/ --include="*.ts" --include="*.js" --exclude-dir=node_modules; then
+        if grep -rE '\b(color|flavor|center|defense|authorize|organize)\b' src/ --include="*.ts" --include="*.js" --exclude-dir=node_modules; then
           echo "❌ Found American English spellings. Please use British English (colour, flavour, centre, defence, authorise, organise)"
           exit 1
         else
@@ -110,4 +113,5 @@ ignore_patterns:
   - "coverage/**"
   - "*.log"
   - ".env"
+  - ".test.env"
   - ".env.local"
