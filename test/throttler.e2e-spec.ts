@@ -11,7 +11,7 @@ describe('Throttler (e2e)', () => {
   let unauthenticatedLimit: number;
   let authenticatedLimit: number;
   let ttl: number;
-  const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
+  const logFilePath = '/tmp/e2e-test.log';
 
   beforeAll(async () => {
     // As we are not testing the throttler service itself, but rather the implementation of the throttler,
