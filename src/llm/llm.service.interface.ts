@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { GoogleGenerativeAIFetchError } from '@google/generative-ai';
 import { ZodError } from 'zod';
 
 import { LlmResponse } from './types';
@@ -43,7 +42,7 @@ export type LlmPayload = ImagePromptPayload | StringPromptPayload;
  */
 @Injectable()
 export abstract class LLMService {
-  private readonly logger = new Logger(LLMService.name);
+  protected readonly logger = new Logger(LLMService.name);
 
   constructor(protected readonly configService: ConfigService) {}
 
@@ -113,18 +112,15 @@ export abstract class LLMService {
 
   /**
    * Checks if an error is a rate limit error (HTTP 429).
+   * This method is generic and does not depend on any specific LLM SDK.
    * @param error The error to check.
    * @returns True if the error is a rate limit error.
    */
   private isRateLimitError(error: unknown): boolean {
-    // Check for Google Generative AI fetch errors with 429 status
-    if (error instanceof GoogleGenerativeAIFetchError) {
-      return (error as any).status === 429;
-    }
-
-    // Check for other error formats that might indicate rate limiting
-    if (error && typeof error === 'object' && 'status' in error) {
-      return (error as any).status === 429;
+    // Use the utility function to extract status code from various error formats
+    const statusCode = this.extractErrorStatusCode(error);
+    if (statusCode === 429) {
+      return true;
     }
 
     // Check for error messages that might indicate rate limiting
@@ -136,6 +132,39 @@ export abstract class LLMService {
     }
 
     return false;
+  }
+
+  /**
+   * Utility function to extract HTTP status code from various error formats.
+   * This is designed to work with different LLM SDK error structures.
+   * @param error The error to extract status code from.
+   * @returns The HTTP status code if found, undefined otherwise.
+   */
+  private extractErrorStatusCode(error: unknown): number | undefined {
+    if (!error || typeof error !== 'object') {
+      return undefined;
+    }
+
+    // Check for status property directly
+    if ('status' in error && typeof error.status === 'number') {
+      return error.status;
+    }
+
+    // Check for statusCode property (alternative naming)
+    if ('statusCode' in error && typeof error.statusCode === 'number') {
+      return error.statusCode;
+    }
+
+    // Check for response.status (nested in response object)
+    if ('response' in error && 
+        error.response && 
+        typeof error.response === 'object' &&
+        'status' in error.response &&
+        typeof (error.response as Record<string, unknown>).status === 'number') {
+      return (error.response as Record<string, unknown>).status as number;
+    }
+
+    return undefined;
   }
 
   /**

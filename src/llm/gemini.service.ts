@@ -20,7 +20,7 @@ import { ConfigService } from '../config/config.service';
 @Injectable()
 export class GeminiService extends LLMService {
   private readonly client: GoogleGenerativeAI;
-  private readonly logger = new Logger(GeminiService.name);
+  private readonly geminiLogger = new Logger(GeminiService.name);
 
   constructor(
     configService: ConfigService,
@@ -51,7 +51,7 @@ export class GeminiService extends LLMService {
     const modelParams = this.buildModelParams(payload);
     const contents = this.buildContents(payload);
 
-    this.logger.debug(
+    this.geminiLogger.debug(
       `Sending to Gemini with model: ${modelParams.model}, temperature: ${
         modelParams.generationConfig?.temperature ?? 0
       }`,
@@ -63,10 +63,10 @@ export class GeminiService extends LLMService {
       const result = await model.generateContent(contents);
       const responseText = result.response.text?.() ?? '';
 
-      this.logger.debug(`Raw response from Gemini: \n\n${responseText}`);
+      this.geminiLogger.debug(`Raw response from Gemini: \n\n${responseText}`);
 
       const parsedJson = this.jsonParserUtil.parse(responseText);
-      this.logger.debug(
+      this.geminiLogger.debug(
         `Parsed JSON response: ${JSON.stringify(parsedJson, null, 2)}`,
       );
 
@@ -77,12 +77,12 @@ export class GeminiService extends LLMService {
 
       return LlmResponseSchema.parse(dataToValidate);
     } catch (error) {
-      this.logger.debug(
+      this.geminiLogger.debug(
         'Error communicating with or validating response from Gemini API',
         error,
       );
       if (error instanceof ZodError) {
-        this.logger.error('Zod validation failed', error.errors);
+        this.geminiLogger.error('Zod validation failed', error.errors);
         throw error;
       }
       
@@ -209,15 +209,15 @@ export class GeminiService extends LLMService {
    */
   private logPayload(payload: LlmPayload, contents: (string | Part)[]): void {
     if (this.isStringPromptPayload(payload)) {
-      this.logger.debug(
+      this.geminiLogger.debug(
         `String payload being sent: ${JSON.stringify(contents, null, 2)}`,
       );
     } else if (this.isImagePromptPayload(payload)) {
-      this.logger.debug(
+      this.geminiLogger.debug(
         `Image payload being sent with ${contents.length} content items`,
       );
     } else {
-      this.logger.debug(
+      this.geminiLogger.debug(
         `Unknown payload type being sent with ${contents.length} content items`,
       );
     }
