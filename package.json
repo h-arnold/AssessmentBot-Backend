@@ -15,6 +15,7 @@
     "start:prod": "NODE_ENV=production node dist/src/main.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:british": "./scripts/check-british-english.sh",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -87,7 +88,8 @@
   "homepage": "https://github.com/h-arnold/AssessmentBot-Backend#readme",
   "lint-staged": {
     "*.ts": "eslint --fix",
-    "*.{js,ts,json,md}": "prettier --write"
+    "*.{js,ts,json,md}": "prettier --write",
+    "*.{ts,js}": "./scripts/check-british-english.sh"
   },
   "repository": {
     "type": "git",

@@ -53,6 +53,10 @@ commands:
     run: npm run lint:fix
     description: "Run ESLint and automatically fix issues"
   
+  lint_british:
+    run: npm run lint:british
+    description: "Check for American English spellings and enforce British English"
+  
   format:
     run: npm run format
     description: "Format code using Prettier"
@@ -97,13 +101,7 @@ quality_checks:
   
   # British English compliance check
   british_english:
-    - run: |
-        if grep -rE '\b(color|flavor|center|defense|authorize|organize)\b' src/ --include="*.ts" --include="*.js" --exclude-dir=node_modules; then
-          echo "❌ Found American English spellings. Please use British English (colour, flavour, centre, defence, authorise, organise)"
-          exit 1
-        else
-          echo "✅ British English compliance verified"
-        fi
+    - run: ./scripts/check-british-english.sh
       description: "Ensure British English spelling is used throughout the codebase"
 
 # File patterns that should be ignored by the agent
