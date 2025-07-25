@@ -123,7 +123,7 @@ The system automatically checks for American English spellings and enforces Brit
 
 The GitHub Copilot Coding Agent will automatically:
 
-1. Have access to the same Node.js environment (version 20)
+1. Have access to the same Node.js environment (version 22)
 2. Use the same ESLint and Prettier configurations
 3. Run the same quality checks as local development
 4. Have access to necessary environment variables and secrets

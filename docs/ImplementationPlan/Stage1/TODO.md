@@ -6,7 +6,7 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 
 ## Prerequisites
 
-- [ ] Node.js 20.x installed
+- [ ] Node.js 22.x installed
 - [ ] Docker installed and running
 - [ ] Git initialized in the repository
 
@@ -120,7 +120,7 @@ This stage focuses on scaffolding a NestJS application, configuring TypeScript, 
 
 #### 5.1 Create Dockerfile
 
-- [x] Use `node:20-alpine` as base image (as specified in README)
+- [x] Use `node:22-alpine` as base image (as specified in README)
 - [x] Multi-stage build for optimisation
 - [x] Copy package files and install dependencies
 - [x] Copy source code and build application

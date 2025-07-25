@@ -8,7 +8,7 @@ This document outlines the high-level implementation stages for the Assessment B
 - **Deliverables**:
   - NestJS monorepo created via Nest CLI
   - ESLint + Prettier configuration, Husky hooks, lint-staged setup
-  - Dockerfile (`node:20-alpine`), basic `docker-compose.yml`
+  - Dockerfile (`node:22-alpine`), basic `docker-compose.yml`
 - **Test Criteria**:
   - `npm run lint` passes without errors
   - Dev server starts: `npm run start:dev`
