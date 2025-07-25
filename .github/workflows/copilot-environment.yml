@@ -1,14 +1,18 @@
-name: Setup Development Environment for Copilot
+name: "Copilot Setup Steps"
 
+# Automatically run the setup steps when they are changed to allow for easy validation, and
+# allow manual testing through the repository's "Actions" tab
 on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
   pull_request:
-    types: [opened, synchronize]
-
-permissions:
-  contents: read
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
 
 jobs:
-  setup-copilot-environment:
+  copilot-setup-steps:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -26,3 +30,6 @@ jobs:
       - name: Create test environment file
         run: |
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .test.env
+
+    permissions:
+      contents: read
