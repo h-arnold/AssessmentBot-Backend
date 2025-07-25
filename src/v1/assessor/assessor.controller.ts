@@ -19,6 +19,11 @@ import {
   type CreateAssessorDto,
   createAssessorDtoSchema,
 } from './dto/create-assessor.dto';
+import { type ImageTaskDto, imageTaskDtoSchema } from './dto/image-task.dto';
+import {
+  type TextTableTaskDto,
+  textTableTaskDtoSchema,
+} from './dto/text-table-task.dto';
 import { LlmResponse } from '../../llm/types';
 
 /**
@@ -56,6 +61,7 @@ export class AssessorController {
 
   /**
    * Handles the creation of a new assessment.
+   * The method determines the task type and applies appropriate validation.
    * @param createAssessorDto The data transfer object containing assessment details.
    * @returns A promise that resolves to the result of the assessment creation.
    */
@@ -64,14 +70,24 @@ export class AssessorController {
     @Body(new ZodValidationPipe(createAssessorDtoSchema))
     createAssessorDto: CreateAssessorDto,
   ): Promise<LlmResponse> {
-    // If taskType is IMAGE, validate image fields using ImageValidationPipe
+    // Apply additional validation for image tasks
     if (createAssessorDto.taskType === 'IMAGE') {
-      const imagePipe = new ImageValidationPipe(this.configService);
-      // Validate each image field
-      await imagePipe.transform(createAssessorDto.reference);
-      await imagePipe.transform(createAssessorDto.template);
-      await imagePipe.transform(createAssessorDto.studentResponse);
+      await this.validateImageTask(createAssessorDto);
     }
+
     return this.assessorService.createAssessment(createAssessorDto);
+  }
+
+  /**
+   * Validates image-specific fields using the ImageValidationPipe.
+   * This method is called when the task type is IMAGE.
+   * @param imageTaskDto The image task DTO to validate.
+   */
+  private async validateImageTask(imageTaskDto: ImageTaskDto): Promise<void> {
+    const imagePipe = new ImageValidationPipe(this.configService);
+    // Validate each image field
+    await imagePipe.transform(imageTaskDto.reference);
+    await imagePipe.transform(imageTaskDto.template);
+    await imagePipe.transform(imageTaskDto.studentResponse);
   }
 }

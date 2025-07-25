@@ -5,10 +5,8 @@ import { ImagePrompt } from './image.prompt';
 import { PromptFactory } from './prompt.factory';
 import { TablePrompt } from './table.prompt';
 import { TextPrompt } from './text.prompt';
-import {
-  CreateAssessorDto,
-  TaskType,
-} from '../v1/assessor/dto/create-assessor.dto';
+import { CreateAssessorDto } from '../v1/assessor/dto/create-assessor.dto';
+import { TextTableTaskType } from '../v1/assessor/dto/text-table-task.dto';
 
 describe('PromptFactory', () => {
   let factory: PromptFactory;
@@ -27,7 +25,7 @@ describe('PromptFactory', () => {
 
   it("should return a TextPrompt for taskType 'TEXT'", () => {
     const dto: CreateAssessorDto = {
-      taskType: TaskType.TEXT,
+      taskType: TextTableTaskType.TEXT,
       reference: 'ref',
       studentResponse: 'stud',
       template: 'temp',
@@ -39,7 +37,7 @@ describe('PromptFactory', () => {
 
   it("should return a TablePrompt for taskType 'TABLE'", () => {
     const dto: CreateAssessorDto = {
-      taskType: TaskType.TABLE,
+      taskType: TextTableTaskType.TABLE,
       reference: 'ref',
       studentResponse: 'stud',
       template: 'temp',
@@ -51,7 +49,7 @@ describe('PromptFactory', () => {
 
   it("should return an ImagePrompt for taskType 'IMAGE'", () => {
     const dto: CreateAssessorDto = {
-      taskType: TaskType.IMAGE,
+      taskType: 'IMAGE',
       reference: 'ref',
       studentResponse: 'stud',
       template: 'temp',

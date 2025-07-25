@@ -5,10 +5,8 @@ import { Prompt } from './prompt.base';
 import { TablePrompt } from './table.prompt';
 import { TextPrompt } from './text.prompt';
 import { readMarkdown } from '../common/file-utils';
-import {
-  CreateAssessorDto,
-  TaskType,
-} from '../v1/assessor/dto/create-assessor.dto';
+import { CreateAssessorDto } from '../v1/assessor/dto/create-assessor.dto';
+import { TextTableTaskType } from '../v1/assessor/dto/text-table-task.dto';
 
 /**
  * A factory for creating prompt instances based on the task type.
@@ -45,22 +43,24 @@ export class PromptFactory {
    * @param taskType The task type.
    * @returns An object containing the system and user prompt file names.
    */
-  private getPromptFiles(taskType: TaskType): {
+  private getPromptFiles(taskType: string): {
     systemPromptFile?: string;
     userTemplateFile?: string;
   } {
     switch (taskType) {
-      case TaskType.TEXT:
+      case TextTableTaskType.TEXT:
+      case 'TEXT': // backward compatibility
         return {
           systemPromptFile: 'text.system.prompt.md',
           userTemplateFile: 'text.user.prompt.md',
         };
-      case TaskType.TABLE:
+      case TextTableTaskType.TABLE:
+      case 'TABLE': // backward compatibility
         return {
           systemPromptFile: 'table.system.prompt.md',
           userTemplateFile: 'table.user.prompt.md',
         };
-      case TaskType.IMAGE:
+      case 'IMAGE':
         return {
           systemPromptFile: 'image.system.prompt.md',
           userTemplateFile: undefined,
@@ -99,21 +99,23 @@ export class PromptFactory {
     systemPrompt?: string,
   ): Prompt {
     switch (dto.taskType) {
-      case TaskType.TEXT:
+      case TextTableTaskType.TEXT:
+      case 'TEXT': // backward compatibility
         return new TextPrompt(
           inputs,
           this.logger,
           userTemplateFile,
           systemPrompt,
         );
-      case TaskType.TABLE:
+      case TextTableTaskType.TABLE:
+      case 'TABLE': // backward compatibility
         return new TablePrompt(
           inputs,
           this.logger,
           userTemplateFile,
           systemPrompt,
         );
-      case TaskType.IMAGE: {
+      case 'IMAGE': {
         const imageInputs = {
           referenceTask: Buffer.isBuffer(dto.reference)
             ? dto.reference.toString()

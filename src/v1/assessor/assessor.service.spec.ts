@@ -3,7 +3,8 @@ import { LoggerModule } from 'nestjs-pino';
 
 import { AssessorService } from './assessor.service';
 import { ConfigModule, ConfigService } from '../../config';
-import { CreateAssessorDto, TaskType } from './dto/create-assessor.dto';
+import { CreateAssessorDto } from './dto/create-assessor.dto';
+import { TextTableTaskType } from './dto/text-table-task.dto';
 import { JsonParserUtil } from '../../common/json-parser.util';
 import { GeminiService } from '../../llm/gemini.service';
 import { LlmModule } from '../../llm/llm.module';
@@ -79,7 +80,7 @@ describe('AssessorService', () => {
   describe('createAssessment', () => {
     it('should call the prompt factory and llm service', async () => {
       const dto: CreateAssessorDto = {
-        taskType: TaskType.TEXT,
+        taskType: TextTableTaskType.TEXT,
         reference: 'ref',
         studentResponse: 'stud',
         template: 'temp',
@@ -101,7 +102,7 @@ describe('AssessorService', () => {
 
     it('should correctly handle a multimodal (image) payload', async () => {
       const dto: CreateAssessorDto = {
-        taskType: TaskType.IMAGE,
+        taskType: 'IMAGE',
         reference: 'A picture of a cat',
         studentResponse: 'A drawing of a cat',
         template: 'An empty canvas',
