@@ -8,7 +8,7 @@ describe('Authentication E2E Tests', () => {
   let appProcess: ChildProcessWithoutNullStreams;
   let appUrl: string;
   let apiKey: string;
-  const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
+  const logFilePath = '/tmp/e2e-test.log';
 
   const INVALID_API_KEY = 'invalid_key';
 

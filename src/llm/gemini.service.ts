@@ -80,7 +80,7 @@ export class GeminiService implements LLMService {
         error,
       );
       if (error instanceof ZodError) {
-        this.logger.error('Zod validation failed', error.errors);
+        this.logger.error('Zod validation failed', error.issues);
         throw error;
       }
       const errObj = error as Error;

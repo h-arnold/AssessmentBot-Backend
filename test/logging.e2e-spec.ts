@@ -14,7 +14,7 @@ describe('Logging (True E2E)', () => {
   let appProcess: ChildProcessWithoutNullStreams;
   let appUrl: string;
   let apiKey: string;
-  const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
+  const logFilePath = '/tmp/e2e-test.log';
 
   beforeAll(async () => {
     const app = await startApp(logFilePath);
