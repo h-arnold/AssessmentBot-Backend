@@ -2,8 +2,8 @@
 {
   "name": "AssessmentBot-Backend DevContainer",
   // Use the alpine variant to match the production image specified in README.md
-  // The -alpine variant is not available for Node 20. Using the default Debian-based image.
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  // The -alpine variant is not available for Node 22. Using the default Debian-based image.
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/git:1": {},

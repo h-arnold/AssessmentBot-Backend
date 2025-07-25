@@ -27,7 +27,7 @@ To get the Assessment Bot backend up and running, follow these steps:
 
 ### Prerequisites
 
-- **Node.js**: Version 20.x or later. You can download it from [nodejs.org](https://nodejs.org/).
+- **Node.js**: Version 22.x or later. You can download it from [nodejs.org](https://nodejs.org/).
 - **Docker**: Docker Desktop (or Docker Engine and Docker Compose) installed and running. Follow the instructions for your operating system on the [Docker website](https://www.docker.com/get-started).
 - **Git**: Git installed and configured. You can download it from [git-scm.com](https://git-scm.com/downloads).
 
@@ -58,7 +58,7 @@ To get the Assessment Bot backend up and running, follow these steps:
 
 ## Stack
 
-- **Docker**: Use base image `node:20-alpine` for a minimal and efficient container.
+- **Docker**: Use base image `node:22-alpine` for a minimal and efficient container.
 - **Node.js**: The runtime environment for the backend code.
 - **TypeScript**: The programming language used for the backend code, providing static typing and modern JavaScript features.
 - **Passport.js**: For handling authentication strategies (e.g., API Keys via `passport-http-bearer`).
@@ -295,6 +295,7 @@ This project includes scripts for automated penetration testing and abuse simula
 - **Brute Force API Key Attack**
   - `scripts/pentest-bruteforce.js`: Attempts to brute force API keys by sending requests with keys from a wordlist.
   - Usage:
+
     ```bash
     node scripts/pentest-bruteforce.js <url> <wordlist.txt>
     ```
@@ -305,6 +306,7 @@ This project includes scripts for automated penetration testing and abuse simula
 - **Flooding/DoS Attack**
   - `scripts/pentest-flood.js`: Sends a large number of requests in parallel to simulate a denial-of-service attack.
   - Usage:
+
     ```bash
     node scripts/pentest-flood.js <url> <apiKey> <count>
     ```
@@ -316,6 +318,7 @@ This project includes scripts for automated penetration testing and abuse simula
 - **Unified Pentest Runner**
   - `scripts/pentest-all.js`: Runs brute force, flood, and/or e2e pentest tests in sequence.
   - Usage:
+
     ```bash
     npm run test:pentest -- <mode> [args...]
     ```
