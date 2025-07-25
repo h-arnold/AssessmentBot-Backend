@@ -18,7 +18,7 @@ environment:
 # Tools and dependencies
 setup:
   # Install Node.js dependencies
-  - run: npm ci
+  - run: npm install
   
   # Create test environment file with only GEMINI_API_KEY
   - run: |
