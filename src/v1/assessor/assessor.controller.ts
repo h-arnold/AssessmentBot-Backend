@@ -89,5 +89,13 @@ export class AssessorController {
     await imagePipe.transform(imageTaskDto.reference);
     await imagePipe.transform(imageTaskDto.template);
     await imagePipe.transform(imageTaskDto.studentResponse);
+
+    // Validate images array if present
+    if (imageTaskDto.images) {
+      for (const image of imageTaskDto.images) {
+        // Images array contains objects with path and mimeType, not raw image data
+        // No additional validation needed as they're validated by Zod schema
+      }
+    }
   }
 }

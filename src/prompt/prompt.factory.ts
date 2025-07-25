@@ -49,13 +49,11 @@ export class PromptFactory {
   } {
     switch (taskType) {
       case TextTableTaskType.TEXT:
-      case 'TEXT': // backward compatibility
         return {
           systemPromptFile: 'text.system.prompt.md',
           userTemplateFile: 'text.user.prompt.md',
         };
       case TextTableTaskType.TABLE:
-      case 'TABLE': // backward compatibility
         return {
           systemPromptFile: 'table.system.prompt.md',
           userTemplateFile: 'table.user.prompt.md',
@@ -100,7 +98,6 @@ export class PromptFactory {
   ): Prompt {
     switch (dto.taskType) {
       case TextTableTaskType.TEXT:
-      case 'TEXT': // backward compatibility
         return new TextPrompt(
           inputs,
           this.logger,
@@ -108,7 +105,6 @@ export class PromptFactory {
           systemPrompt,
         );
       case TextTableTaskType.TABLE:
-      case 'TABLE': // backward compatibility
         return new TablePrompt(
           inputs,
           this.logger,
