@@ -21,25 +21,11 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Create test environment file
         run: |
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .test.env
-
-      - name: Run ESLint
-        run: npm run lint
-
-      - name: Run tests
-        run: npm run test
-
-      - name: Run build
-        run: npm run build
-
-      - name: Run E2E tests
-        run: npm run test:e2e
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
   validate-pr-quality:
     runs-on: ubuntu-latest
@@ -55,7 +41,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Check code formatting
         run: npm run format -- --check
@@ -69,6 +55,20 @@ jobs:
           else
             echo "✅ British English compliance verified"
           fi
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Run build
+        run: npm run build
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
   # This job runs the same checks that Husky would run on commit
   husky-validation:
