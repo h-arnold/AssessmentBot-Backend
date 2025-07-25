@@ -14,18 +14,6 @@ environment:
     APP_VERSION: "1.0.0"
     LOG_LEVEL: "debug"
     PORT: "3000"
-    
-    # Test environment values (matching E2E test utils)
-    API_KEYS: "test-api-key,test-api-key-2"
-    MAX_IMAGE_UPLOAD_SIZE_MB: "1"
-    ALLOWED_IMAGE_MIME_TYPES: "image/png,image/jpeg"
-    THROTTLER_TTL: "36000000"
-    UNAUTHENTICATED_THROTTLER_LIMIT: "9"
-    AUTHENTICATED_THROTTLER_LIMIT: "12"
-
-  # Secrets that should be populated from repository secrets
-  secrets:
-    - GEMINI_API_KEY
 
 # Tools and dependencies
 setup:
