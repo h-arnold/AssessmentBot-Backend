@@ -26,7 +26,7 @@ import { ConfigModule } from '../config/config.module';
  * @exports
  * - `ApiKeyStrategy`: Makes the API key strategy available for use in other modules.
  * - `ApiKeyGuard`: Allows other modules to enforce API key authentication.
- * - `ApiKeyService`: Enables other modules to utilize API key management services.
+ * - `ApiKeyService`: Enables other modules to utilise API key management services.
  */
 @Module({
   imports: [
