@@ -82,7 +82,7 @@ export class GeminiService extends LLMService {
         error,
       );
       if (error instanceof ZodError) {
-        this.geminiLogger.error('Zod validation failed', error.errors);
+        this.logger.error('Zod validation failed', error.issues);
         throw error;
       }
       

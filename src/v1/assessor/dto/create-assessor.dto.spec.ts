@@ -100,7 +100,7 @@ describe('CreateAssessorDto', () => {
       const result = createAssessorDtoSchema.safeParse(payload);
       expect(result.success).toBe(false);
       const error = (result as { error: ZodError }).error;
-      expect(error.issues[0].message).toContain('Unrecognized key(s)');
+      expect(error.issues[0].message).toContain('Unrecognized key');
     });
 
     it('should reject null for a required field', () => {

@@ -38,7 +38,7 @@ describe('ConfigModule', () => {
     expect(configService).toBeDefined();
   });
 
-  it('should initialize successfully when .env file is missing but required env vars are set', async () => {
+  it('should initialise successfully when .env file is missing but required env vars are set', async () => {
     // Temporarily remove .env file if it exists for this test
     const originalDotEnvPath = path.resolve(process.cwd(), '.env');
     let dotEnvExists = false;

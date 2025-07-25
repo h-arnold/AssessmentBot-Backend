@@ -25,7 +25,7 @@ describe('AssessorController (e2e)', () => {
   let appProcess: ChildProcessWithoutNullStreams;
   let appUrl: string;
   let apiKey: string;
-  const logFilePath = '/workspaces/AssessmentBot-Backend/e2e-test.log';
+  const logFilePath = '/tmp/e2e-test.log';
 
   let textTask: TaskData;
   let tableTask: TaskData;
