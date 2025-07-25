@@ -18,14 +18,15 @@ import { ConfigService } from '../config/config.service';
  * sending requests and validating responses from the Gemini API.
  */
 @Injectable()
-export class GeminiService implements LLMService {
+export class GeminiService extends LLMService {
   private readonly client: GoogleGenerativeAI;
-  private readonly logger = new Logger(GeminiService.name);
+  private readonly geminiLogger = new Logger(GeminiService.name);
 
   constructor(
-    private readonly configService: ConfigService,
+    configService: ConfigService,
     private readonly jsonParserUtil: JsonParserUtil,
   ) {
+    super(configService);
     const apiKey = this.configService.get('GEMINI_API_KEY');
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY is not set in environment');
@@ -34,7 +35,8 @@ export class GeminiService implements LLMService {
   }
 
   /**
-   * Sends a payload to the Gemini API to generate an assessment.
+   * Internal method that sends a payload to the Gemini API to generate an assessment.
+   * This method is called by the base class's send method, which handles retry logic.
    *
    * This method dynamically selects the appropriate Gemini model based on the payload type
    * (text-only or multimodal with images). It attempts to repair malformed JSON
@@ -45,11 +47,11 @@ export class GeminiService implements LLMService {
    * @throws ZodError if the response validation fails.
    * @throws Error if the API call fails or the response is invalid.
    */
-  public async send(payload: LlmPayload): Promise<LlmResponse> {
+  protected async _sendInternal(payload: LlmPayload): Promise<LlmResponse> {
     const modelParams = this.buildModelParams(payload);
     const contents = this.buildContents(payload);
 
-    this.logger.debug(
+    this.geminiLogger.debug(
       `Sending to Gemini with model: ${modelParams.model}, temperature: ${
         modelParams.generationConfig?.temperature ?? 0
       }`,
@@ -61,10 +63,10 @@ export class GeminiService implements LLMService {
       const result = await model.generateContent(contents);
       const responseText = result.response.text?.() ?? '';
 
-      this.logger.debug(`Raw response from Gemini: \n\n${responseText}`);
+      this.geminiLogger.debug(`Raw response from Gemini: \n\n${responseText}`);
 
       const parsedJson = this.jsonParserUtil.parse(responseText);
-      this.logger.debug(
+      this.geminiLogger.debug(
         `Parsed JSON response: ${JSON.stringify(parsedJson, null, 2)}`,
       );
 
@@ -75,7 +77,7 @@ export class GeminiService implements LLMService {
 
       return LlmResponseSchema.parse(dataToValidate);
     } catch (error) {
-      this.logger.debug(
+      this.geminiLogger.debug(
         'Error communicating with or validating response from Gemini API',
         error,
       );
@@ -83,10 +85,10 @@ export class GeminiService implements LLMService {
         this.logger.error('Zod validation failed', error.issues);
         throw error;
       }
-      const errObj = error as Error;
-      throw new Error(
-        `Failed to get a valid and structured response from the LLM.\nOriginal error: ${errObj.message || error}\nStack: ${errObj.stack || 'N/A'}`,
-      );
+      
+      // Let the original error bubble up - the base class will handle 
+      // retry logic and error wrapping appropriately
+      throw error;
     }
   }
 
@@ -207,15 +209,15 @@ export class GeminiService implements LLMService {
    */
   private logPayload(payload: LlmPayload, contents: (string | Part)[]): void {
     if (this.isStringPromptPayload(payload)) {
-      this.logger.debug(
+      this.geminiLogger.debug(
         `String payload being sent: ${JSON.stringify(contents, null, 2)}`,
       );
     } else if (this.isImagePromptPayload(payload)) {
-      this.logger.debug(
+      this.geminiLogger.debug(
         `Image payload being sent with ${contents.length} content items`,
       );
     } else {
-      this.logger.debug(
+      this.geminiLogger.debug(
         `Unknown payload type being sent with ${contents.length} content items`,
       );
     }
