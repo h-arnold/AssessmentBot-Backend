@@ -30,6 +30,33 @@ mockGoogleGenerativeAI.mockImplementation(() => ({
   getGenerativeModel: mockGetGenerativeModel,
 }));
 
+// Test fixtures and utilities
+const createValidResponse = (score: number) => ({
+  response: {
+    text: () =>
+      `{"completeness": {"score": ${score}, "reasoning": "Test"}, "accuracy": {"score": ${score}, "reasoning": "Test"}, "spag": {"score": ${score}, "reasoning": "Test"}}`,
+  },
+});
+
+const createStringPayload = (user: string = 'test'): StringPromptPayload => ({
+  system: 'system prompt',
+  user,
+});
+
+const createImagePayload = (): ImagePromptPayload => ({
+  system: 'system prompt',
+  messages: [{ content: 'Test message' }],
+  images: [{ mimeType: 'image/png', data: 'test-data' }],
+});
+
+const expectValidResponse = (result: any, score: number) => {
+  expect(result).toEqual({
+    completeness: { score, reasoning: 'Test' },
+    accuracy: { score, reasoning: 'Test' },
+    spag: { score, reasoning: 'Test' },
+  });
+};
+
 describe('GeminiService', () => {
   let service: GeminiService;
   let configService: ConfigService;
@@ -67,415 +94,206 @@ describe('GeminiService', () => {
     expect(mockGoogleGenerativeAI).toHaveBeenCalledWith('test-api-key');
   });
 
-  it('should send a string payload and return a valid response', async () => {
-    mockGenerateContent.mockResolvedValue({
-      response: {
-        text: () =>
-          '{"completeness": {"score": 1, "reasoning": "Test"}, "accuracy": {"score": 1, "reasoning": "Test"}, "spag": {"score": 1, "reasoning": "Test"}}',
-      },
-    });
+  describe('basic functionality', () => {
+    it('should send a string payload and return a valid response', async () => {
+      mockGenerateContent.mockResolvedValue(createValidResponse(1));
 
-    const payload: StringPromptPayload = {
-      system: 'system prompt',
-      user: 'test prompt',
-    };
-    await service.send(payload);
-
-    expect(mockGetGenerativeModel).toHaveBeenCalledWith({
-      model: 'gemini-2.0-flash-lite',
-      systemInstruction: 'system prompt',
-      generationConfig: { temperature: 0 },
-    });
-    expect(mockGenerateContent).toHaveBeenCalledWith(['test prompt']);
-  });
-
-  // Removed system prompt payload test as SystemPromptPayload is no longer supported
-
-  it('should send a multimodal payload and return a valid response', async () => {
-    mockGenerateContent.mockResolvedValue({
-      response: {
-        text: () =>
-          '{"completeness": {"score": 3, "reasoning": "Test"}, "accuracy": {"score": 3, "reasoning": "Test"}, "spag": {"score": 3, "reasoning": "Test"}}',
-      },
-    });
-
-    const payload: ImagePromptPayload = {
-      system: 'system prompt',
-      messages: [{ content: 'Test message' }],
-      images: [{ mimeType: 'image/png', data: 'test-data' }],
-    };
-
-    await service.send(payload);
-
-    // PNG files should be read with base64 encoding
-    expect(mockGetGenerativeModel).toHaveBeenCalledWith({
-      model: 'gemini-2.5-flash',
-      systemInstruction: 'system prompt',
-      generationConfig: { temperature: 0 },
-    });
-    expect(mockGenerateContent).toHaveBeenCalledWith([
-      'Test message',
-      { inlineData: { mimeType: 'image/png', data: 'test-data' } },
-    ]);
-  });
-
-  it('should handle malformed JSON and still return a valid response', async () => {
-    const malformedJson =
-      '{"completeness": {"score": 4, "reasoning": "Test"}, "accuracy": {"score": 4, "reasoning": "Test"}, "spag": {"score": 4, "reasoning": "Test"},}';
-    const repairedJson =
-      '{"completeness": {"score": 4, "reasoning": "Test"}, "accuracy": {"score": 4, "reasoning": "Test"}, "spag": {"score": 4, "reasoning": "Test"}}';
-
-    mockGenerateContent.mockResolvedValue({
-      response: {
-        text: () => malformedJson,
-      },
-    });
-
-    (jsonParserUtil.parse as jest.Mock).mockReturnValueOnce(
-      JSON.parse(repairedJson),
-    );
-
-    const payload: StringPromptPayload = {
-      system: 'system prompt',
-      user: 'test',
-    };
-    await service.send(payload);
-
-    expect(jsonParserUtil.parse).toHaveBeenCalledWith(malformedJson);
-  });
-
-  it('should throw an error if the SDK fails', async () => {
-    mockGenerateContent.mockRejectedValue(new Error('SDK Error'));
-
-    const payload: StringPromptPayload = {
-      system: 'system prompt',
-      user: 'test',
-    };
-    await expect(service.send(payload)).rejects.toThrow(
-      'Failed to get a valid and structured response from the LLM.',
-    );
-  });
-
-  it('should throw a ZodError for an invalid response structure', async () => {
-    mockGenerateContent.mockResolvedValue({
-      response: {
-        text: () => '{"invalid": "structure"}',
-      },
-    });
-
-    const payload: StringPromptPayload = {
-      system: 'system prompt',
-      user: 'test',
-    };
-    await expect(service.send(payload)).rejects.toThrow(ZodError);
-  });
-
-  it('should throw an error if JsonParserUtil fails to parse the response', async () => {
-    mockGenerateContent.mockResolvedValue({
-      response: {
-        text: () => 'This is not JSON.',
-      },
-    });
-
-    (jsonParserUtil.parse as jest.Mock).mockImplementation(() => {
-      throw new Error('Malformed or irreparable JSON string provided.');
-    });
-
-    const payload: StringPromptPayload = {
-      system: 'system prompt',
-      user: 'test',
-    };
-    await expect(service.send(payload)).rejects.toThrow(
-      'Failed to get a valid and structured response from the LLM.',
-    );
-  });
-
-  describe('retry logic', () => {
-    it('should retry on 429 errors and eventually succeed', async () => {
-      // Don't use fake timers for this test since it's hard to coordinate
-      // with the actual retry mechanism
-      const payload: StringPromptPayload = {
-        system: 'system prompt',
-        user: 'test',
-      };
-
-      // First call fails with 429, second call succeeds
-      mockGenerateContent
-        .mockRejectedValueOnce(new GoogleGenerativeAIFetchError('Rate limited', 429))
-        .mockResolvedValueOnce({
-          response: {
-            text: () =>
-              '{"completeness": {"score": 1, "reasoning": "Test"}, "accuracy": {"score": 1, "reasoning": "Test"}, "spag": {"score": 1, "reasoning": "Test"}}',
-          },
-        });
-
+      const payload = createStringPayload('test prompt');
       const result = await service.send(payload);
 
-      expect(result).toEqual({
-        completeness: { score: 1, reasoning: 'Test' },
-        accuracy: { score: 1, reasoning: 'Test' },
-        spag: { score: 1, reasoning: 'Test' },
+      expect(mockGetGenerativeModel).toHaveBeenCalledWith({
+        model: 'gemini-2.0-flash-lite',
+        systemInstruction: 'system prompt',
+        generationConfig: { temperature: 0 },
       });
-
-      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+      expect(mockGenerateContent).toHaveBeenCalledWith(['test prompt']);
+      expectValidResponse(result, 1);
     });
 
-    it('should retry multiple times with exponential backoff', async () => {
-      const payload: StringPromptPayload = {
-        system: 'system prompt',
-        user: 'test',
-      };
+    it('should send a multimodal payload and return a valid response', async () => {
+      mockGenerateContent.mockResolvedValue(createValidResponse(3));
 
-      // First two calls fail with 429, third call succeeds
-      mockGenerateContent
-        .mockRejectedValueOnce(new GoogleGenerativeAIFetchError('Rate limited', 429))
-        .mockRejectedValueOnce(new GoogleGenerativeAIFetchError('Rate limited', 429))
-        .mockResolvedValueOnce({
-          response: {
-            text: () =>
-              '{"completeness": {"score": 2, "reasoning": "Test"}, "accuracy": {"score": 2, "reasoning": "Test"}, "spag": {"score": 2, "reasoning": "Test"}}',
-          },
-        });
-
+      const payload = createImagePayload();
       const result = await service.send(payload);
 
-      expect(result).toEqual({
-        completeness: { score: 2, reasoning: 'Test' },
-        accuracy: { score: 2, reasoning: 'Test' },
-        spag: { score: 2, reasoning: 'Test' },
+      expect(mockGetGenerativeModel).toHaveBeenCalledWith({
+        model: 'gemini-2.5-flash',
+        systemInstruction: 'system prompt',
+        generationConfig: { temperature: 0 },
       });
-
-      expect(mockGenerateContent).toHaveBeenCalledTimes(3);
+      expect(mockGenerateContent).toHaveBeenCalledWith([
+        'Test message',
+        { inlineData: { mimeType: 'image/png', data: 'test-data' } },
+      ]);
+      expectValidResponse(result, 3);
     });
 
-    it('should throw error after max retries exceeded', async () => {
-      const payload: StringPromptPayload = {
-        system: 'system prompt',
-        user: 'test',
-      };
+    it('should handle malformed JSON and still return a valid response', async () => {
+      const malformedJson =
+        '{"completeness": {"score": 4, "reasoning": "Test"}, "accuracy": {"score": 4, "reasoning": "Test"}, "spag": {"score": 4, "reasoning": "Test"},}';
+      const repairedJson =
+        '{"completeness": {"score": 4, "reasoning": "Test"}, "accuracy": {"score": 4, "reasoning": "Test"}, "spag": {"score": 4, "reasoning": "Test"}}';
 
-      // All calls fail with 429 (more than max retries)
-      const rateLimitError = new GoogleGenerativeAIFetchError('Rate limited', 429);
-      mockGenerateContent.mockRejectedValue(rateLimitError);
+      mockGenerateContent.mockResolvedValue({
+        response: {
+          text: () => malformedJson,
+        },
+      });
 
-      await expect(service.send(payload)).rejects.toThrow('Rate limited');
+      (jsonParserUtil.parse as jest.Mock).mockReturnValueOnce(
+        JSON.parse(repairedJson),
+      );
 
-      // Should have called 3 times: initial + 2 retries (based on LLM_MAX_RETRIES=2)
-      expect(mockGenerateContent).toHaveBeenCalledTimes(3);
+      const payload = createStringPayload();
+      await service.send(payload);
+
+      expect(jsonParserUtil.parse).toHaveBeenCalledWith(malformedJson);
+    });
+  });
+
+  describe('error handling', () => {
+    it('should throw an error if the SDK fails', async () => {
+      mockGenerateContent.mockRejectedValue(new Error('SDK Error'));
+
+      const payload = createStringPayload();
+      await expect(service.send(payload)).rejects.toThrow(
+        'Failed to get a valid and structured response from the LLM.',
+      );
+    });
+
+    it('should throw a ZodError for an invalid response structure', async () => {
+      mockGenerateContent.mockResolvedValue({
+        response: {
+          text: () => '{"invalid": "structure"}',
+        },
+      });
+
+      const payload = createStringPayload();
+      await expect(service.send(payload)).rejects.toThrow(ZodError);
+    });
+
+    it('should throw an error if JsonParserUtil fails to parse the response', async () => {
+      mockGenerateContent.mockResolvedValue({
+        response: {
+          text: () => 'This is not JSON.',
+        },
+      });
+
+      (jsonParserUtil.parse as jest.Mock).mockImplementation(() => {
+        throw new Error('Malformed or irreparable JSON string provided.');
+      });
+
+      const payload = createStringPayload();
+      await expect(service.send(payload)).rejects.toThrow(
+        'Failed to get a valid and structured response from the LLM.',
+      );
     });
 
     it('should not retry on non-429 errors', async () => {
-      const payload: StringPromptPayload = {
-        system: 'system prompt',
-        user: 'test',
-      };
-
-      // Simulate a 500 error (not rate limiting)
       const serverError = new GoogleGenerativeAIFetchError('Server error', 500);
       mockGenerateContent.mockRejectedValue(serverError);
 
+      const payload = createStringPayload();
       await expect(service.send(payload)).rejects.toThrow('Failed to get a valid and structured response from the LLM');
 
       // Should only be called once, no retries
       expect(mockGenerateContent).toHaveBeenCalledTimes(1);
     });
+  });
 
-    it('should detect rate limit errors from error messages', async () => {
-      const payload: StringPromptPayload = {
-        system: 'system prompt',
-        user: 'test',
-      };
-
-      // First call fails with rate limit message, second succeeds
-      mockGenerateContent
-        .mockRejectedValueOnce(new Error('Rate limit exceeded'))
-        .mockResolvedValueOnce({
-          response: {
-            text: () =>
-              '{"completeness": {"score": 3, "reasoning": "Test"}, "accuracy": {"score": 3, "reasoning": "Test"}, "spag": {"score": 3, "reasoning": "Test"}}',
-          },
-        });
+  describe('retry logic', () => {
+    // Helper function to test retry behavior
+    const testRetryBehaviorSuccess = async (errors: Error[], expectedCallCount: number) => {
+      const payload = createStringPayload();
+      
+      // Chain the mock rejections followed by success
+      let mockChain = mockGenerateContent;
+      errors.forEach(error => {
+        mockChain = mockChain.mockRejectedValueOnce(error);
+      });
+      mockChain.mockResolvedValueOnce(createValidResponse(2));
 
       const result = await service.send(payload);
+      expectValidResponse(result, 2);
+      expect(mockGenerateContent).toHaveBeenCalledTimes(expectedCallCount);
+    };
 
-      expect(result).toEqual({
-        completeness: { score: 3, reasoning: 'Test' },
-        accuracy: { score: 3, reasoning: 'Test' },
-        spag: { score: 3, reasoning: 'Test' },
+    const testRetryBehaviorFailure = async (errors: Error[], expectedCallCount: number) => {
+      const payload = createStringPayload();
+      
+      // Mock all calls to fail
+      errors.forEach(error => {
+        mockGenerateContent.mockRejectedValueOnce(error);
       });
 
-      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+      await expect(service.send(payload)).rejects.toThrow();
+      expect(mockGenerateContent).toHaveBeenCalledTimes(expectedCallCount);
+    };
+
+    it('should retry on 429 errors and eventually succeed', async () => {
+      await testRetryBehaviorSuccess([new GoogleGenerativeAIFetchError('Rate limited', 429)], 2);
     });
 
-    it('should detect rate limit errors from "too many requests" message', async () => {
-      const payload: StringPromptPayload = {
-        system: 'system prompt',
-        user: 'test',
-      };
+    it('should retry multiple times with exponential backoff', async () => {
+      await testRetryBehaviorSuccess([
+        new GoogleGenerativeAIFetchError('Rate limited', 429),
+        new GoogleGenerativeAIFetchError('Rate limited', 429)
+      ], 3);
+    });
 
-      // First call fails with "too many requests", second succeeds
-      mockGenerateContent
-        .mockRejectedValueOnce(new Error('Too many requests'))
-        .mockResolvedValueOnce({
-          response: {
-            text: () =>
-              '{"completeness": {"score": 4, "reasoning": "Test"}, "accuracy": {"score": 4, "reasoning": "Test"}, "spag": {"score": 4, "reasoning": "Test"}}',
-          },
-        });
+    it('should retry on rate limit error messages', async () => {
+      await testRetryBehaviorSuccess([new Error('Rate limit exceeded')], 2);
+    });
 
-      const result = await service.send(payload);
+    it('should retry on "too many requests" error messages', async () => {
+      await testRetryBehaviorSuccess([new Error('Too many requests')], 2);
+    });
 
-      expect(result).toEqual({
-        completeness: { score: 4, reasoning: 'Test' },
-        accuracy: { score: 4, reasoning: 'Test' },
-        spag: { score: 4, reasoning: 'Test' },
-      });
-
-      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+    it('should throw error after max retries exceeded', async () => {
+      const rateLimitError = new GoogleGenerativeAIFetchError('Rate limited', 429);
+      await testRetryBehaviorFailure([rateLimitError, rateLimitError, rateLimitError], 3);
     });
   });
 
   describe('resource exhausted error handling', () => {
-    it('should throw ResourceExhaustedError for "RESOURCE_EXHAUSTED" error', async () => {
-      const payload: StringPromptPayload = {
-        system: 'system prompt',
-        user: 'test',
-      };
-
-      // Mock a resource exhausted error with RESOURCE_EXHAUSTED in message
-      const resourceExhaustedError = new GoogleGenerativeAIFetchError('RESOURCE_EXHAUSTED: Quota exceeded', 429);
-      mockGenerateContent.mockRejectedValue(resourceExhaustedError);
-
-      let thrownError: any;
-      try {
-        await service.send(payload);
-        fail('Expected ResourceExhaustedError to be thrown');
-      } catch (error) {
-        thrownError = error;
+    // Helper function to test resource exhausted error patterns
+    const testResourceExhaustedError = async (errorMessage: string, statusCode: number = 429) => {
+      const payload = createStringPayload();
+      
+      const error = errorMessage.includes('RESOURCE_EXHAUSTED') 
+        ? new GoogleGenerativeAIFetchError(errorMessage, statusCode)
+        : new Error(errorMessage);
+      
+      if (!(error instanceof GoogleGenerativeAIFetchError)) {
+        (error as any).status = statusCode;
       }
+      
+      mockGenerateContent.mockRejectedValueOnce(error);
 
-      expect(thrownError).toBeInstanceOf(ResourceExhaustedError);
-      expect(thrownError.message).toBe('API quota exhausted. Please try again later or upgrade your plan.');
+      await expect(service.send(payload)).rejects.toThrow(ResourceExhaustedError);
+      expect(mockGenerateContent).toHaveBeenCalledTimes(1); // Should not retry
+    };
 
-      // Should not retry resource exhausted errors
-      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+    it('should throw ResourceExhaustedError for "RESOURCE_EXHAUSTED" error', async () => {
+      await testResourceExhaustedError('RESOURCE_EXHAUSTED: Quota exceeded');
     });
 
     it('should throw ResourceExhaustedError for "resource exhausted" error', async () => {
-      const payload: StringPromptPayload = {
-        system: 'system prompt',
-        user: 'test',
-      };
-
-      // Mock a resource exhausted error with lowercase "resource exhausted"
-      const resourceExhaustedError = new Error('Request failed: resource exhausted - quota limits exceeded');
-      (resourceExhaustedError as any).status = 429;
-      mockGenerateContent.mockRejectedValue(resourceExhaustedError);
-
-      await expect(service.send(payload)).rejects.toThrow(ResourceExhaustedError);
-
-      // Should not retry resource exhausted errors
-      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+      await testResourceExhaustedError('Request failed: resource exhausted - quota limits exceeded');
     });
 
     it('should throw ResourceExhaustedError for "quota exceeded" error', async () => {
-      const payload: StringPromptPayload = {
-        system: 'system prompt',
-        user: 'test',
-      };
-
-      // Mock a resource exhausted error with "quota exceeded"
-      const resourceExhaustedError = new Error('API quota exceeded for this project');
-      (resourceExhaustedError as any).statusCode = 429;
-      mockGenerateContent.mockRejectedValue(resourceExhaustedError);
-
-      await expect(service.send(payload)).rejects.toThrow(ResourceExhaustedError);
-
-      // Should not retry resource exhausted errors
-      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+      await testResourceExhaustedError('API quota exceeded for this project');
     });
 
     it('should throw ResourceExhaustedError for "quota exhausted" error', async () => {
-      const payload: StringPromptPayload = {
-        system: 'system prompt',
-        user: 'test',
-      };
-
-      // Mock a resource exhausted error with "quota exhausted"
-      const resourceExhaustedError = new Error('Your quota has been exhausted');
-      (resourceExhaustedError as any).status = 429;
-      mockGenerateContent.mockRejectedValue(resourceExhaustedError);
-
-      await expect(service.send(payload)).rejects.toThrow(ResourceExhaustedError);
-
-      // Should not retry resource exhausted errors
-      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
-    });
-
-    it('should still retry regular rate limit errors (not resource exhausted)', async () => {
-      const payload: StringPromptPayload = {
-        system: 'system prompt',
-        user: 'test',
-      };
-
-      // Mock a regular rate limit error (without resource exhausted patterns)
-      mockGenerateContent
-        .mockRejectedValueOnce(new GoogleGenerativeAIFetchError('Rate limit exceeded', 429))
-        .mockResolvedValueOnce({
-          response: {
-            text: () =>
-              '{"completeness": {"score": 1, "reasoning": "Test"}, "accuracy": {"score": 1, "reasoning": "Test"}, "spag": {"score": 1, "reasoning": "Test"}}',
-          },
-        });
-
-      const result = await service.send(payload);
-
-      expect(result).toEqual({
-        completeness: { score: 1, reasoning: 'Test' },
-        accuracy: { score: 1, reasoning: 'Test' },
-        spag: { score: 1, reasoning: 'Test' },
-      });
-
-      // Should retry regular rate limit errors
-      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
-    });
-
-    it('should still retry "too many requests" errors (not resource exhausted)', async () => {
-      const payload: StringPromptPayload = {
-        system: 'system prompt',
-        user: 'test',
-      };
-
-      // Mock a "too many requests" error (without resource exhausted patterns)
-      mockGenerateContent
-        .mockRejectedValueOnce(new Error('Too many requests'))
-        .mockResolvedValueOnce({
-          response: {
-            text: () =>
-              '{"completeness": {"score": 2, "reasoning": "Test"}, "accuracy": {"score": 2, "reasoning": "Test"}, "spag": {"score": 2, "reasoning": "Test"}}',
-          },
-        });
-
-      const result = await service.send(payload);
-
-      expect(result).toEqual({
-        completeness: { score: 2, reasoning: 'Test' },
-        accuracy: { score: 2, reasoning: 'Test' },
-        spag: { score: 2, reasoning: 'Test' },
-      });
-
-      // Should retry "too many requests" errors
-      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+      await testResourceExhaustedError('Your quota has been exhausted');
     });
 
     it('should preserve original error in ResourceExhaustedError', async () => {
-      const payload: StringPromptPayload = {
-        system: 'system prompt',
-        user: 'test',
-      };
-
+      const payload = createStringPayload();
       const originalError = new GoogleGenerativeAIFetchError('RESOURCE_EXHAUSTED: Free tier quota exceeded', 429);
-      mockGenerateContent.mockRejectedValue(originalError);
+      mockGenerateContent.mockRejectedValueOnce(originalError);
 
       try {
         await service.send(payload);
@@ -484,6 +302,18 @@ describe('GeminiService', () => {
         expect(error).toBeInstanceOf(ResourceExhaustedError);
         expect((error as ResourceExhaustedError).originalError).toBe(originalError);
       }
+    });
+
+    it('should still retry regular rate limit errors (not resource exhausted)', async () => {
+      mockGenerateContent
+        .mockRejectedValueOnce(new GoogleGenerativeAIFetchError('Rate limit exceeded', 429))
+        .mockResolvedValueOnce(createValidResponse(1));
+
+      const payload = createStringPayload();
+      const result = await service.send(payload);
+
+      expectValidResponse(result, 1);
+      expect(mockGenerateContent).toHaveBeenCalledTimes(2); // Should retry
     });
   });
 });
