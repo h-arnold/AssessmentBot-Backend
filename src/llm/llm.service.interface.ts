@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ZodError } from 'zod';
 
-import { LlmResponse } from './types';
 import { ResourceExhaustedError } from './resource-exhausted.error';
+import { LlmResponse } from './types';
 import { ConfigService } from '../config/config.service';
 
 /**
@@ -78,7 +78,7 @@ export abstract class LLMService {
         const isLastAttempt = attempt === maxRetries;
 
         if (!isRateLimitError || isLastAttempt) {
-          // If it's not a rate limit error, or we've exhausted retries, 
+          // If it's not a rate limit error, or we've exhausted retries,
           // wrap the error if it's not already a known error type
           if (isRateLimitError || error instanceof ZodError) {
             throw error; // Throw original error for rate limits or Zod errors
@@ -91,11 +91,12 @@ export abstract class LLMService {
         }
 
         // Calculate exponential backoff delay
-        const delay = baseBackoffMs * Math.pow(2, attempt) + (Math.random() * 100);
-        
+        const delay =
+          baseBackoffMs * Math.pow(2, attempt) + Math.random() * 100;
+
         this.logger.warn(
           `Rate limit encountered on attempt ${attempt + 1}/${maxRetries + 1}. ` +
-          `Retrying in ${delay}ms. Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+            `Retrying in ${delay}ms. Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         );
 
         await this.sleep(delay);
@@ -125,7 +126,7 @@ export abstract class LLMService {
   private isResourceExhaustedError(error: unknown): boolean {
     // Use the utility function to extract status code from various error formats
     const statusCode = this.extractErrorStatusCode(error);
-    
+
     // Must be a 429 error to be resource exhausted
     if (statusCode !== 429) {
       return false;
@@ -134,11 +135,13 @@ export abstract class LLMService {
     // Check for resource exhausted patterns in error messages
     if (error instanceof Error) {
       const message = error.message.toLowerCase();
-      return message.includes('resource_exhausted') || 
-             message.includes('resource exhausted') ||
-             message.includes('quota exceeded') ||
-             message.includes('quota exhausted') ||
-             message.includes('quota has been exhausted');
+      return (
+        message.includes('resource_exhausted') ||
+        message.includes('resource exhausted') ||
+        message.includes('quota exceeded') ||
+        message.includes('quota exhausted') ||
+        message.includes('quota has been exhausted')
+      );
     }
 
     return false;
@@ -165,8 +168,9 @@ export abstract class LLMService {
     // Check for error messages that might indicate retryable rate limiting
     if (error instanceof Error) {
       const message = error.message.toLowerCase();
-      return message.includes('rate limit') || 
-             message.includes('too many requests');
+      return (
+        message.includes('rate limit') || message.includes('too many requests')
+      );
     }
 
     return false;
@@ -194,11 +198,13 @@ export abstract class LLMService {
     }
 
     // Check for response.status (nested in response object)
-    if ('response' in error && 
-        error.response && 
-        typeof error.response === 'object' &&
-        'status' in error.response &&
-        typeof (error.response as Record<string, unknown>).status === 'number') {
+    if (
+      'response' in error &&
+      error.response &&
+      typeof error.response === 'object' &&
+      'status' in error.response &&
+      typeof (error.response as Record<string, unknown>).status === 'number'
+    ) {
       return (error.response as Record<string, unknown>).status as number;
     }
 
@@ -210,6 +216,6 @@ export abstract class LLMService {
    * @param ms The number of milliseconds to sleep.
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

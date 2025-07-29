@@ -1,4 +1,7 @@
-import { GoogleGenerativeAI, GoogleGenerativeAIFetchError } from '@google/generative-ai';
+import {
+  GoogleGenerativeAI,
+  GoogleGenerativeAIFetchError,
+} from '@google/generative-ai';
 import { Logger } from '@nestjs/common';
 import { ZodError } from 'zod';
 
@@ -31,9 +34,11 @@ mockGoogleGenerativeAI.mockImplementation(() => ({
 }));
 
 // Test fixtures and utilities
-const createValidResponse = (score: number) => ({
+const createValidResponse = (
+  score: number,
+): { response: { text: () => string } } => ({
   response: {
-    text: () =>
+    text: (): string =>
       `{"completeness": {"score": ${score}, "reasoning": "Test"}, "accuracy": {"score": ${score}, "reasoning": "Test"}, "spag": {"score": ${score}, "reasoning": "Test"}}`,
   },
 });
@@ -49,7 +54,7 @@ const createImagePayload = (): ImagePromptPayload => ({
   images: [{ mimeType: 'image/png', data: 'test-data' }],
 });
 
-const expectValidResponse = (result: any, score: number) => {
+const expectValidResponse = (result: LlmResponse, score: number): void => {
   expect(result).toEqual({
     completeness: { score, reasoning: 'Test' },
     accuracy: { score, reasoning: 'Test' },
@@ -194,7 +199,9 @@ describe('GeminiService', () => {
       mockGenerateContent.mockRejectedValue(serverError);
 
       const payload = createStringPayload();
-      await expect(service.send(payload)).rejects.toThrow('Failed to get a valid and structured response from the LLM');
+      await expect(service.send(payload)).rejects.toThrow(
+        'Failed to get a valid and structured response from the LLM',
+      );
 
       // Should only be called once, no retries
       expect(mockGenerateContent).toHaveBeenCalledTimes(1);
@@ -203,12 +210,15 @@ describe('GeminiService', () => {
 
   describe('retry logic', () => {
     // Helper function to test retry behavior
-    const testRetryBehaviorSuccess = async (errors: Error[], expectedCallCount: number) => {
+    const testRetryBehaviorSuccess = async (
+      errors: Error[],
+      expectedCallCount: number,
+    ): Promise<void> => {
       const payload = createStringPayload();
-      
+
       // Chain the mock rejections followed by success
       let mockChain = mockGenerateContent;
-      errors.forEach(error => {
+      errors.forEach((error) => {
         mockChain = mockChain.mockRejectedValueOnce(error);
       });
       mockChain.mockResolvedValueOnce(createValidResponse(2));
@@ -218,11 +228,14 @@ describe('GeminiService', () => {
       expect(mockGenerateContent).toHaveBeenCalledTimes(expectedCallCount);
     };
 
-    const testRetryBehaviorFailure = async (errors: Error[], expectedCallCount: number) => {
+    const testRetryBehaviorFailure = async (
+      errors: Error[],
+      expectedCallCount: number,
+    ): Promise<void> => {
       const payload = createStringPayload();
-      
+
       // Mock all calls to fail
-      errors.forEach(error => {
+      errors.forEach((error) => {
         mockGenerateContent.mockRejectedValueOnce(error);
       });
 
@@ -230,83 +243,116 @@ describe('GeminiService', () => {
       expect(mockGenerateContent).toHaveBeenCalledTimes(expectedCallCount);
     };
 
+    // eslint-disable-next-line jest/expect-expect
     it('should retry on 429 errors and eventually succeed', async () => {
-      await testRetryBehaviorSuccess([new GoogleGenerativeAIFetchError('Rate limited', 429)], 2);
+      await testRetryBehaviorSuccess(
+        [new GoogleGenerativeAIFetchError('Rate limited', 429)],
+        2,
+      );
     });
 
+    // eslint-disable-next-line jest/expect-expect
     it('should retry multiple times with exponential backoff', async () => {
-      await testRetryBehaviorSuccess([
-        new GoogleGenerativeAIFetchError('Rate limited', 429),
-        new GoogleGenerativeAIFetchError('Rate limited', 429)
-      ], 3);
+      await testRetryBehaviorSuccess(
+        [
+          new GoogleGenerativeAIFetchError('Rate limited', 429),
+          new GoogleGenerativeAIFetchError('Rate limited', 429),
+        ],
+        3,
+      );
     });
 
+    // eslint-disable-next-line jest/expect-expect
     it('should retry on rate limit error messages', async () => {
       await testRetryBehaviorSuccess([new Error('Rate limit exceeded')], 2);
     });
 
+    // eslint-disable-next-line jest/expect-expect
     it('should retry on "too many requests" error messages', async () => {
       await testRetryBehaviorSuccess([new Error('Too many requests')], 2);
     });
 
+    // eslint-disable-next-line jest/expect-expect
     it('should throw error after max retries exceeded', async () => {
-      const rateLimitError = new GoogleGenerativeAIFetchError('Rate limited', 429);
-      await testRetryBehaviorFailure([rateLimitError, rateLimitError, rateLimitError], 3);
+      const rateLimitError = new GoogleGenerativeAIFetchError(
+        'Rate limited',
+        429,
+      );
+      await testRetryBehaviorFailure(
+        [rateLimitError, rateLimitError, rateLimitError],
+        3,
+      );
     });
   });
 
   describe('resource exhausted error handling', () => {
     // Helper function to test resource exhausted error patterns
-    const testResourceExhaustedError = async (errorMessage: string, statusCode: number = 429) => {
+    const testResourceExhaustedError = async (
+      errorMessage: string,
+      statusCode: number = 429,
+    ): Promise<void> => {
       const payload = createStringPayload();
-      
-      const error = errorMessage.includes('RESOURCE_EXHAUSTED') 
+
+      const error = errorMessage.includes('RESOURCE_EXHAUSTED')
         ? new GoogleGenerativeAIFetchError(errorMessage, statusCode)
         : new Error(errorMessage);
-      
+
       if (!(error instanceof GoogleGenerativeAIFetchError)) {
-        (error as any).status = statusCode;
+        (error as Error & { status?: number }).status = statusCode;
       }
-      
+
       mockGenerateContent.mockRejectedValueOnce(error);
 
-      await expect(service.send(payload)).rejects.toThrow(ResourceExhaustedError);
+      await expect(service.send(payload)).rejects.toThrow(
+        ResourceExhaustedError,
+      );
       expect(mockGenerateContent).toHaveBeenCalledTimes(1); // Should not retry
     };
 
+    // eslint-disable-next-line jest/expect-expect
     it('should throw ResourceExhaustedError for "RESOURCE_EXHAUSTED" error', async () => {
       await testResourceExhaustedError('RESOURCE_EXHAUSTED: Quota exceeded');
     });
 
+    // eslint-disable-next-line jest/expect-expect
     it('should throw ResourceExhaustedError for "resource exhausted" error', async () => {
-      await testResourceExhaustedError('Request failed: resource exhausted - quota limits exceeded');
+      await testResourceExhaustedError(
+        'Request failed: resource exhausted - quota limits exceeded',
+      );
     });
 
+    // eslint-disable-next-line jest/expect-expect
     it('should throw ResourceExhaustedError for "quota exceeded" error', async () => {
       await testResourceExhaustedError('API quota exceeded for this project');
     });
 
+    // eslint-disable-next-line jest/expect-expect
     it('should throw ResourceExhaustedError for "quota exhausted" error', async () => {
       await testResourceExhaustedError('Your quota has been exhausted');
     });
 
     it('should preserve original error in ResourceExhaustedError', async () => {
       const payload = createStringPayload();
-      const originalError = new GoogleGenerativeAIFetchError('RESOURCE_EXHAUSTED: Free tier quota exceeded', 429);
+      const originalError = new GoogleGenerativeAIFetchError(
+        'RESOURCE_EXHAUSTED: Free tier quota exceeded',
+        429,
+      );
+
       mockGenerateContent.mockRejectedValueOnce(originalError);
 
-      try {
-        await service.send(payload);
-        fail('Expected ResourceExhaustedError to be thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(ResourceExhaustedError);
-        expect((error as ResourceExhaustedError).originalError).toBe(originalError);
-      }
+      const thrownError = await service.send(payload).catch((error) => error);
+
+      expect(thrownError).toBeInstanceOf(ResourceExhaustedError);
+      expect((thrownError as ResourceExhaustedError).originalError).toBe(
+        originalError,
+      );
     });
 
     it('should still retry regular rate limit errors (not resource exhausted)', async () => {
       mockGenerateContent
-        .mockRejectedValueOnce(new GoogleGenerativeAIFetchError('Rate limit exceeded', 429))
+        .mockRejectedValueOnce(
+          new GoogleGenerativeAIFetchError('Rate limit exceeded', 429),
+        )
         .mockResolvedValueOnce(createValidResponse(1));
 
       const payload = createStringPayload();
