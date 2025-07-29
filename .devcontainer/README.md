@@ -1,10 +1,10 @@
 # Dev Container for AssessmentBot-Backend
 
-This configuration sets up a development environment for the AssessmentBot-Backend project using VS Code Dev Containers. It includes Node.js 20, Docker CLI, and common tools for NestJS, TypeScript, and testing.
+This configuration sets up a development environment for the AssessmentBot-Backend project using VS Code Dev Containers. It includes Node.js 22, Docker CLI, and common tools for NestJS, TypeScript, and testing.
 
 ## Features
 
-- Node.js 20 (Debian)
+- Node.js 22 (Debian)
 - Yarn & npm
 - Docker CLI
 - Recommended VS Code extensions
