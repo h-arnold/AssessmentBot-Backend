@@ -7,6 +7,7 @@ import {
   ImagePromptPayload,
   StringPromptPayload,
 } from './llm.service.interface';
+import { ResourceExhaustedError } from './resource-exhausted.error';
 import { JsonParserUtil } from '../common/json-parser.util';
 import { ConfigService } from '../config/config.service';
 
@@ -331,6 +332,158 @@ describe('GeminiService', () => {
       });
 
       expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('resource exhausted error handling', () => {
+    it('should throw ResourceExhaustedError for "RESOURCE_EXHAUSTED" error', async () => {
+      const payload: StringPromptPayload = {
+        system: 'system prompt',
+        user: 'test',
+      };
+
+      // Mock a resource exhausted error with RESOURCE_EXHAUSTED in message
+      const resourceExhaustedError = new GoogleGenerativeAIFetchError('RESOURCE_EXHAUSTED: Quota exceeded', 429);
+      mockGenerateContent.mockRejectedValue(resourceExhaustedError);
+
+      let thrownError: any;
+      try {
+        await service.send(payload);
+        fail('Expected ResourceExhaustedError to be thrown');
+      } catch (error) {
+        thrownError = error;
+      }
+
+      expect(thrownError).toBeInstanceOf(ResourceExhaustedError);
+      expect(thrownError.message).toBe('API quota exhausted. Please try again later or upgrade your plan.');
+
+      // Should not retry resource exhausted errors
+      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw ResourceExhaustedError for "resource exhausted" error', async () => {
+      const payload: StringPromptPayload = {
+        system: 'system prompt',
+        user: 'test',
+      };
+
+      // Mock a resource exhausted error with lowercase "resource exhausted"
+      const resourceExhaustedError = new Error('Request failed: resource exhausted - quota limits exceeded');
+      (resourceExhaustedError as any).status = 429;
+      mockGenerateContent.mockRejectedValue(resourceExhaustedError);
+
+      await expect(service.send(payload)).rejects.toThrow(ResourceExhaustedError);
+
+      // Should not retry resource exhausted errors
+      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw ResourceExhaustedError for "quota exceeded" error', async () => {
+      const payload: StringPromptPayload = {
+        system: 'system prompt',
+        user: 'test',
+      };
+
+      // Mock a resource exhausted error with "quota exceeded"
+      const resourceExhaustedError = new Error('API quota exceeded for this project');
+      (resourceExhaustedError as any).statusCode = 429;
+      mockGenerateContent.mockRejectedValue(resourceExhaustedError);
+
+      await expect(service.send(payload)).rejects.toThrow(ResourceExhaustedError);
+
+      // Should not retry resource exhausted errors
+      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw ResourceExhaustedError for "quota exhausted" error', async () => {
+      const payload: StringPromptPayload = {
+        system: 'system prompt',
+        user: 'test',
+      };
+
+      // Mock a resource exhausted error with "quota exhausted"
+      const resourceExhaustedError = new Error('Your quota has been exhausted');
+      (resourceExhaustedError as any).status = 429;
+      mockGenerateContent.mockRejectedValue(resourceExhaustedError);
+
+      await expect(service.send(payload)).rejects.toThrow(ResourceExhaustedError);
+
+      // Should not retry resource exhausted errors
+      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+    });
+
+    it('should still retry regular rate limit errors (not resource exhausted)', async () => {
+      const payload: StringPromptPayload = {
+        system: 'system prompt',
+        user: 'test',
+      };
+
+      // Mock a regular rate limit error (without resource exhausted patterns)
+      mockGenerateContent
+        .mockRejectedValueOnce(new GoogleGenerativeAIFetchError('Rate limit exceeded', 429))
+        .mockResolvedValueOnce({
+          response: {
+            text: () =>
+              '{"completeness": {"score": 1, "reasoning": "Test"}, "accuracy": {"score": 1, "reasoning": "Test"}, "spag": {"score": 1, "reasoning": "Test"}}',
+          },
+        });
+
+      const result = await service.send(payload);
+
+      expect(result).toEqual({
+        completeness: { score: 1, reasoning: 'Test' },
+        accuracy: { score: 1, reasoning: 'Test' },
+        spag: { score: 1, reasoning: 'Test' },
+      });
+
+      // Should retry regular rate limit errors
+      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+    });
+
+    it('should still retry "too many requests" errors (not resource exhausted)', async () => {
+      const payload: StringPromptPayload = {
+        system: 'system prompt',
+        user: 'test',
+      };
+
+      // Mock a "too many requests" error (without resource exhausted patterns)
+      mockGenerateContent
+        .mockRejectedValueOnce(new Error('Too many requests'))
+        .mockResolvedValueOnce({
+          response: {
+            text: () =>
+              '{"completeness": {"score": 2, "reasoning": "Test"}, "accuracy": {"score": 2, "reasoning": "Test"}, "spag": {"score": 2, "reasoning": "Test"}}',
+          },
+        });
+
+      const result = await service.send(payload);
+
+      expect(result).toEqual({
+        completeness: { score: 2, reasoning: 'Test' },
+        accuracy: { score: 2, reasoning: 'Test' },
+        spag: { score: 2, reasoning: 'Test' },
+      });
+
+      // Should retry "too many requests" errors
+      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+    });
+
+    it('should preserve original error in ResourceExhaustedError', async () => {
+      const payload: StringPromptPayload = {
+        system: 'system prompt',
+        user: 'test',
+      };
+
+      const originalError = new GoogleGenerativeAIFetchError('RESOURCE_EXHAUSTED: Free tier quota exceeded', 429);
+      mockGenerateContent.mockRejectedValue(originalError);
+
+      try {
+        await service.send(payload);
+        fail('Expected ResourceExhaustedError to be thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(ResourceExhaustedError);
+        expect((error as ResourceExhaustedError).originalError).toBe(originalError);
+      }
     });
   });
 });

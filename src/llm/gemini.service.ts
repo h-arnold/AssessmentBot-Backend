@@ -9,6 +9,7 @@ import {
   StringPromptPayload,
 } from './llm.service.interface';
 import { LlmResponse, LlmResponseSchema } from './types';
+import { ResourceExhaustedError } from './resource-exhausted.error';
 import { JsonParserUtil } from '../common/json-parser.util';
 import { ConfigService } from '../config/config.service';
 
