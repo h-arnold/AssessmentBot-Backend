@@ -116,10 +116,14 @@ export async function waitForLog(
  * Starts the application in a child process for E2E testing, waits for it to be ready, and returns process info.
  *
  * @param logFilePath - The path to the log file to use for the app process.
+ * @param envOverrides - A plain JavaScript object to override default environment variables.
  * @returns An object containing the app process, base URL, and API key.
  * @throws If the application fails to start within 30 seconds.
  */
-export async function startApp(logFilePath: string): Promise<{
+export async function startApp(
+  logFilePath: string,
+  envOverrides: Record<string, string> = {},
+): Promise<{
   appProcess: ChildProcessWithoutNullStreams;
   appUrl: string;
   apiKey: string;
@@ -134,34 +138,36 @@ export async function startApp(logFilePath: string): Promise<{
 
   const mainJsPath = path.join(__dirname, '..', '..', 'dist', 'src', 'main.js');
 
-  // Define the keys and other settings for the test run.
-  const apiKey = 'test-api-key';
-  const apiKey2 = 'test-api-key-2';
-  const throttlerTtl = process.env.THROTTLER_TTL
-    ? parseInt(process.env.THROTTLER_TTL)
-    : 36000000;
-  const unauthenticatedThrottlerLimit = 9; //This seems to be the required limit for all the e2e tests to pass.
-  const authenticatedThrottlerLimit = 12; // Add slightly more so that there is something of a difference between authenticated and unauthenticated request reate limits
-  const apiKeys = [apiKey, apiKey2].join(',');
-
-  const testEnv: NodeJS.ProcessEnv = {
+  // Base environment setup
+  const baseTestEnv: NodeJS.ProcessEnv = {
     ...process.env,
     NODE_ENV: 'test',
     PORT: '3001',
     E2E_TESTING: 'true',
     LOG_FILE: logFilePath,
-    API_KEYS: apiKeys,
-    THROTTLER_TTL: throttlerTtl.toString(),
-    UNAUTHENTICATED_THROTTLER_LIMIT: unauthenticatedThrottlerLimit.toString(),
-    AUTHENTICATED_THROTTLER_LIMIT: authenticatedThrottlerLimit.toString(),
   };
 
   // Provide a dummy key ONLY if a real one isn't already in the environment.
   // This allows live tests to run with a real key from .test.env,
   // while ensuring other tests can run in CI/CD without a real key.
-  if (!testEnv.GEMINI_API_KEY) {
-    testEnv.GEMINI_API_KEY = 'dummy-key-for-testing';
+  if (!baseTestEnv.GEMINI_API_KEY) {
+    baseTestEnv.GEMINI_API_KEY = 'dummy-key-for-testing';
   }
+
+  // Define default values for the test run.
+  const defaultTestValues = {
+    API_KEYS: 'test-api-key,test-api-key-2',
+    THROTTLER_TTL: (process.env.THROTTLER_TTL || 36000000).toString(),
+    UNAUTHENTICATED_THROTTLER_LIMIT: '9', // This seems to be the required limit for all the e2e tests to pass.
+    AUTHENTICATED_THROTTLER_LIMIT: '12', // Add slightly more so that there is something of a difference between authenticated and unauthenticated request rate limits
+  };
+
+  // Combine base, defaults, and overrides
+  const testEnv: NodeJS.ProcessEnv = {
+    ...baseTestEnv,
+    ...defaultTestValues,
+    ...envOverrides,
+  };
 
   const appProcess = spawn('node', [mainJsPath], {
     cwd: path.join(__dirname, '..', '..'),
@@ -195,15 +201,22 @@ export async function startApp(logFilePath: string): Promise<{
     throw error;
   }
 
+  // Derive return values from the final, effective environment
+  const [apiKey, apiKey2] = testEnv.API_KEYS!.split(',');
+
   // Return the values used in this specific test run
   return {
     appProcess,
     appUrl,
     apiKey,
     apiKey2,
-    throttlerTtl,
-    unauthenticatedThrottlerLimit,
-    authenticatedThrottlerLimit,
+    throttlerTtl: parseInt(testEnv.THROTTLER_TTL!),
+    unauthenticatedThrottlerLimit: parseInt(
+      testEnv.UNAUTHENTICATED_THROTTLER_LIMIT!,
+    ),
+    authenticatedThrottlerLimit: parseInt(
+      testEnv.AUTHENTICATED_THROTTLER_LIMIT!,
+    ),
   };
 }
 
