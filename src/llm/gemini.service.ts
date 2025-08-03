@@ -8,6 +8,7 @@ import {
   LlmPayload,
   StringPromptPayload,
 } from './llm.service.interface';
+import { ResourceExhaustedError } from './resource-exhausted.error';
 import { LlmResponse, LlmResponseSchema } from './types';
 import { JsonParserUtil } from '../common/json-parser.util';
 import { ConfigService } from '../config/config.service';
@@ -85,8 +86,8 @@ export class GeminiService extends LLMService {
         this.logger.error('Zod validation failed', error.issues);
         throw error;
       }
-      
-      // Let the original error bubble up - the base class will handle 
+
+      // Let the original error bubble up - the base class will handle
       // retry logic and error wrapping appropriately
       throw error;
     }
