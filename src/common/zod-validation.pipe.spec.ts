@@ -169,7 +169,10 @@ describe('ZodValidationPipe', () => {
     expect(response).toHaveProperty('errors');
     expect(Array.isArray(response.errors)).toBe(true);
     expect(response.errors).toHaveLength(2);
-    expect(response.errors[0]).toHaveProperty('message', 'Invalid email address');
+    expect(response.errors[0]).toHaveProperty(
+      'message',
+      'Invalid email address',
+    );
     expect(response.errors[1]).toHaveProperty(
       'message',
       'Too small: expected string to have >=8 characters',

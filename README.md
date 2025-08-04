@@ -1,5 +1,9 @@
 # Assessment Bot - Backend
 
+![CI - Unit & E2E Tests](https://github.com/h-arnold/AssessmentBot-Backend/actions/workflows/ci.yml/badge.svg)
+![CodeQL](https://github.com/h-arnold/AssessmentBot-Backend/actions/workflows/codeql.yml/badge.svg)
+![SonarQube](https://github.com/h-arnold/AssessmentBot-Backend/actions/workflows/sonarqube.yml/badge.svg)
+
 This repository contains the backend code for the Assessment Bot, which is responsible for managing assessments, grading, and providing feedback. It is written in TypeScript and uses Node.js as the runtime environment.
 
 There is no front end, and is accessible via a REST API only. Configuration values are stored in environment variables, and prompt templates are stored as markdown files. It is designed to be stateless, meaning that it does not store any user data or session information on the server.

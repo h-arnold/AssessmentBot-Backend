@@ -16,7 +16,7 @@ Adhere to these principles in all contributions:
 
 ## 2. Tech Stack & Key Libraries
 
-- **Runtime**: Node.js in a Docker container (`node:22-alpine`).
+- **Runtime**: Node.js in a Docker container (`node:20-alpine`).
 - **Language**: TypeScript.
 - **Framework**: NestJS.
 - **Authentication**: Passport.js (specifically `passport-http-bearer` for API keys).
@@ -24,6 +24,7 @@ Adhere to these principles in all contributions:
 - **Testing**: Jest for unit, integration, and E2E tests. Use `supertest` for E2E.
 - **LLM Integration**: Use the abstract `LlmService` for interactions and `json-repair` for robust response parsing.
 - **ESM Compliance**: The codebase uses ESM syntax (import/export) for source files, but compiles to CommonJS for compatibility with NestJS and its ecosystem. This approach leverages modern JavaScript features while ensuring stability with current dependencies.
+- **File Path Resolution**: For obtaining current directory paths, use the `getCurrentDirname()` utility from `src/common/file-utils.ts` instead of `import.meta.url`. This utility handles both ESM runtime environments and Jest test environments gracefully.
 
 ## 3. Development Workflow
 
@@ -76,3 +77,29 @@ Complete each step in order. **IMPORTANT**: You must complete each step in the T
 Once you have _fully_ completed a step, check off the step in the `TODO.md` file and update it. It is critical you do this to enable everyone to track the progress of the project accurately.
 
 Where you encounter an issue that will may impact future steps (i.e. anything more substantial than syntax or linting errors), you must document this in the TODO file, in the space provided for you. Ensure you provide detailed commentary on the issue, including your reasoning and the solutions used to inform future work.
+
+## 6. Logging
+
+The project uses `nestjs-pino` for logging. To ensure consistency and maintainability, follow these guidelines:
+
+1.  **Centralised Configuration**: The logger is configured centrally in `app.module.ts` using `LoggerModule.forRootAsync` and initialised in `main.ts` with `app.useLogger(app.get(Logger))`. No further configuration is needed elsewhere.
+
+2.  **Standard Injection**: In any class (service, controller, pipe, etc.), use the standard NestJS `Logger` from `@nestjs/common`. Do **not** use `PinoLogger` or `@InjectPinoLogger` from `nestjs-pino` directly.
+
+3.  **Instantiation**: The recommended way to get a logger instance is to instantiate it directly within the class, providing the class name as the context. This is the most straightforward approach and aligns with NestJS documentation.
+
+    ```typescript
+    // In my.service.ts
+    import { Injectable, Logger } from '@nestjs/common';
+
+    @Injectable()
+    export class MyService {
+      private readonly logger = new Logger(MyService.name);
+
+      doSomething() {
+        this.logger.log('Doing something...');
+      }
+    }
+    ```
+
+By following this pattern, the application remains decoupled from the specific logging library, and all log messages will be correctly processed by `pino` as configured globally.

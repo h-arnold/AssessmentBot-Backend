@@ -1,30 +1,25 @@
-import { ChildProcessWithoutNullStreams } from 'child_process';
+import * as path from 'path';
 
 import request from 'supertest';
 
-import { startApp, stopApp } from './utils/e2e-test-utils';
+import { startApp, stopApp, AppInstance } from './utils/app-lifecycle';
 
 describe('Main App (E2E)', () => {
-  let appProcess: ChildProcessWithoutNullStreams;
-  let appUrl: string;
-  let apiKey: string;
-  const logFilePath = '/tmp/e2e-test.log';
+  let app: AppInstance;
+  const logFilePath = path.join(__dirname, 'logs', 'main.e2e-spec.log');
 
   beforeAll(async () => {
-    const app = await startApp(logFilePath);
-    appProcess = app.appProcess;
-    appUrl = app.appUrl;
-    apiKey = app.apiKey;
-  }, 10000);
+    app = await startApp(logFilePath);
+  });
 
   afterAll(() => {
-    stopApp(appProcess);
+    stopApp(app.appProcess);
   });
 
   it('should return a greeting from the root endpoint', async () => {
-    const response = await request(appUrl)
+    const response = await request(app.appUrl)
       .get('/')
-      .set('Authorization', `Bearer ${apiKey}`);
+      .set('Authorization', `Bearer ${app.apiKey}`);
     expect(response.status).toBe(200);
     expect(response.text).toBe('Hello World!');
   });

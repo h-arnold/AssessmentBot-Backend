@@ -1,10 +1,9 @@
-import { ChildProcessWithoutNullStreams } from 'child_process';
-import { promises as fs } from 'fs';
+import * as fs from 'fs/promises';
 import * as path from 'path';
 
 import request from 'supertest';
 
-import { startApp, stopApp } from './utils/e2e-test-utils';
+import { startApp, stopApp, AppInstance } from './utils/app-lifecycle';
 
 // Helper function to load a file and convert it to a data URI
 const loadFileAsDataURI = async (filePath: string): Promise<string> => {
@@ -22,52 +21,29 @@ interface TaskData {
 }
 
 describe('AssessorController (e2e)', () => {
-  let appProcess: ChildProcessWithoutNullStreams;
-  let appUrl: string;
-  let apiKey: string;
-  const logFilePath = '/tmp/e2e-test.log';
+  let app: AppInstance;
+  const logFilePath = path.join(__dirname, 'logs', 'assessor.e2e-spec.log');
 
-  let textTask: TaskData;
+  let textTask: TaskData = {
+    taskType: 'TEXT',
+    referenceTask: '',
+    emptyTask: '',
+    studentTask: '',
+  };
   let tableTask: TaskData;
   let imageTask: TaskData;
 
   beforeAll(async () => {
-    const app = await startApp(logFilePath);
-    appProcess = app.appProcess;
-    appUrl = app.appUrl;
-    apiKey = app.apiKey;
-
-    // Load test data asynchronously
-    const dataDir = path.join(__dirname, 'data');
-    const imageDir = path.join(__dirname, 'ImageTasks');
-
-    const textTaskPath = path.join(dataDir, 'textTask.json');
-    const tableTaskPath = path.join(dataDir, 'tableTask.json');
-
-    textTask = JSON.parse(await fs.readFile(textTaskPath, 'utf-8'));
-    tableTask = JSON.parse(await fs.readFile(tableTaskPath, 'utf-8'));
-
-    imageTask = {
-      taskType: 'IMAGE',
-      reference: await loadFileAsDataURI(
-        path.join(imageDir, 'referenceTask.png'),
-      ),
-      template: await loadFileAsDataURI(
-        path.join(imageDir, 'templateTask.png'),
-      ),
-      studentResponse: await loadFileAsDataURI(
-        path.join(imageDir, 'studentTask.png'),
-      ),
-    };
-  }, 20000); // Increased timeout for file loading
+    app = await startApp(logFilePath);
+  });
 
   afterAll(() => {
-    stopApp(appProcess);
+    stopApp(app.appProcess);
   });
 
   describe('Auth and Validation', () => {
     it('/v1/assessor (POST) should return 401 Unauthorized when no API key is provided', async () => {
-      const res = await request(appUrl)
+      const res = await request(app.appUrl)
         .post('/v1/assessor')
         .send(textTask)
         .expect(401);
@@ -75,7 +51,7 @@ describe('AssessorController (e2e)', () => {
     });
 
     it('/v1/assessor (POST) should return 401 Unauthorized when an invalid API key is provided', async () => {
-      const res = await request(appUrl)
+      const res = await request(app.appUrl)
         .post('/v1/assessor')
         .set('Authorization', 'Bearer invalid-key')
         .send(textTask)
@@ -85,9 +61,9 @@ describe('AssessorController (e2e)', () => {
 
     it('/v1/assessor (POST) should return 400 Bad Request for invalid DTO', async () => {
       const invalidPayload = { ...textTask, taskType: 'INVALID' };
-      const res = await request(appUrl)
+      const res = await request(app.appUrl)
         .post('/v1/assessor')
-        .set('Authorization', `Bearer ${apiKey}`)
+        .set('Authorization', `Bearer ${app.apiKey}`)
         .send(invalidPayload)
         .expect(400);
       expect(res.body.message).toBe('Validation failed');
@@ -102,9 +78,9 @@ describe('AssessorController (e2e)', () => {
       studentResponse: 'test',
     };
 
-    const res = await request(appUrl)
+    const res = await request(app.appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${apiKey}`)
+      .set('Authorization', `Bearer ${app.apiKey}`)
       .send(validPayload)
       .expect(201);
     expect(res.body).toHaveProperty('completeness');

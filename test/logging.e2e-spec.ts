@@ -1,30 +1,55 @@
-import { ChildProcessWithoutNullStreams } from 'child_process';
+/**
+ * End-to-end tests for the application's logging functionality.
+ *
+ * This suite verifies that logs are correctly generated, formatted, and contain the expected fields and redactions.
+ * It interacts with the running application via HTTP requests and inspects the resulting log file for correctness.
+ *
+ * @file /workspaces/AssessmentBot-Backend/test/logging.e2e-spec.ts
+ *
+ * @remarks
+ * - The log file is not cleared between tests to preserve log entries for asynchronous operations.
+ * - Tests depend on log file contents and may require manual log file management for debugging.
+ *
+ * @suite Logging (True E2E)
+ *
+ * @test
+ * 1. Should Propagate Request Context to Injected Loggers
+ *    - Ensures that request context (e.g., req.id) is propagated to all relevant log entries.
+ * 2. Should Output Valid JSON
+ *    - Verifies that log entries are valid JSON objects.
+ * 3. Should Contain Standard Request/Response Fields
+ *    - Checks for standard fields such as req.id, req.method, req.url, res.statusCode, and responseTime.
+ * 4. Should Redact Authorization Header
+ *    - Ensures that sensitive headers (Authorization) are redacted in logs.
+ * 5. Should Log Errors with Stack Traces
+ *    - Confirms that errors are logged with type, message, and stack trace.
+ * 6. Should Include ISO-8601 Timestamps
+ *    - Validates that log entries include a valid timestamp in milliseconds since epoch.
+ * 7. Should Respect LOG_LEVEL Configuration
+ *    - Placeholder test for log level configuration.
+ * 8. Should Handle Large Payloads Without Breaking JSON Output
+ *    - Ensures that large request payloads do not break log output formatting.
+ *
+ * @see startApp, stopApp, getLogObjects, waitForLog
+ */
+
+import * as path from 'path';
 
 import request from 'supertest';
 
-import {
-  LogObject,
-  getLogObjects,
-  waitForLog,
-  startApp,
-  stopApp,
-} from './utils/e2e-test-utils';
+import { startApp, stopApp, AppInstance } from './utils/app-lifecycle';
+import { getLogObjects, waitForLog } from './utils/log-watcher';
 
 describe('Logging (True E2E)', () => {
-  let appProcess: ChildProcessWithoutNullStreams;
-  let appUrl: string;
-  let apiKey: string;
-  const logFilePath = '/tmp/e2e-test.log';
+  let app: AppInstance;
+  const logFilePath = path.join(__dirname, 'logs', 'logging.e2e-spec.log');
 
   beforeAll(async () => {
-    const app = await startApp(logFilePath);
-    appProcess = app.appProcess;
-    appUrl = app.appUrl;
-    apiKey = app.apiKey;
-  }, 10000);
+    app = await startApp(logFilePath);
+  });
 
   afterAll(() => {
-    stopApp(appProcess);
+    stopApp(app.appProcess);
   });
 
   // Do NOT clear the log file before each test.
@@ -37,9 +62,9 @@ describe('Logging (True E2E)', () => {
     // As such, this test needs to run first because the way the test tracks when a request begins is when we get the message
     // `API key authentication attempt successful` which you will get in most of the tests. Should it be necessary to create
     // more request tracking type tests, I'll need to implement a more robust solution to this, but for now, this works.
-    await request(appUrl)
+    await request(app.appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${apiKey}`)
+      .set('Authorization', `Bearer ${app.apiKey}`)
       .send({
         taskType: 'TEXT',
         reference: 'The quick brown fox jumps over the lazy dog.',
@@ -49,11 +74,7 @@ describe('Logging (True E2E)', () => {
 
     await waitForLog(
       logFilePath,
-      (log) =>
-        !!(
-          log.msg &&
-          log.msg.includes('API key authentication attempt successful')
-        ),
+      (log) => !!log.msg?.includes('API key authentication attempt successful'),
     );
 
     let logObjects = getLogObjects(logFilePath);
@@ -102,13 +123,17 @@ describe('Logging (True E2E)', () => {
   });
 
   it('2. Should Output Valid JSON', async () => {
-    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
+    await request(app.appUrl)
+      .get('/')
+      .set('Authorization', `Bearer ${app.apiKey}`);
     await waitForLog(logFilePath, (log) => !!(log.req && log.res));
     expect(getLogObjects(logFilePath).length).toBeGreaterThan(0);
   });
 
   it('3. Should Contain Standard Request/Response Fields', async () => {
-    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
+    await request(app.appUrl)
+      .get('/')
+      .set('Authorization', `Bearer ${app.apiKey}`);
     await waitForLog(logFilePath, (log) => !!(log.req && log.req.url === '/'));
     const logObject = getLogObjects(logFilePath).find(
       (obj) => obj.req && obj.req.url === '/',
@@ -122,7 +147,9 @@ describe('Logging (True E2E)', () => {
   });
 
   it('4. Should Redact Authorization Header', async () => {
-    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
+    await request(app.appUrl)
+      .get('/')
+      .set('Authorization', `Bearer ${app.apiKey}`);
     await waitForLog(
       logFilePath,
       (log) => log.req?.headers?.authorization === 'Bearer <redacted>',
@@ -137,9 +164,9 @@ describe('Logging (True E2E)', () => {
   });
 
   it('5. Should Log Errors with Stack Traces', async () => {
-    await request(appUrl)
+    await request(app.appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${apiKey}`)
+      .set('Authorization', `Bearer ${app.apiKey}`)
       .send({});
     await waitForLog(logFilePath, (log) => !!log.err);
     const logObject = getLogObjects(logFilePath).find((obj) => obj.err);
@@ -150,7 +177,9 @@ describe('Logging (True E2E)', () => {
   });
 
   it('6. Should Include ISO-8601 Timestamps', async () => {
-    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
+    await request(app.appUrl)
+      .get('/')
+      .set('Authorization', `Bearer ${app.apiKey}`);
     await waitForLog(logFilePath, (log) => typeof log.time === 'number');
     const logObject = getLogObjects(logFilePath).find(
       (obj) => typeof obj.time === 'number',
@@ -180,13 +209,13 @@ describe('Logging (True E2E)', () => {
       criteria: 'Test criteria',
     };
 
-    await request(appUrl)
+    await request(app.appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${apiKey}`)
+      .set('Authorization', `Bearer ${app.apiKey}`)
       .send(largePayload);
     await waitForLog(
       logFilePath,
-      (log) => !!(log.msg && log.msg.includes('request completed')),
+      (log) => !!log.msg?.includes('request completed'),
     );
     expect(getLogObjects(logFilePath).length).toBeGreaterThan(0);
   });

@@ -1,14 +1,15 @@
 import { ChildProcessWithoutNullStreams } from 'child_process';
+import * as path from 'path';
 
 import request from 'supertest';
 
-import { startApp, stopApp, waitForLog } from './utils/e2e-test-utils';
+import { startApp, stopApp } from './utils/app-lifecycle';
 
 describe('Authentication E2E Tests', () => {
   let appProcess: ChildProcessWithoutNullStreams;
   let appUrl: string;
   let apiKey: string;
-  const logFilePath = '/tmp/e2e-test.log';
+  const logFilePath = path.join(__dirname, 'logs', 'auth.e2e-spec.log');
 
   const INVALID_API_KEY = 'invalid_key';
 
