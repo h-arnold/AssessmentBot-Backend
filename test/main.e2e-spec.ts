@@ -6,7 +6,6 @@ import { startApp, stopApp, AppInstance } from './utils/app-lifecycle';
 
 describe('Main App (E2E)', () => {
   let app: AppInstance;
-  let apiKey: string;
   const logFilePath = '/tmp/e2e-test.log';
 
   beforeAll(async () => {
@@ -20,7 +19,7 @@ describe('Main App (E2E)', () => {
   it('should return a greeting from the root endpoint', async () => {
     const response = await request(app.appUrl)
       .get('/')
-      .set('Authorization', `Bearer ${apiKey}`);
+      .set('Authorization', `Bearer ${app.apiKey}`);
     expect(response.status).toBe(200);
     expect(response.text).toBe('Hello World!');
   });

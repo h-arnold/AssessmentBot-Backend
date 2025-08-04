@@ -7,6 +7,8 @@ on:
 
 jobs:
   test:
+    permissions:
+      contents: read
     name: Run Unit & E2E Tests
     runs-on: ubuntu-latest
     env:
@@ -18,22 +20,22 @@ jobs:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+      uses: actions/checkout@v4
       - name: Use Node.js 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
       - name: Install dependencies
-        run: npm install
+      run: npm install
       - name: Prepare Husky hooks
-        run: npm run prepare
+      run: npm run prepare
       - name: Create .test.env for E2E tests
-        run: |
-          if [ ! -f .test.env ]; then
-            cp .test.env.example .test.env
-            echo "GEMINI_API_KEY=${GEMINI_API_KEY}" > .test.env
-          fi
+      run: |
+        if [ ! -f .test.env ]; then
+        cp .test.env.example .test.env
+        echo "GEMINI_API_KEY=${GEMINI_API_KEY}" > .test.env
+        fi
       - name: Run unit tests
-        run: npm test
+      run: npm test
       - name: Run e2e tests
-        run: npm run test:e2e
+      run: npm run test:e2e

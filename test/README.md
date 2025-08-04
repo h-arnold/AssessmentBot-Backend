@@ -49,30 +49,26 @@ This is particularly useful for testing edge cases or specific configurations, s
 
 To test the application's behaviour with a very low authenticated request limit, you can override the `AUTHENTICATED_THROTTLER_LIMIT` like so:
 
+````typescript
 ```typescript
-let appProcess: ChildProcessWithoutNullStreams;
-let appUrl: string;
-
 describe('My Feature with Custom Env', () => {
-  let appProcess;
-  let appUrl;
+  let app: AppInstance;
 
   beforeAll(async () => {
     const envOverrides = {
       AUTHENTICATED_THROTTLER_LIMIT: '5', // Override default
     };
-    const app = await startApp('/tmp/my-feature-test.log', envOverrides);
-    appProcess = app.appProcess;
-    appUrl = app.appUrl;
+    app = await startApp('/tmp/my-feature-test.log', envOverrides);
   });
 
   afterAll(() => {
-    stopApp(appProcess);
+    stopApp(app.appProcess);
   });
 
   // Your tests here...
+  // e.g. it('should make a request', () => request(app.appUrl).get('/...'));
 });
-```
+````
 
 The `envOverrides` object is merged with the base test environment, with the overrides taking precedence.
 
