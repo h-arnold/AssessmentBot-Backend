@@ -1,3 +1,4 @@
+import * as fs from 'fs/promises';
 import * as path from 'path';
 
 import request from 'supertest';
@@ -21,9 +22,14 @@ interface TaskData {
 
 describe('AssessorController (e2e)', () => {
   let app: AppInstance;
-  const logFilePath = '/tmp/e2e-test.log';
+  const logFilePath = path.join(__dirname, 'logs', 'assessor.e2e-spec.log');
 
-  let textTask: TaskData;
+  let textTask: TaskData = {
+    taskType: 'TEXT',
+    referenceTask: '',
+    emptyTask: '',
+    studentTask: '',
+  };
   let tableTask: TaskData;
   let imageTask: TaskData;
 

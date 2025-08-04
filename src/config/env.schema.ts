@@ -42,8 +42,14 @@ export const configSchema = z.object({
   API_KEYS: z
     .string()
     .optional()
-    .transform((val) => (val ? val.split(',').map((s) => s.trim()) : undefined))
-    .pipe(z.array(z.string().regex(/^[a-zA-Z0-9_-]+$/)).optional()),
+    .transform((val) =>
+      val === undefined ? undefined : val.split(',').map((s) => s.trim()),
+    )
+    .refine(
+      (arr) =>
+        arr === undefined || arr.every((s) => /^[a-zA-Z0-9_-]+$/.test(s)),
+      { message: 'Invalid API key format' },
+    ),
   MAX_IMAGE_UPLOAD_SIZE_MB: z.coerce.number().int().min(0).default(1),
   ALLOWED_IMAGE_MIME_TYPES: z
     .string()

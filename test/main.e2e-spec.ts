@@ -1,10 +1,12 @@
+import * as path from 'path';
+
 import request from 'supertest';
 
 import { startApp, stopApp, AppInstance } from './utils/app-lifecycle';
 
 describe('Main App (E2E)', () => {
   let app: AppInstance;
-  const logFilePath = '/tmp/e2e-test.log';
+  const logFilePath = path.join(__dirname, 'logs', 'main.e2e-spec.log');
 
   beforeAll(async () => {
     app = await startApp(logFilePath);
