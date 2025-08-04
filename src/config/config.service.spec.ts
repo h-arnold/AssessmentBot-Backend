@@ -1,9 +1,6 @@
 import * as fs from 'fs';
-import * as path from 'path';
 
 import { Test, TestingModule } from '@nestjs/testing';
-import * as dotenv from 'dotenv';
-import { z } from 'zod';
 
 import { ConfigService } from './config.service';
 
@@ -134,18 +131,18 @@ describe('ConfigService', () => {
 
     it('should pass with valid NODE_ENV values', () => {
       const validEnvs = ['development', 'production', 'test'];
-      validEnvs.forEach((env) => {
+      for (const env of validEnvs) {
         process.env.NODE_ENV = env;
         expect(() => new ConfigService()).not.toThrow();
-      });
+      }
     });
 
     it('should fail with invalid NODE_ENV values', () => {
       const invalidEnvs = ['invalid', '', null, undefined];
-      invalidEnvs.forEach((env) => {
+      for (const env of invalidEnvs) {
         process.env.NODE_ENV = env === null ? undefined : env;
         expect(() => new ConfigService()).toThrow();
-      });
+      }
     });
 
     it('should be validated as a number', () => {
@@ -320,6 +317,7 @@ SOME_OTHER_VAR=value
     });
 
     it('.env.example should contain all required variables', () => {
+      // cSpell:ignore Vars
       const fileContent = (fs.readFileSync as jest.Mock)(
         '.env.example',
         'utf-8',
@@ -335,6 +333,7 @@ SOME_OTHER_VAR=value
     });
 
     it('.env.example should use placeholder values', () => {
+      // cSpell:ignore Vars
       const fileContent = (fs.readFileSync as jest.Mock)(
         '.env.example',
         'utf-8',
@@ -359,6 +358,7 @@ SOME_OTHER_VAR=value
     });
 
     it('should not cause an error when .env file is missing and required vars are in process.env', async () => {
+      // cSpell:ignore vars
       // We need to re-create the testing module to ensure ConfigService re-initializes
       // with the correct environment state (no .env file).
       const module: TestingModule = await Test.createTestingModule({
