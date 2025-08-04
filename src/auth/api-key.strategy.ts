@@ -53,7 +53,7 @@ export class ApiKeyStrategy extends PassportStrategy(Strategy, 'bearer') {
       throw new UnauthorizedException('Malformed Bearer scheme.');
     }
 
-    const user = await this.apiKeyService.validate(apiKey);
+    const user = this.apiKeyService.validate(apiKey);
     if (!user) {
       throw new UnauthorizedException();
     }
