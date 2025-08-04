@@ -162,12 +162,12 @@ export async function startApp(
     AUTHENTICATED_THROTTLER_LIMIT: '12', // Add slightly more so that there is something of a difference between authenticated and unauthenticated request rate limits
   };
 
-  // Combine base, defaults, and overrides
   const testEnv: NodeJS.ProcessEnv = {
-    ...baseTestEnv,
     ...defaultTestValues,
+    ...process.env,
     ...envOverrides,
   };
+  testEnv.LOG_FILE = logFilePath;
 
   const appProcess = spawn('node', [mainJsPath], {
     cwd: path.join(__dirname, '..', '..'),

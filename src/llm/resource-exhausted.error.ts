@@ -4,7 +4,10 @@
  * to inform the calling code that no retries should be attempted.
  */
 export class ResourceExhaustedError extends Error {
-  constructor(message: string, public readonly originalError?: unknown) {
+  constructor(
+    message: string,
+    public readonly originalError?: unknown,
+  ) {
     super(message);
     this.name = 'ResourceExhaustedError';
   }

@@ -50,8 +50,8 @@ This is particularly useful for testing edge cases or specific configurations, s
 To test the application's behaviour with a very low authenticated request limit, you can override the `AUTHENTICATED_THROTTLER_LIMIT` like so:
 
 ```typescript
-// in your-test.e2e-spec.ts
-import { startApp, stopApp } from './utils/e2e-test-utils';
+let appProcess: ChildProcessWithoutNullStreams;
+let appUrl: string;
 
 describe('My Feature with Custom Env', () => {
   let appProcess;

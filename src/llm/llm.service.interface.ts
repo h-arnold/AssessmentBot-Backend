@@ -135,13 +135,14 @@ export abstract class LLMService {
     // Check for resource exhausted patterns in error messages
     if (error instanceof Error) {
       const message = error.message.toLowerCase();
-      return (
-        message.includes('resource_exhausted') ||
-        message.includes('resource exhausted') ||
-        message.includes('quota exceeded') ||
-        message.includes('quota exhausted') ||
-        message.includes('quota has been exhausted')
-      );
+      const patterns = [
+        'resource_exhausted',
+        'resource exhausted',
+        'quota exceeded',
+        'quota exhausted',
+        'quota has been exhausted',
+      ];
+      return patterns.some((pattern) => message.includes(pattern));
     }
 
     return false;
