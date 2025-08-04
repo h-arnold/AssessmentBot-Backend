@@ -9,3 +9,6 @@ node_modules
 dist/
 .vscode/
 test-path-resolution.js
+
+# SonarLint Connected Mode config
+.sonarlint/connectedMode.json

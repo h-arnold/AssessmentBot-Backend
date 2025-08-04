@@ -1,5 +1,3 @@
-import { ChildProcessWithoutNullStreams } from 'child_process';
-
 import request from 'supertest';
 
 import { startApp, stopApp, AppInstance } from './utils/app-lifecycle';

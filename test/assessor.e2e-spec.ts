@@ -1,5 +1,3 @@
-import { ChildProcessWithoutNullStreams } from 'child_process';
-import { promises as fs } from 'fs';
 import * as path from 'path';
 
 import request from 'supertest';
