@@ -157,7 +157,7 @@ export async function startApp(
   // Define default values for the test run.
   const defaultTestValues = {
     API_KEYS: 'test-api-key,test-api-key-2',
-    THROTTLER_TTL: (process.env.THROTTLER_TTL || 36000000).toString(),
+    THROTTLER_TTL: process.env.THROTTLER_TTL || '36000000',
     UNAUTHENTICATED_THROTTLER_LIMIT: '9', // This seems to be the required limit for all the e2e tests to pass.
     AUTHENTICATED_THROTTLER_LIMIT: '12', // Add slightly more so that there is something of a difference between authenticated and unauthenticated request rate limits
   };
