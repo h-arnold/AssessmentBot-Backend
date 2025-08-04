@@ -36,6 +36,11 @@ jobs:
             echo "GEMINI_API_KEY=${GEMINI_API_KEY}" > .test.env
           fi
       - name: Run unit tests
-        run: npm test
+        run: npm test -- --verbose
       - name: Run e2e tests
-        run: npm run test:e2e
+        run: npm run test:e2e -- --verbose
+      - name: Publish JUnit Test Report
+        uses: mikepenz/action-junit-report@v5
+        if: success() || failure()
+        with:
+          report_paths: './junit/jest-junit.xml'

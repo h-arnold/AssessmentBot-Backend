@@ -31,4 +31,14 @@ export default {
     '^test/(.*)$': '<rootDir>/test/$1',
   },
   extensionsToTreatAsEsm: ['.ts'],
+  reporters: [
+    'default',
+    [
+      'jest-junit',
+      {
+        outputDirectory: './junit',
+        outputName: 'jest-junit.xml',
+      },
+    ],
+  ],
 };
