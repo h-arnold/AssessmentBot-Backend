@@ -8,7 +8,7 @@ describe('Throttler (e2e)', () => {
   let app: AppInstance;
   let authenticatedLimit: number;
   let ttl: number;
-  const logFilePath = '/tmp/e2e-test.log';
+  const logFilePath = './test/throttler.e2e-spec.log';
 
   beforeAll(async () => {
     // As we are not testing the throttler service itself, but rather the implementation of the throttler,
@@ -26,112 +26,65 @@ describe('Throttler (e2e)', () => {
     stopApp(app.appProcess);
   });
 
-  
-
   describe('Unauthenticated Routes', () => {
-    it('should allow requests below the unauthenticated limit', async () => {
-      const requests = Array(app.unauthenticatedThrottlerLimit)
-        .fill(0)
-        .map(() => request(app.appUrl).get('/health').expect(200));
-      const responses = await Promise.all(requests);
-      expect(responses.length).toBe(app.unauthenticatedThrottlerLimit);
-    });
-
-    it('should reject requests exceeding the unauthenticated limit', async () => {
+    it('should enforce rate limiting for unauthenticated users', async () => {
+      // 1. Allow requests up to the limit
       const successfulRequests = Array(app.unauthenticatedThrottlerLimit)
         .fill(0)
         .map(() => request(app.appUrl).get('/health').expect(200));
       await Promise.all(successfulRequests);
 
-      const response = await request(app.appUrl).get('/health');
-      expect(response.status).toBe(429);
-    });
+      // 2. Reject requests exceeding the limit and check header
+      const throttledResponse = await request(app.appUrl).get('/health');
+      expect(throttledResponse.status).toBe(429);
+      expect(throttledResponse.headers['retry-after']).toBeDefined();
+      expect(
+        parseInt(throttledResponse.headers['retry-after'], 10),
+      ).toBeGreaterThan(0);
 
-    it('should include Retry-After header on throttled response', async () => {
-      const successfulRequests = Array(app.unauthenticatedThrottlerLimit)
-        .fill(0)
-        .map(() => request(app.appUrl).get('/health').expect(200));
-      await Promise.all(successfulRequests);
-
-      const response = await request(app.appUrl).get('/health');
-      expect(response.status).toBe(429);
-      expect(response.headers['retry-after']).toBeDefined();
-      expect(parseInt(response.headers['retry-after'], 10)).toBeGreaterThan(0);
-    });
-
-    it('should reset the limit after the TTL expires', async () => {
+      // 3. Reset the limit after the TTL expires
       await new Promise((resolve) => setTimeout(resolve, app.throttlerTtl));
-      // The next request should be successful
-      const response = await request(app.appUrl).get('/health');
-      expect(response.status).toBe(200);
-    }, 15000);
+      const afterResetResponse = await request(app.appUrl).get('/health');
+      expect(afterResetResponse.status).toBe(200);
+    }, 15000); // Increased timeout to account for all sequential steps
   });
 
   describe('Authenticated Routes', () => {
-    it('should allow requests below the authenticated limit', async () => {
-      const requests = Array(app.authenticatedThrottlerLimit)
+    it('should enforce rate limiting for authenticated users', async () => {
+      const postData = {
+        taskType: 'TEXT',
+        reference: 'The quick brown fox jumps over the lazy dog.',
+        template: 'Write a sentence about a fox.',
+        studentResponse: 'A fox is a mammal.',
+      };
+
+      // 1. Allow requests up to the limit
+      const successfulRequests = Array(app.authenticatedThrottlerLimit)
         .fill(0)
         .map(() =>
           request(app.appUrl)
             .post('/v1/assessor')
             .set('Authorization', `Bearer ${app.apiKey}`)
-            .send({
-              taskType: 'TEXT',
-              reference: 'The quick brown fox jumps over the lazy dog.',
-              template: 'Write a sentence about a fox.',
-              studentResponse: 'A fox is a mammal.',
-            })
+            .send(postData)
             .expect(201),
         );
-      const responses = await Promise.all(requests);
-      expect(responses.length).toBe(app.authenticatedThrottlerLimit);
-    });
+      await Promise.all(successfulRequests);
 
-    it('should reject requests exceeding the authenticated limit', async () => {
-      // Send only the allowed number of requests in parallel
-      const allowedRequests = Array(app.authenticatedThrottlerLimit)
-        .fill(0)
-        .map(() =>
-          request(app.appUrl)
-            .post('/v1/assessor')
-            .set('Authorization', `Bearer ${app.apiKey}`)
-            .send({
-              taskType: 'TEXT',
-              reference: 'The quick brown fox jumps over the lazy dog.',
-              template: 'Write a sentence about a fox.',
-              studentResponse: 'A fox is a mammal.',
-            })
-            .expect(201),
-        );
-      await Promise.all(allowedRequests);
-
-      // Now send the overflow request, which should be throttled
-      const response = await request(app.appUrl)
+      // 2. Reject requests exceeding the limit
+      const throttledResponse = await request(app.appUrl)
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${app.apiKey}`)
-        .send({
-          taskType: 'TEXT',
-          reference: 'The quick brown fox jumps over the lazy dog.',
-          template: 'Write a sentence about a fox.',
-          studentResponse: 'A fox is a mammal.',
-        });
-      expect(response.status).toBe(429);
-    });
+        .send(postData);
+      expect(throttledResponse.status).toBe(429);
 
-    it('should reset the limit after the TTL expires', async () => {
+      // 3. Reset the limit after the TTL expires
       await new Promise((resolve) => setTimeout(resolve, app.throttlerTtl));
-
-      const response = await request(app.appUrl)
+      const afterResetResponse = await request(app.appUrl)
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${app.apiKey}`)
-        .send({
-          taskType: 'TEXT',
-          reference: 'The quick brown fox jumps over the lazy dog.',
-          template: 'Write a sentence about a fox.',
-          studentResponse: 'A fox is a mammal.',
-        });
-      expect(response.status).toBe(201);
-    }, 15000);
+        .send(postData);
+      expect(afterResetResponse.status).toBe(201);
+    }, 15000); // Increased timeout to account for all sequential steps
   });
 
   it.todo('should log throttled requests (requires log capture setup)');
