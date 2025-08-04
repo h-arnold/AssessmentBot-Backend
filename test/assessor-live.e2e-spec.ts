@@ -4,7 +4,7 @@ import * as path from 'path';
 
 import request from 'supertest';
 
-import { startApp, stopApp } from './utils/e2e-test-utils';
+import { startApp, stopApp, AppInstance } from './utils/app-lifecycle';
 
 // Helper function to load a file and convert it to a data URI
 const loadFileAsDataURI = async (filePath: string): Promise<string> => {
@@ -22,9 +22,7 @@ interface TaskData {
 }
 
 describe('AssessorController (e2e-live)', () => {
-  let appProcess: ChildProcessWithoutNullStreams;
-  let appUrl: string;
-  let apiKey: string;
+  let app: AppInstance;
   const logFilePath = '/tmp/e2e-test.log';
 
   let tableData: TaskData;
@@ -34,10 +32,7 @@ describe('AssessorController (e2e-live)', () => {
   let studentDataUri: string;
 
   beforeAll(async () => {
-    const app = await startApp(logFilePath);
-    appProcess = app.appProcess;
-    appUrl = app.appUrl;
-    apiKey = app.apiKey;
+    app = await startApp(logFilePath);
 
     // Load test data asynchronously
     const dataDir = path.join(__dirname, 'data');
@@ -61,7 +56,7 @@ describe('AssessorController (e2e-live)', () => {
   }, 20000); // Increased timeout for file loading
 
   afterAll(() => {
-    stopApp(appProcess);
+    stopApp(app.appProcess);
   });
 
   it('/v1/assessor (POST) should return a valid assessment for a text task', async () => {
@@ -72,9 +67,9 @@ describe('AssessorController (e2e-live)', () => {
       studentResponse: textData.studentTask,
     };
 
-    const response = await request(appUrl)
+    const response = await request(app.appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${apiKey}`)
+      .set('Authorization', `Bearer ${app.apiKey}`)
       .send(mappedPayload)
       .expect(201);
 
@@ -92,9 +87,9 @@ describe('AssessorController (e2e-live)', () => {
       studentResponse: tableData.studentTask,
     };
 
-    const response = await request(appUrl)
+    const response = await request(app.appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${apiKey}`)
+      .set('Authorization', `Bearer ${app.apiKey}`)
       .send(mappedPayload)
       .expect(201);
 
@@ -112,9 +107,9 @@ describe('AssessorController (e2e-live)', () => {
       studentResponse: studentDataUri,
     };
 
-    const response = await request(appUrl)
+    const response = await request(app.appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${apiKey}`)
+      .set('Authorization', `Bearer ${app.apiKey}`)
       .send(imagePayload)
       .expect(201);
 

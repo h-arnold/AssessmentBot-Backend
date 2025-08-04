@@ -2,29 +2,19 @@ import { ChildProcessWithoutNullStreams } from 'child_process';
 
 import request from 'supertest';
 
-import {
-  LogObject,
-  getLogObjects,
-  waitForLog,
-  startApp,
-  stopApp,
-} from './utils/e2e-test-utils';
+import { startApp, stopApp, AppInstance } from './utils/app-lifecycle';
+import { getLogObjects, waitForLog, LogObject } from './utils/log-watcher';
 
 describe('Logging (True E2E)', () => {
-  let appProcess: ChildProcessWithoutNullStreams;
-  let appUrl: string;
-  let apiKey: string;
+  let app: AppInstance;
   const logFilePath = '/tmp/e2e-test.log';
 
   beforeAll(async () => {
-    const app = await startApp(logFilePath);
-    appProcess = app.appProcess;
-    appUrl = app.appUrl;
-    apiKey = app.apiKey;
-  }, 10000);
+    app = await startApp(logFilePath);
+  });
 
   afterAll(() => {
-    stopApp(appProcess);
+    stopApp(app.appProcess);
   });
 
   // Do NOT clear the log file before each test.
@@ -37,9 +27,9 @@ describe('Logging (True E2E)', () => {
     // As such, this test needs to run first because the way the test tracks when a request begins is when we get the message
     // `API key authentication attempt successful` which you will get in most of the tests. Should it be necessary to create
     // more request tracking type tests, I'll need to implement a more robust solution to this, but for now, this works.
-    await request(appUrl)
+    await request(app.appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${apiKey}`)
+      .set('Authorization', `Bearer ${app.apiKey}`)
       .send({
         taskType: 'TEXT',
         reference: 'The quick brown fox jumps over the lazy dog.',
@@ -102,13 +92,13 @@ describe('Logging (True E2E)', () => {
   });
 
   it('2. Should Output Valid JSON', async () => {
-    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
+    await request(app.appUrl).get('/').set('Authorization', `Bearer ${app.apiKey}`);
     await waitForLog(logFilePath, (log) => !!(log.req && log.res));
     expect(getLogObjects(logFilePath).length).toBeGreaterThan(0);
   });
 
   it('3. Should Contain Standard Request/Response Fields', async () => {
-    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
+    await request(app.appUrl).get('/').set('Authorization', `Bearer ${app.apiKey}`);
     await waitForLog(logFilePath, (log) => !!(log.req && log.req.url === '/'));
     const logObject = getLogObjects(logFilePath).find(
       (obj) => obj.req && obj.req.url === '/',
@@ -122,7 +112,7 @@ describe('Logging (True E2E)', () => {
   });
 
   it('4. Should Redact Authorization Header', async () => {
-    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
+    await request(app.appUrl).get('/').set('Authorization', `Bearer ${app.apiKey}`);
     await waitForLog(
       logFilePath,
       (log) => log.req?.headers?.authorization === 'Bearer <redacted>',
@@ -137,9 +127,9 @@ describe('Logging (True E2E)', () => {
   });
 
   it('5. Should Log Errors with Stack Traces', async () => {
-    await request(appUrl)
+    await request(app.appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${apiKey}`)
+      .set('Authorization', `Bearer ${app.apiKey}`)
       .send({});
     await waitForLog(logFilePath, (log) => !!log.err);
     const logObject = getLogObjects(logFilePath).find((obj) => obj.err);
@@ -150,7 +140,7 @@ describe('Logging (True E2E)', () => {
   });
 
   it('6. Should Include ISO-8601 Timestamps', async () => {
-    await request(appUrl).get('/').set('Authorization', `Bearer ${apiKey}`);
+    await request(app.appUrl).get('/').set('Authorization', `Bearer ${app.apiKey}`);
     await waitForLog(logFilePath, (log) => typeof log.time === 'number');
     const logObject = getLogObjects(logFilePath).find(
       (obj) => typeof obj.time === 'number',
@@ -180,9 +170,9 @@ describe('Logging (True E2E)', () => {
       criteria: 'Test criteria',
     };
 
-    await request(appUrl)
+    await request(app.appUrl)
       .post('/v1/assessor')
-      .set('Authorization', `Bearer ${apiKey}`)
+      .set('Authorization', `Bearer ${app.apiKey}`)
       .send(largePayload);
     await waitForLog(
       logFilePath,
