@@ -85,12 +85,11 @@ export async function waitForLog(
   logFilePath: string,
   predicate: (log: LogObject) => boolean,
   timeoutMs = 30000,
-):
-  Promise<void> {
+): Promise<void> {
   const startTime = Date.now();
 
   return new Promise((resolve, reject) => {
-    const checkLog = () => {
+    const checkLog = (): void => {
       const logs = getLogObjects(logFilePath);
       if (logs.some(predicate)) {
         resolve();

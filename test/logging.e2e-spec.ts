@@ -92,13 +92,17 @@ describe('Logging (True E2E)', () => {
   });
 
   it('2. Should Output Valid JSON', async () => {
-    await request(app.appUrl).get('/').set('Authorization', `Bearer ${app.apiKey}`);
+    await request(app.appUrl)
+      .get('/')
+      .set('Authorization', `Bearer ${app.apiKey}`);
     await waitForLog(logFilePath, (log) => !!(log.req && log.res));
     expect(getLogObjects(logFilePath).length).toBeGreaterThan(0);
   });
 
   it('3. Should Contain Standard Request/Response Fields', async () => {
-    await request(app.appUrl).get('/').set('Authorization', `Bearer ${app.apiKey}`);
+    await request(app.appUrl)
+      .get('/')
+      .set('Authorization', `Bearer ${app.apiKey}`);
     await waitForLog(logFilePath, (log) => !!(log.req && log.req.url === '/'));
     const logObject = getLogObjects(logFilePath).find(
       (obj) => obj.req && obj.req.url === '/',
@@ -112,7 +116,9 @@ describe('Logging (True E2E)', () => {
   });
 
   it('4. Should Redact Authorization Header', async () => {
-    await request(app.appUrl).get('/').set('Authorization', `Bearer ${app.apiKey}`);
+    await request(app.appUrl)
+      .get('/')
+      .set('Authorization', `Bearer ${app.apiKey}`);
     await waitForLog(
       logFilePath,
       (log) => log.req?.headers?.authorization === 'Bearer <redacted>',
@@ -140,7 +146,9 @@ describe('Logging (True E2E)', () => {
   });
 
   it('6. Should Include ISO-8601 Timestamps', async () => {
-    await request(app.appUrl).get('/').set('Authorization', `Bearer ${app.apiKey}`);
+    await request(app.appUrl)
+      .get('/')
+      .set('Authorization', `Bearer ${app.apiKey}`);
     await waitForLog(logFilePath, (log) => typeof log.time === 'number');
     const logObject = getLogObjects(logFilePath).find(
       (obj) => typeof obj.time === 'number',
