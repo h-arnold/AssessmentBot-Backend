@@ -12,3 +12,6 @@ test-path-resolution.js
 
 # SonarLint Connected Mode config
 .sonarlint/connectedMode.json
+
+# E2E Testing Logs
+test/logs

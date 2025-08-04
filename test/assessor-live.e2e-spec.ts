@@ -1,4 +1,3 @@
-import { ChildProcessWithoutNullStreams } from 'child_process';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
@@ -23,7 +22,11 @@ interface TaskData {
 
 describe('AssessorController (e2e-live)', () => {
   let app: AppInstance;
-  const logFilePath = '/tmp/e2e-test.log';
+  const logFilePath = path.join(
+    __dirname,
+    'logs',
+    'assessor-live.e2e-spec.log',
+  );
 
   let tableData: TaskData;
   let textData: TaskData;

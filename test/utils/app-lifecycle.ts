@@ -74,8 +74,11 @@ export async function startApp(
   const appUrl = 'http://localhost:3001';
 
   try {
-    await waitForLog(logFilePath, (log) =>
-      log.msg?.includes('Nest application successfully started'),
+    await waitForLog(
+      logFilePath,
+      (log) =>
+        typeof log.msg === 'string' &&
+        log.msg.includes('Nest application successfully started'),
     );
   } catch (error) {
     console.error('Error during app startup:', error);

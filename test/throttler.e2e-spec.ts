@@ -1,4 +1,4 @@
-import { ChildProcessWithoutNullStreams } from 'child_process';
+import * as path from 'path';
 
 import request from 'supertest';
 
@@ -8,7 +8,7 @@ describe('Throttler (e2e)', () => {
   let app: AppInstance;
   let authenticatedLimit: number;
   let ttl: number;
-  const logFilePath = './test/throttler.e2e-spec.log';
+  const logFilePath = path.join(__dirname, 'logs', 'throttler.e2e-spec.log');
 
   beforeAll(async () => {
     // As we are not testing the throttler service itself, but rather the implementation of the throttler,

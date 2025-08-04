@@ -1,13 +1,48 @@
-import { ChildProcessWithoutNullStreams } from 'child_process';
+/**
+ * End-to-end tests for the application's logging functionality.
+ *
+ * This suite verifies that logs are correctly generated, formatted, and contain the expected fields and redactions.
+ * It interacts with the running application via HTTP requests and inspects the resulting log file for correctness.
+ *
+ * @file /workspaces/AssessmentBot-Backend/test/logging.e2e-spec.ts
+ *
+ * @remarks
+ * - The log file is not cleared between tests to preserve log entries for asynchronous operations.
+ * - Tests depend on log file contents and may require manual log file management for debugging.
+ *
+ * @suite Logging (True E2E)
+ *
+ * @test
+ * 1. Should Propagate Request Context to Injected Loggers
+ *    - Ensures that request context (e.g., req.id) is propagated to all relevant log entries.
+ * 2. Should Output Valid JSON
+ *    - Verifies that log entries are valid JSON objects.
+ * 3. Should Contain Standard Request/Response Fields
+ *    - Checks for standard fields such as req.id, req.method, req.url, res.statusCode, and responseTime.
+ * 4. Should Redact Authorization Header
+ *    - Ensures that sensitive headers (Authorization) are redacted in logs.
+ * 5. Should Log Errors with Stack Traces
+ *    - Confirms that errors are logged with type, message, and stack trace.
+ * 6. Should Include ISO-8601 Timestamps
+ *    - Validates that log entries include a valid timestamp in milliseconds since epoch.
+ * 7. Should Respect LOG_LEVEL Configuration
+ *    - Placeholder test for log level configuration.
+ * 8. Should Handle Large Payloads Without Breaking JSON Output
+ *    - Ensures that large request payloads do not break log output formatting.
+ *
+ * @see startApp, stopApp, getLogObjects, waitForLog
+ */
+
+import * as path from 'path';
 
 import request from 'supertest';
 
 import { startApp, stopApp, AppInstance } from './utils/app-lifecycle';
-import { getLogObjects, waitForLog, LogObject } from './utils/log-watcher';
+import { getLogObjects, waitForLog } from './utils/log-watcher';
 
 describe('Logging (True E2E)', () => {
   let app: AppInstance;
-  const logFilePath = '/tmp/e2e-test.log';
+  const logFilePath = path.join(__dirname, 'logs', 'logging.e2e-spec.log');
 
   beforeAll(async () => {
     app = await startApp(logFilePath);
@@ -39,11 +74,7 @@ describe('Logging (True E2E)', () => {
 
     await waitForLog(
       logFilePath,
-      (log) =>
-        !!(
-          log.msg &&
-          log.msg.includes('API key authentication attempt successful')
-        ),
+      (log) => !!log.msg?.includes('API key authentication attempt successful'),
     );
 
     let logObjects = getLogObjects(logFilePath);
@@ -184,7 +215,7 @@ describe('Logging (True E2E)', () => {
       .send(largePayload);
     await waitForLog(
       logFilePath,
-      (log) => !!(log.msg && log.msg.includes('request completed')),
+      (log) => !!log.msg?.includes('request completed'),
     );
     expect(getLogObjects(logFilePath).length).toBeGreaterThan(0);
   });
