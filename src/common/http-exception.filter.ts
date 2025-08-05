@@ -5,7 +5,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core';
+import { BaseExceptionFilter } from '@nestjs/core';
 import { Request } from 'express';
 
 @Catch()
@@ -18,6 +18,35 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest<Request>();
+
+    // Handle Express PayloadTooLargeError (body-parser)
+    // See: https://github.com/expressjs/body-parser#errors
+    if (
+      exception &&
+      typeof exception === 'object' &&
+      'type' in exception &&
+      exception.type === 'entity.too.large'
+    ) {
+      const status = HttpStatus.PAYLOAD_TOO_LARGE;
+      const message = 'Payload Too Large';
+      const errorResponse = {
+        statusCode: status,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+        message,
+      };
+      this.logger.warn(
+        {
+          method: request.method,
+          path: request.url,
+          ip: request.ip,
+          headers: this.sanitiseHeaders(request.headers),
+          userAgent: request.headers['user-agent'],
+        },
+        `HTTP ${status} - ${message}`,
+      );
+      return response.status(status).json(errorResponse);
+    }
 
     const status =
       exception instanceof HttpException
