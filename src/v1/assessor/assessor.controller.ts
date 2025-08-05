@@ -1,13 +1,5 @@
-import {
-  Body,
-  Controller,
-  Post,
-  UseGuards,
-  UsePipes,
-  Inject,
-  forwardRef,
-} from '@nestjs/common';
-import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ApiKeyGuard } from 'src/auth/api-key.guard';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import { ZodValidationPipe } from 'src/common/zod-validation.pipe';

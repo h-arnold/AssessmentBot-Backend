@@ -6,7 +6,6 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { LoggerModule, Params } from 'nestjs-pino';
 
 import { AuthModule } from './auth/auth.module';
-import { CommonModule } from './common/common.module';
 import { LogRedactor } from './common/utils/log-redactor.util';
 import { ConfigModule } from './config/config.module';
 import { ConfigService } from './config/config.service';
