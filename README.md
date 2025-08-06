@@ -313,7 +313,7 @@ The application uses environment variables for configuration. Copy `.env.example
 
 ### Rate Limiting (Throttling)
 
-- `THROTTLER_TTL`: Time-to-live for rate-limiting windows in seconds. Default is `60`.
+- `THROTTLER_TTL`: Time-to-live for rate-limiting windows in milliseconds. Default is `10000`.
 - `UNAUTHENTICATED_THROTTLER_LIMIT`: Maximum requests per TTL window for unauthenticated routes. Default is `10`.
 - `AUTHENTICATED_THROTTLER_LIMIT`: Maximum requests per TTL window for authenticated routes. Default is `90`.
 
