@@ -41,7 +41,7 @@ This document should provide detailed documentation for the core Assessor module
 
 ## Performance Considerations
 
-- Processing time optimization
+- Processing time optimisation
 - Memory usage
 - Concurrent request handling
 - Rate limiting impact
