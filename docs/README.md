@@ -30,9 +30,9 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 
 - [API Reference](api/API_Documentation.md) - Complete API endpoint documentation
 - [Authentication](auth/API_Key_Management.md) - API key management and authentication
-- [Request/Response Schemas](api/schemas.md) - _[TODO]_ Detailed data schemas
-- [Error Codes](api/error-codes.md) - _[TODO]_ API error handling and codes
-- [Rate Limiting](api/rate-limiting.md) - _[TODO]_ API rate limiting details
+- [Request/Response Schemas](api/schemas.md) - Detailed data schemas
+- [Error Codes](api/error-codes.md) - API error handling and codes
+- [Rate Limiting](api/rate-limiting.md) - API rate limiting details
 
 ### ⚙️ Configuration
 
