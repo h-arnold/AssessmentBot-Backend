@@ -135,7 +135,7 @@ For IMAGE tasks where reference, template, and studentResponse have inconsistent
 }
 ```
 
-### 401 - Unauthorised
+### 401 - Unauthorized
 
 Returned when authentication fails or is missing.
 
