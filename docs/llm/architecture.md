@@ -27,7 +27,7 @@ This document should explain the Large Language Model integration architecture.
 
 ## Performance Considerations
 
-- Response time optimization
+- Response time optimisation
 - Rate limiting handling
 - Retry mechanisms
 - Caching strategies
