@@ -393,7 +393,7 @@ Rate limit violations are logged with:
 - Shared IP addresses (multiple clients)
 - Incorrect TTL configuration
 - Client retry loops
-  **Solutions**:
+**Solutions**:
 - Check IP sharing scenarios
 - Verify environment configuration
 - Implement proper error handling
