@@ -1,16 +1,22 @@
 import { Logger } from '@nestjs/common';
 
 import { Prompt } from './prompt.base';
+
 /**
- * A prompt for assessing table-based tasks.
+ * Prompt implementation for assessing table-based tasks.
+ *
+ * This class handles the creation of prompts for table assessment tasks,
+ * using specific templates optimised for evaluating tabular data submissions.
+ * It inherits all common prompt functionality from the base Prompt class.
  */
 export class TablePrompt extends Prompt {
   /**
-   * Initializes the TablePrompt instance.
-   * @param inputs The prompt inputs.
-   * @param logger The logger instance.
-   * @param userTemplateName The name of the user template file.
-   * @param systemPrompt The system prompt string.
+   * Initialises the TablePrompt instance with table-specific configuration.
+   *
+   * @param inputs - Raw input data to be validated containing table information
+   * @param logger - Logger instance for recording table prompt operations
+   * @param userTemplateName - Optional name of the user template file (defaults to table template)
+   * @param systemPrompt - Optional system prompt string providing context for table assessment
    */
   constructor(
     inputs: unknown,

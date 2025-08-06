@@ -5,6 +5,13 @@ import { LLMService } from '../../llm/llm.service.interface';
 import { LlmResponse } from '../../llm/types';
 import { PromptFactory } from '../../prompt/prompt.factory';
 
+/**
+ * Service responsible for orchestrating the assessment creation process.
+ *
+ * This service acts as the primary business logic layer for assessment operations.
+ * It coordinates between the prompt generation system and the LLM service to
+ * create comprehensive assessments based on provided criteria and student responses.
+ */
 @Injectable()
 export class AssessorService {
   /**
