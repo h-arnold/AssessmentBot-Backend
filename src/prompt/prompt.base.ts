@@ -6,24 +6,38 @@ import { readMarkdown } from '../common/file-utils';
 import { LlmPayload } from '../llm/llm.service.interface';
 
 /**
- * Zod schema for validating the basic inputs for any prompt.
+ * Zod schema for validating basic inputs required for any prompt.
+ *
+ * This schema ensures that all prompt types receive the essential
+ * data needed for assessment: a reference task, student task, and
+ * empty task template.
  */
 export const PromptInputSchema = z.object({
+  /** The reference or model solution for the task */
   referenceTask: z.string(),
+  /** The student's submitted response to the task */
   studentTask: z.string(),
+  /** The original task prompt or template given to the student */
   emptyTask: z.string(),
 });
 
 /**
- * Type inferred from the PromptInputSchema.
+ * Type representing validated prompt input data.
  */
 export type PromptInput = z.infer<typeof PromptInputSchema>;
 
 /**
- * An abstract base class for all prompt types.
+ * Abstract base class for all prompt implementations.
  *
- * It handles common functionality such as input validation, template reading,
- * and rendering. Subclasses must implement the `buildMessage` method.
+ * This class provides common functionality for prompt generation including:
+ * - Input validation using Zod schemas
+ * - Template loading and rendering with Mustache
+ * - Common properties and lifecycle management
+ *
+ * Subclasses must implement the `buildMessage` method to create
+ * task-specific LLM payloads appropriate for their assessment type.
+ *
+ * @abstract
  */
 export abstract class Prompt {
   protected referenceTask!: string;
@@ -35,11 +49,17 @@ export abstract class Prompt {
   protected systemPrompt?: string;
 
   /**
-   * Initializes the Prompt instance.
-   * @param inputs The raw, unknown input, which is then validated against the PromptInputSchema.
-   * @param logger The logger instance.
-   * @param userTemplateName Optional name of the markdown template for user message parts.
-   * @param systemPrompt Optional system prompt string.
+   * Initialises the Prompt instance with validated input data.
+   *
+   * This constructor validates the provided inputs against the schema,
+   * stores the validated data as instance properties, and configures
+   * the prompt with template and system prompt information.
+   *
+   * @param inputs - Raw input data to be validated against PromptInputSchema
+   * @param logger - Logger instance for recording prompt operations
+   * @param userTemplateName - Optional name of the markdown template for user message parts
+   * @param systemPrompt - Optional system prompt string for LLM context
+   * @throws Error if input validation fails
    */
   constructor(
     inputs: unknown,

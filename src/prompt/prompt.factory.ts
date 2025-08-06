@@ -11,17 +11,34 @@ import {
 } from '../v1/assessor/dto/create-assessor.dto';
 
 /**
- * A factory for creating prompt instances based on the task type.
+ * Factory service for creating task-specific prompt instances.
+ *
+ * This factory implements the Factory pattern to create appropriate prompt
+ * objects based on the type of assessment task (TEXT, TABLE, or IMAGE).
+ * It handles the loading of prompt templates from markdown files and
+ * instantiates the correct prompt subclass with the necessary configuration.
  */
 @Injectable()
 export class PromptFactory {
+  /**
+   * Constructs the PromptFactory.
+   *
+   * @param logger - Logger instance for recording prompt creation activities
+   */
   constructor(private readonly logger: Logger) {}
 
   /**
-   * Creates a prompt instance based on the provided DTO.
-   * @param dto The DTO containing the task type and other data.
-   * @returns A prompt instance.
-   * @throws An error if the task type is unsupported.
+   * Creates an appropriate prompt instance based on the provided assessment data.
+   *
+   * This method orchestrates the creation of task-specific prompts by:
+   * 1. Extracting input data from the DTO
+   * 2. Determining the correct prompt template files
+   * 3. Loading system prompts from markdown files
+   * 4. Instantiating the appropriate prompt subclass
+   *
+   * @param dto - Data transfer object containing task type and assessment data
+   * @returns A promise resolving to a task-specific prompt instance
+   * @throws Error if the task type is unsupported
    */
   public async create(dto: CreateAssessorDto): Promise<Prompt> {
     const inputs = {
@@ -41,9 +58,15 @@ export class PromptFactory {
   }
 
   /**
-   * Determines the prompt file names based on the task type.
-   * @param taskType The task type.
-   * @returns An object containing the system and user prompt file names.
+   * Determines the appropriate prompt template files based on task type.
+   *
+   * Different task types require different prompt templates for optimal
+   * LLM performance. This method maps task types to their corresponding
+   * system and user prompt template files.
+   *
+   * @param taskType - The type of assessment task
+   * @returns Object containing the names of system and user prompt template files
+   * @throws Error if the task type is not supported
    */
   private getPromptFiles(taskType: TaskType): {
     systemPromptFile?: string;
@@ -71,9 +94,14 @@ export class PromptFactory {
   }
 
   /**
-   * Loads the system prompt content from a markdown file.
-   * @param systemPromptFile The name of the system prompt file.
-   * @returns The content of the system prompt file, or undefined if the file name is not provided.
+   * Loads system prompt content from a markdown template file.
+   *
+   * System prompts provide the LLM with context and instructions for
+   * how to approach the assessment task. This method safely loads
+   * the content from markdown files in the templates directory.
+   *
+   * @param systemPromptFile - Name of the system prompt markdown file
+   * @returns Promise resolving to the prompt content, or undefined if no file specified
    */
   private async loadSystemPrompt(
     systemPromptFile?: string,
@@ -85,12 +113,18 @@ export class PromptFactory {
   }
 
   /**
-   * Instantiates the correct Prompt subclass.
-   * @param dto The DTO.
-   * @param inputs The prompt inputs.
-   * @param userTemplateFile The name of the user template file.
-   * @param systemPrompt The system prompt string.
-   * @returns A prompt instance.
+   * Instantiates the appropriate prompt subclass based on task type.
+   *
+   * This method creates the specific prompt implementation (TextPrompt,
+   * TablePrompt, or ImagePrompt) with the appropriate configuration
+   * for the given task type and input data.
+   *
+   * @param dto - The assessment data transfer object
+   * @param inputs - Validated prompt input data
+   * @param userTemplateFile - Name of the user template file (if applicable)
+   * @param systemPrompt - System prompt content (if applicable)
+   * @returns Configured prompt instance ready for message generation
+   * @throws Error if the task type is not supported
    */
   private instantiatePrompt(
     dto: CreateAssessorDto,

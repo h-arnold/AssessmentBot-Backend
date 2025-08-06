@@ -47,9 +47,22 @@ export class AssessorController {
   ) {}
 
   /**
-   * Handles the creation of a new assessment.
-   * @param createAssessorDto The data transfer object containing assessment details.
-   * @returns A promise that resolves to the result of the assessment creation.
+   * Creates a new assessment by processing the provided task data.
+   *
+   * This endpoint serves as the primary entry point for assessment requests.
+   * It performs comprehensive validation including schema validation via Zod
+   * and specialized image validation for IMAGE task types. The method then
+   * delegates to the AssessorService to orchestrate the assessment process.
+   *
+   * **Image Task Validation:**
+   * For IMAGE task types, this method performs additional validation on the
+   * image data using the ImageValidationPipe to ensure proper format, size,
+   * and MIME type compliance.
+   *
+   * @param createAssessorDto - Validated data transfer object containing task details
+   * @returns Promise resolving to LLM assessment response with scoring and reasoning
+   * @throws {BadRequestException} If validation fails for any field
+   * @throws {UnauthorizedException} If API key authentication fails
    */
   @Post()
   async create(

@@ -8,10 +8,23 @@ import { getCurrentDirname } from '../common/file-utils';
 import { LlmPayload } from '../llm/llm.service.interface';
 
 /**
- * A prompt for assessing image-based tasks.
+ * Prompt implementation for assessing image-based tasks.
+ *
+ * This class handles the creation of prompts for image assessment tasks,
+ * supporting both file-based images and data URI encoded images. It manages
+ * the conversion of image data into formats suitable for LLM processing
+ * and implements security measures for file access.
  */
 export class ImagePrompt extends Prompt {
-  // ImagePrompt does not use a user template, so override with custom logic
+  /**
+   * Builds user message parts for image prompts.
+   *
+   * Image prompts handle content differently from text prompts and
+   * typically don't require separate user message parts since the
+   * images are included directly in the payload.
+   *
+   * @returns Promise resolving to an empty array of Parts
+   */
   protected async buildUserMessageParts(): Promise<
     import('@google/generative-ai').Part[]
   > {
@@ -21,11 +34,12 @@ export class ImagePrompt extends Prompt {
   private readonly images: { path: string; mimeType: string }[];
 
   /**
-   * Initializes the ImagePrompt instance.
-   * @param inputs The prompt inputs.
-   * @param logger The logger instance.
-   * @param images An array of image objects.
-   * @param systemPrompt The system prompt string.
+   * Initialises the ImagePrompt instance with image-specific configuration.
+   *
+   * @param inputs - Validated prompt input data containing image information
+   * @param logger - Logger instance for recording image prompt operations
+   * @param images - Optional array of image objects with file paths and MIME types
+   * @param systemPrompt - Optional system prompt string providing context for image assessment
    */
   constructor(
     inputs: PromptInput,
@@ -39,7 +53,13 @@ export class ImagePrompt extends Prompt {
 
   /**
    * Builds the LLM payload for an image-based assessment.
-   * @returns A Promise that resolves to the LlmPayload.
+   *
+   * Creates a payload suitable for multimodal LLMs that can process both
+   * text and images. The method handles two scenarios:
+   * 1. File-based images: reads image files from disk
+   * 2. Data URI images: extracts image data from base64 encoded strings
+   *
+   * @returns Promise resolving to an LlmPayload containing system prompt and image data
    */
   public async buildMessage(): Promise<LlmPayload> {
     // For image prompts, the user message is a combination of the rendered system prompt
@@ -61,8 +81,13 @@ export class ImagePrompt extends Prompt {
   }
 
   /**
-   * Helper to build images payload from file paths
-   * @returns A promise that resolves to an array of image data and mime types.
+   * Builds image payload from file paths on the filesystem.
+   *
+   * Reads image files from disk and converts them to base64 format
+   * suitable for LLM processing. This method is used when images
+   * are provided as file references rather than embedded data.
+   *
+   * @returns Promise resolving to array of image data and MIME type objects
    */
   private async buildImagesFromFiles(): Promise<
     { data: string; mimeType: string }[]
@@ -75,8 +100,14 @@ export class ImagePrompt extends Prompt {
   }
 
   /**
-   * Helper to build images payload from data URIs in inputs
-   * @returns An array of image data and mime types.
+   * Builds image payload from data URIs embedded in the input.
+   *
+   * Extracts base64-encoded image data from data URI strings in the
+   * input fields. This method assumes the validation pipeline has
+   * already confirmed all image fields contain valid data URIs.
+   *
+   * @returns Array of image data and MIME type objects
+   * @throws Error if any data URI is malformed
    */
   private buildImagesFromDataUris(): { data: string; mimeType: string }[] {
     // Assumes validation pipeline guarantees all three tasks are valid data URIs

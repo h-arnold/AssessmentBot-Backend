@@ -1,9 +1,22 @@
 import { z } from 'zod';
 
 /**
- * Defines the schema for a single assessment criterion.
- * - `score`: An integer between 0 and 5.
- * - `reasoning`: A non-empty string explaining the score.
+ * Type representing a single assessment criterion with score and reasoning.
+ *
+ * Each assessment criterion consists of a numerical score (0-5) and
+ * a textual explanation for that score. This provides both quantitative
+ * and qualitative feedback for assessment results.
+ */
+export type AssessmentCriterion = z.infer<typeof AssessmentCriterionSchema>;
+
+/**
+ * Zod schema for validating a single assessment criterion.
+ *
+ * Defines the structure and validation rules for individual assessment
+ * criteria used in LLM-generated assessments.
+ *
+ * @property score - Integer between 0 and 5 representing the assessment score
+ * @property reasoning - Non-empty string explaining the rationale for the score
  */
 export const AssessmentCriterionSchema = z.object({
   score: z.number().int().min(0).max(5),
@@ -11,17 +24,15 @@ export const AssessmentCriterionSchema = z.object({
 });
 
 /**
- * Defines the schema for the complete LLM assessment response.
- * It expects exactly three criteria: completeness, accuracy, and spag.
- */
-/**
- * Schema for validating the response from an LLM (Large Language Model).
- * This schema ensures that the response adheres to specific assessment criteria.
+ * Zod schema for validating complete LLM assessment responses.
  *
- * Properties:
- * - `completeness`: Represents the completeness of the response, validated using the `AssessmentCriterionSchema`.
- * - `accuracy`: Represents the accuracy of the response, validated using the `AssessmentCriterionSchema`.
- * - `spag`: Represents spelling, punctuation, and grammar (SPAG) of the response, validated using the `AssessmentCriterionSchema`.
+ * This schema ensures that LLM responses conform to the expected structure
+ * with exactly three assessment criteria: completeness, accuracy, and SPAG
+ * (Spelling, Punctuation, and Grammar).
+ *
+ * @property completeness - Assessment of how complete the response is
+ * @property accuracy - Assessment of the factual accuracy of the response
+ * @property spag - Assessment of spelling, punctuation, and grammar quality
  */
 export const LlmResponseSchema = z.object({
   completeness: AssessmentCriterionSchema,
@@ -30,6 +41,10 @@ export const LlmResponseSchema = z.object({
 });
 
 /**
- * TypeScript type inferred from the LlmResponseSchema.
+ * Type representing a complete LLM assessment response.
+ *
+ * This type is inferred from the LlmResponseSchema and represents
+ * the expected structure of assessment results returned by the LLM.
+ * It contains three assessment criteria with scores and reasoning.
  */
 export type LlmResponse = z.infer<typeof LlmResponseSchema>;
