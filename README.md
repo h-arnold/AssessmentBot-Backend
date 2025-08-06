@@ -31,7 +31,7 @@ To get the Assessment Bot backend up and running, follow these steps:
 
 ### Prerequisites
 
-- **Node.js**: Version 22.x or later. You can download it from [nodejs.org](https://nodejs.org/).
+- **Node.js**: Version 22.x. You can download it from [nodejs.org](https://nodejs.org/).
 - **Docker**: Docker Desktop (or Docker Engine and Docker Compose) installed and running. Follow the instructions for your operating system on the [Docker website](https://www.docker.com/get-started).
 - **Git**: Git installed and configured. You can download it from [git-scm.com](https://git-scm.com/downloads).
 
@@ -189,47 +189,67 @@ src
 │ └── assessor.service.ts
 │
 ├── auth
-│ ├── guards
-│ │ └── api-key.guard.ts
-│ ├── strategies
-│ │ └── api-key.strategy.ts
-│ └── auth.module.ts
+│ ├── api-key.guard.ts
+│ ├── api-key.service.ts
+│ ├── api-key.strategy.ts
+│ ├── auth.module.ts
+│ └── user.interface.ts
 │
 ├── common
-│ ├── filters
-│ │ └── http-exception.filter.ts
-│ ├── logger
-│ │ └── logger.module.ts
+│ ├── common.module.ts
+│ ├── file-utils.ts
+│ ├── http-exception.filter.ts
+│ ├── json-parser.util.ts
 │ ├── pipes
-│ │ └── zod-validation.pipe.ts
-│ └── utils
-│ └── json-parser.util.ts
+│ │ └── image-validation.pipe.ts
+│ ├── utils
+│ │ ├── log-redactor.util.ts
+│ │ └── type-guards.ts
+│ └── zod-validation.pipe.ts
 │
 ├── config
-│ └── config.module.ts
+│ ├── config.module.ts
+│ ├── config.service.ts
+│ ├── env.schema.ts
+│ ├── index.ts
+│ └── throttler.config.ts
 │
-├── docs
-│ └── swagger.module.ts
+├── llm
+│ ├── gemini.service.ts
+│ ├── llm.module.ts
+│ ├── llm.service.interface.ts
+│ ├── resource-exhausted.error.ts
+│ └── types.ts
 │
 ├── prompt
-│ ├── prompt.superclass.ts
-│ ├── text-prompt.subclass.ts
-│ ├── table-prompt.subclass.ts
-│ └── image-prompt.subclass.ts
+│ ├── image.prompt.ts
+│ ├── prompt.base.ts
+│ ├── prompt.factory.ts
+│ ├── prompt.module.ts
+│ ├── table.prompt.ts
+│ ├── templates
+│ │ ├── image.system.prompt.md
+│ │ ├── table.system.prompt.md
+│ │ ├── table.user.prompt.md
+│ │ ├── text.system.prompt.md
+│ │ └── text.user.prompt.md
+│ └── text.prompt.ts
+│
+└── status
+├── status.controller.ts
+├── status.module.ts
+└── status.service.ts
 │
 
 ### Component Breakdown
 
 - `v1/assessor`: The versioned core feature module. The `AssessorController` serves as the entry point for API requests, the `AssessorService` orchestrates the business logic (calling the LLM, parsing the response), and the `dto` subdirectory defines the shape of the data using Zod schemas. Versioning allows for future API evolution without breaking existing clients.
-- `common/filters`: Contains global error handling logic, such as `HttpExceptionFilter`, to standardise and centralize error responses and logging.
-- `common/logger`: Provides a centralized, structured logging solution using Pino and integrates with NestJS for consistent, high-performance logs across the application.
-- `throttler`: Provides rate limiting and abuse prevention for API endpoints, typically using `@nestjs/throttler`.
-- `docs`: Contains Swagger/OpenAPI documentation setup, such as `swagger.module.ts`, to provide interactive and always up-to-date API docs for consumers.
-- `auth`: This module handles all authentication concerns. It contains the Passport.js `ApiKeyStrategy` for validating API keys and the `ApiKeyGuard` to protect endpoints, keeping security logic isolated.
-- `prompt`: Provides a flexible, object-oriented abstraction for generating prompts tailored to different assessment types. Sub-classes are created for specific prompt types.
-- `llm`: This module abstracts the interaction with Large Language Models. It features an abstract `LlmService` class, allowing the application to easily swap out different LLM providers (like OpenAI, Anthropic, etc.) by creating new concrete implementations. This is a direct application of the Open/Closed Principle from SOLID.
-- `config`: Manages environment variables using a custom ConfigModule and ConfigService (see `src/config`). All configuration is validated centrally using Zod schemas and is accessible in a type-safe manner. Do not use @nestjs/config directly outside the config module.
-- `common`: A module for shared, reusable components that don't belong to a specific feature. This includes custom `pipes` (for Zod validation) and `utils` (like the resilient JSON parser).
+- `auth`: This module handles all authentication concerns. It contains the Passport.js `ApiKeyStrategy` for validating API keys, the `ApiKeyGuard` to protect endpoints, and the `ApiKeyService` for key management, keeping security logic isolated.
+- `common`: A module for shared, reusable components that don't belong to a specific feature. This includes custom `pipes` (for Zod validation and image validation), `utils` (like the resilient JSON parser and logging utilities), and the global HTTP exception filter.
+- `config`: Manages environment variables using a custom ConfigModule and ConfigService. All configuration is validated centrally using Zod schemas and is accessible in a type-safe manner. Includes throttler configuration for rate limiting.
+- `llm`: This module abstracts the interaction with Large Language Models. It features the `LlmService` interface and concrete implementations like `GeminiService`. This design allows the application to easily support different LLM providers while maintaining a consistent internal interface.
+- `prompt`: Provides a flexible, object-oriented abstraction for generating prompts tailored to different assessment types. The `PromptBase` class serves as the foundation, with specific implementations for text, table, and image prompts. Template files are stored in the `templates` subdirectory.
+- `status`: Provides health check and status endpoints for monitoring the application's state and version information.
 
 ## Testing Structure
 
@@ -276,23 +296,56 @@ The testing strategy follows the classic testing pyramid model:
 
 ## Environment Variables
 
-The following environment variables control image upload validation:
+The application uses environment variables for configuration. Copy `.env.example` to `.env` and configure the following variables:
 
-- `MAX_IMAGE_UPLOAD_SIZE_MB`: Sets the maximum allowed image size (in megabytes) for uploads. Default is `1` MB. Increase this value to allow larger images.
-- `ALLOWED_IMAGE_MIME_TYPES`: Comma-separated list of allowed image MIME types (e.g., `image/png,image/jpeg`). Default is `image/png`. Only images matching these types will be accepted by the `/v1/assessor` endpoint when `taskType` is `IMAGE`.
+### Required Variables
 
-To configure these, edit your `.env` file:
+- `GEMINI_API_KEY`: The API key for the Google Gemini service. Required for LLM functionality.
+
+### Authentication & Security
+
+- `API_KEYS`: Comma-separated list of valid API keys for client authentication. Use strong, randomly generated strings (e.g., `openssl rand -base64 32`).
+
+### Image Upload Configuration
+
+- `MAX_IMAGE_UPLOAD_SIZE_MB`: Sets the maximum allowed image size (in megabytes) for uploads. Default is `1` MB.
+- `ALLOWED_IMAGE_MIME_TYPES`: Comma-separated list of allowed image MIME types (e.g., `image/png,image/jpeg`). Default is `image/png`.
+
+### Rate Limiting (Throttling)
+
+- `THROTTLER_TTL`: Time-to-live for rate-limiting windows in milliseconds. Default is `10000`.
+- `UNAUTHENTICATED_THROTTLER_LIMIT`: Maximum requests per TTL window for unauthenticated routes. Default is `10`.
+- `AUTHENTICATED_THROTTLER_LIMIT`: Maximum requests per TTL window for authenticated routes. Default is `90`.
+
+### LLM Configuration
+
+- `LLM_BACKOFF_BASE_MS`: Base backoff time in milliseconds for LLM rate limit retries. Default is `1000`.
+- `LLM_MAX_RETRIES`: Maximum number of retry attempts for LLM rate limit errors. Default is `3`.
+
+### Application Settings
+
+- `NODE_ENV`: Application environment (`development`, `production`, `test`). Default is `development`.
+- `PORT`: Port on which the server runs. Default is `3000`.
+- `APP_NAME`: Application name. Default is `AssessmentBot-Backend`.
+- `APP_VERSION`: Application version. Optional, defaults to version from `package.json`.
+- `LOG_LEVEL`: Logging verbosity level (`fatal`, `error`, `warn`, `info`, `debug`, `verbose`). Default is `info`.
+
+### Example Configuration
 
 ```env
+NODE_ENV=development
+PORT=3000
+GEMINI_API_KEY=your_gemini_api_key_here
+API_KEYS=your_secret_key,another_secret_key
 MAX_IMAGE_UPLOAD_SIZE_MB=1
-ALLOWED_IMAGE_MIME_TYPES=image/png
+ALLOWED_IMAGE_MIME_TYPES=image/png,image/jpeg
 ```
 
-These variables are validated at runtime using Zod and can be changed to suit your deployment requirements. If an uploaded image exceeds the size limit or is of a disallowed type, the API will return a `400 Bad Request` error with a descriptive message.
+All variables are validated at startup using Zod schemas to ensure type safety and proper configuration.
 
-## Security & Pentesting Utilities
+## Security & Quality Assurance
 
-This project includes scripts for automated penetration testing and abuse simulation. These scripts help you proactively test the robustness of the API against brute force, flooding (DoS), and advanced input attacks.
+This project includes automated penetration testing and security validation through dedicated E2E tests. These tests help proactively validate the robustness of the API against various attack vectors including prototype pollution, NoSQL injection, brute force attempts, and advanced input attacks.
 
 ### Required GitHub Secrets
 
@@ -304,53 +357,22 @@ The following secrets must be configured in the GitHub repository settings for w
 
 **Note**: The SonarQube configuration (project key, organisation, and host URL) is already defined in `sonar-project.properties`.
 
-### Pentest Scripts
+### Security Testing
 
-- **Brute Force API Key Attack**
-  - `scripts/pentest-bruteforce.js`: Attempts to brute force API keys by sending requests with keys from a wordlist.
-  - Usage:
-
-    ```bash
-    node scripts/pentest-bruteforce.js <url> <wordlist.txt>
-    ```
-
-    - `<url>`: Base URL of your running AssessmentBot instance (e.g., http://localhost:3000)
-    - `<wordlist.txt>`: File with one API key candidate per line
-
-- **Flooding/DoS Attack**
-  - `scripts/pentest-flood.js`: Sends a large number of requests in parallel to simulate a denial-of-service attack.
-  - Usage:
-
-    ```bash
-    node scripts/pentest-flood.js <url> <apiKey> <count>
-    ```
-
-    - `<url>`: Base URL of your running AssessmentBot instance
-    - `<apiKey>`: A valid API key
-    - `<count>`: Number of requests to send in parallel
-
-- **Unified Pentest Runner**
-  - `scripts/pentest-all.js`: Runs brute force, flood, and/or e2e pentest tests in sequence.
-  - Usage:
-
-    ```bash
-    npm run test:pentest -- <mode> [args...]
-    ```
-
-    - Modes:
-      - `bruteforce <url> <wordlist.txt>`
-      - `flood <url> <apiKey> <count>`
-      - `e2e`
-      - `all <url> <wordlist.txt> <apiKey> <count>`
-
-### Example
-
-To run all pentests in sequence:
+Security tests are integrated into the E2E test suite and can be run using:
 
 ```bash
-npm run test:pentest -- all http://localhost:3000 wordlist.txt your_api_key 100
+npm run test:e2e
 ```
 
-> **Note:** These scripts are for internal security testing only. Do not use them against production systems without explicit authorization.
+The test suite includes:
+
+- Penetration testing for common vulnerabilities
+- API key authentication validation
+- Rate limiting verification
+- Input validation and sanitisation testing
+- Advanced attack vector simulation
+
+> **Note:** These tests are for internal security validation only. Do not use them against production systems without explicit authorisation.
 
 ---

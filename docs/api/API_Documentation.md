@@ -135,6 +135,42 @@ The health check endpoint provides information about the application's status.
   ```
   _(Note: The `timestamp` will reflect the actual time of the request, and `applicationName` and `version` are retrieved dynamically from `package.json`.)_
 
+### Hello World
+
+A simple connectivity test endpoint.
+
+- **URL:** `/`
+- **Method:** `GET`
+- **Description:** Returns a simple greeting message to confirm the application is responding.
+- **Response:** `Hello World!`
+
+### Test Error
+
+An endpoint for testing error handling mechanisms.
+
+- **URL:** `/test-error`
+- **Method:** `GET`
+- **Description:** Intentionally throws a 400 Bad Request error to test exception filters.
+- **Response:** `400 Bad Request` with error message "This is a test error"
+
+### Authentication Check
+
+An endpoint for verifying API key authentication.
+
+- **URL:** `/check-auth`
+- **Method:** `GET`
+- **Authentication:** Required (API key)
+- **Description:** Verifies that API key authentication is working correctly.
+- **Response:**
+  ```json
+  {
+    "message": "Authentication successful",
+    "user": {
+      "apiKey": "***redacted***"
+    }
+  }
+  ```
+
 ## Error Handling
 
 Details on error handling and common error codes will be provided here as the API develops.
