@@ -343,9 +343,9 @@ ALLOWED_IMAGE_MIME_TYPES=image/png,image/jpeg
 
 All variables are validated at startup using Zod schemas to ensure type safety and proper configuration.
 
-## Security & Pentesting Utilities
+## Security & Quality Assurance
 
-This project includes scripts for automated penetration testing and abuse simulation. These scripts help you proactively test the robustness of the API against brute force, flooding (DoS), and advanced input attacks.
+This project includes automated penetration testing and security validation through dedicated E2E tests. These tests help proactively validate the robustness of the API against various attack vectors including prototype pollution, NoSQL injection, brute force attempts, and advanced input attacks.
 
 ### Required GitHub Secrets
 
@@ -357,53 +357,22 @@ The following secrets must be configured in the GitHub repository settings for w
 
 **Note**: The SonarQube configuration (project key, organisation, and host URL) is already defined in `sonar-project.properties`.
 
-### Pentest Scripts
+### Security Testing
 
-- **Brute Force API Key Attack**
-  - `scripts/pentest-bruteforce.js`: Attempts to brute force API keys by sending requests with keys from a wordlist.
-  - Usage:
-
-    ```bash
-    node scripts/pentest-bruteforce.js <url> <wordlist.txt>
-    ```
-
-    - `<url>`: Base URL of your running AssessmentBot instance (e.g., http://localhost:3000)
-    - `<wordlist.txt>`: File with one API key candidate per line
-
-- **Flooding/DoS Attack**
-  - `scripts/pentest-flood.js`: Sends a large number of requests in parallel to simulate a denial-of-service attack.
-  - Usage:
-
-    ```bash
-    node scripts/pentest-flood.js <url> <apiKey> <count>
-    ```
-
-    - `<url>`: Base URL of your running AssessmentBot instance
-    - `<apiKey>`: A valid API key
-    - `<count>`: Number of requests to send in parallel
-
-- **Unified Pentest Runner**
-  - `scripts/pentest-all.js`: Runs brute force, flood, and/or e2e pentest tests in sequence.
-  - Usage:
-
-    ```bash
-    npm run test:pentest -- <mode> [args...]
-    ```
-
-    - Modes:
-      - `bruteforce <url> <wordlist.txt>`
-      - `flood <url> <apiKey> <count>`
-      - `e2e`
-      - `all <url> <wordlist.txt> <apiKey> <count>`
-
-### Example
-
-To run all pentests in sequence:
+Security tests are integrated into the E2E test suite and can be run using:
 
 ```bash
-npm run test:pentest -- all http://localhost:3000 wordlist.txt your_api_key 100
+npm run test:e2e
 ```
 
-> **Note:** These scripts are for internal security testing only. Do not use them against production systems without explicit authorization.
+The test suite includes:
+
+- Penetration testing for common vulnerabilities
+- API key authentication validation
+- Rate limiting verification
+- Input validation and sanitisation testing
+- Advanced attack vector simulation
+
+> **Note:** These tests are for internal security validation only. Do not use them against production systems without explicit authorisation.
 
 ---
