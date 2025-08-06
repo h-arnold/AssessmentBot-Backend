@@ -294,6 +294,16 @@ These variables are validated at runtime using Zod and can be changed to suit yo
 
 This project includes scripts for automated penetration testing and abuse simulation. These scripts help you proactively test the robustness of the API against brute force, flooding (DoS), and advanced input attacks.
 
+### Required GitHub Secrets
+
+The following secrets must be configured in the GitHub repository settings for workflows to function properly:
+
+- **`SONAR_TOKEN`**: Required for SonarQube/SonarCloud static analysis. This token should be generated from your SonarCloud account and have permissions to analyse the `h-arnold_AssessmentBot-Backend` project.
+  - Go to [SonarCloud My Account](https://sonarcloud.io/account/security) → Security → Generate Token
+  - Add the token to GitHub repository Settings → Secrets and variables → Actions → New repository secret
+
+**Note**: The SonarQube configuration (project key, organisation, and host URL) is already defined in `sonar-project.properties`.
+
 ### Pentest Scripts
 
 - **Brute Force API Key Attack**

@@ -24,7 +24,7 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v2
         with:
           projectBaseDir: .
-          # You must set SONAR_TOKEN and SONAR_HOST_URL as secrets in your repo
+          # You must set SONAR_TOKEN as a secret in your repo
+          # SONAR_HOST_URL is configured in sonar-project.properties
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
