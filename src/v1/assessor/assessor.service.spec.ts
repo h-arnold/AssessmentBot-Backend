@@ -145,5 +145,26 @@ describe('AssessorService', () => {
       expect(llmService.send).toHaveBeenCalledWith(mockMultimodalPayload);
       expect(result).toEqual({ score: 4 });
     });
+    it('should not have __proto__ property in the DTO', async () => {
+      const dto: CreateAssessorDto = {
+        taskType: TaskType.TEXT,
+        reference: 'ref',
+        studentResponse: 'stud',
+        template: 'temp',
+      };
+
+      const mockPrompt = {
+        buildMessage: jest.fn().mockResolvedValue('prompt message'),
+      };
+      (promptFactory.create as jest.Mock).mockReturnValue(mockPrompt);
+      (llmService.send as jest.Mock).mockResolvedValue({ score: 5 });
+
+      await service.createAssessment(dto);
+
+      const receivedDto = (promptFactory.create as jest.Mock).mock.calls[0][0];
+      expect(
+        Object.prototype.hasOwnProperty.call(receivedDto, '__proto__'),
+      ).toBe(false);
+    });
   });
 });

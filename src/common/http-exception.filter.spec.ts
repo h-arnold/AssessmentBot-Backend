@@ -8,6 +8,58 @@ import {
 import { HttpExceptionFilter } from './http-exception.filter';
 
 describe('HttpExceptionFilter', () => {
+  it('should handle Express PayloadTooLargeError and return 413', () => {
+    // Simulate Express body-parser PayloadTooLargeError
+    const payloadTooLargeError = {
+      type: 'entity.too.large',
+      message: 'request entity too large',
+    };
+    const mockJson = jest.fn();
+    const mockStatus = jest.fn().mockImplementation(() => ({ json: mockJson }));
+    const mockGetResponse = jest
+      .fn()
+      .mockImplementation(() => ({ status: mockStatus }));
+    const mockGetRequest = jest.fn().mockImplementation(() => ({
+      url: '/test-large',
+      method: 'POST',
+      ip: '127.0.0.1',
+      headers: { 'user-agent': 'jest' },
+    }));
+    const mockHttpArgumentsHost = jest.fn().mockImplementation(() => ({
+      getResponse: mockGetResponse,
+      getRequest: mockGetRequest,
+      getNext: jest.fn(),
+    }));
+    const mockArgumentsHost: ArgumentsHost = {
+      switchToHttp: mockHttpArgumentsHost,
+      getArgByIndex: jest.fn(),
+      getArgs: jest.fn(),
+      getType: jest.fn(),
+      switchToRpc: jest.fn(),
+      switchToWs: jest.fn(),
+    };
+    const loggerSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+
+    filter.catch(payloadTooLargeError, mockArgumentsHost);
+
+    expect(mockStatus).toHaveBeenCalledWith(HttpStatus.PAYLOAD_TOO_LARGE);
+    expect(mockJson).toHaveBeenCalledWith({
+      statusCode: HttpStatus.PAYLOAD_TOO_LARGE,
+      message: 'Payload Too Large',
+      timestamp: expect.any(String),
+      path: '/test-large',
+    });
+    expect(loggerSpy).toHaveBeenCalledWith(
+      {
+        method: 'POST',
+        path: '/test-large',
+        ip: '127.0.0.1',
+        headers: { 'user-agent': 'jest' },
+        userAgent: 'jest',
+      },
+      `HTTP ${HttpStatus.PAYLOAD_TOO_LARGE} - Payload Too Large`,
+    );
+  });
   let filter: HttpExceptionFilter;
   let logger: Logger;
 
