@@ -31,7 +31,7 @@ To get the Assessment Bot backend up and running, follow these steps:
 
 ### Prerequisites
 
-- **Node.js**: Version 22.x or later. You can download it from [nodejs.org](https://nodejs.org/).
+- **Node.js**: Version 22.x. You can download it from [nodejs.org](https://nodejs.org/).
 - **Docker**: Docker Desktop (or Docker Engine and Docker Compose) installed and running. Follow the instructions for your operating system on the [Docker website](https://www.docker.com/get-started).
 - **Git**: Git installed and configured. You can download it from [git-scm.com](https://git-scm.com/downloads).
 
@@ -189,47 +189,67 @@ src
 │ └── assessor.service.ts
 │
 ├── auth
-│ ├── guards
-│ │ └── api-key.guard.ts
-│ ├── strategies
-│ │ └── api-key.strategy.ts
-│ └── auth.module.ts
+│ ├── api-key.guard.ts
+│ ├── api-key.service.ts
+│ ├── api-key.strategy.ts
+│ ├── auth.module.ts
+│ └── user.interface.ts
 │
 ├── common
-│ ├── filters
-│ │ └── http-exception.filter.ts
-│ ├── logger
-│ │ └── logger.module.ts
+│ ├── common.module.ts
+│ ├── file-utils.ts
+│ ├── http-exception.filter.ts
+│ ├── json-parser.util.ts
 │ ├── pipes
-│ │ └── zod-validation.pipe.ts
-│ └── utils
-│ └── json-parser.util.ts
+│ │ └── image-validation.pipe.ts
+│ ├── utils
+│ │ ├── log-redactor.util.ts
+│ │ └── type-guards.ts
+│ └── zod-validation.pipe.ts
 │
 ├── config
-│ └── config.module.ts
+│ ├── config.module.ts
+│ ├── config.service.ts
+│ ├── env.schema.ts
+│ ├── index.ts
+│ └── throttler.config.ts
 │
-├── docs
-│ └── swagger.module.ts
+├── llm
+│ ├── gemini.service.ts
+│ ├── llm.module.ts
+│ ├── llm.service.interface.ts
+│ ├── resource-exhausted.error.ts
+│ └── types.ts
 │
 ├── prompt
-│ ├── prompt.superclass.ts
-│ ├── text-prompt.subclass.ts
-│ ├── table-prompt.subclass.ts
-│ └── image-prompt.subclass.ts
+│ ├── image.prompt.ts
+│ ├── prompt.base.ts
+│ ├── prompt.factory.ts
+│ ├── prompt.module.ts
+│ ├── table.prompt.ts
+│ ├── templates
+│ │ ├── image.system.prompt.md
+│ │ ├── table.system.prompt.md
+│ │ ├── table.user.prompt.md
+│ │ ├── text.system.prompt.md
+│ │ └── text.user.prompt.md
+│ └── text.prompt.ts
+│
+└── status
+├── status.controller.ts
+├── status.module.ts
+└── status.service.ts
 │
 
 ### Component Breakdown
 
 - `v1/assessor`: The versioned core feature module. The `AssessorController` serves as the entry point for API requests, the `AssessorService` orchestrates the business logic (calling the LLM, parsing the response), and the `dto` subdirectory defines the shape of the data using Zod schemas. Versioning allows for future API evolution without breaking existing clients.
-- `common/filters`: Contains global error handling logic, such as `HttpExceptionFilter`, to standardise and centralize error responses and logging.
-- `common/logger`: Provides a centralized, structured logging solution using Pino and integrates with NestJS for consistent, high-performance logs across the application.
-- `throttler`: Provides rate limiting and abuse prevention for API endpoints, typically using `@nestjs/throttler`.
-- `docs`: Contains Swagger/OpenAPI documentation setup, such as `swagger.module.ts`, to provide interactive and always up-to-date API docs for consumers.
-- `auth`: This module handles all authentication concerns. It contains the Passport.js `ApiKeyStrategy` for validating API keys and the `ApiKeyGuard` to protect endpoints, keeping security logic isolated.
-- `prompt`: Provides a flexible, object-oriented abstraction for generating prompts tailored to different assessment types. Sub-classes are created for specific prompt types.
-- `llm`: This module abstracts the interaction with Large Language Models. It features an abstract `LlmService` class, allowing the application to easily swap out different LLM providers (like OpenAI, Anthropic, etc.) by creating new concrete implementations. This is a direct application of the Open/Closed Principle from SOLID.
-- `config`: Manages environment variables using a custom ConfigModule and ConfigService (see `src/config`). All configuration is validated centrally using Zod schemas and is accessible in a type-safe manner. Do not use @nestjs/config directly outside the config module.
-- `common`: A module for shared, reusable components that don't belong to a specific feature. This includes custom `pipes` (for Zod validation) and `utils` (like the resilient JSON parser).
+- `auth`: This module handles all authentication concerns. It contains the Passport.js `ApiKeyStrategy` for validating API keys, the `ApiKeyGuard` to protect endpoints, and the `ApiKeyService` for key management, keeping security logic isolated.
+- `common`: A module for shared, reusable components that don't belong to a specific feature. This includes custom `pipes` (for Zod validation and image validation), `utils` (like the resilient JSON parser and logging utilities), and the global HTTP exception filter.
+- `config`: Manages environment variables using a custom ConfigModule and ConfigService. All configuration is validated centrally using Zod schemas and is accessible in a type-safe manner. Includes throttler configuration for rate limiting.
+- `llm`: This module abstracts the interaction with Large Language Models. It features the `LlmService` interface and concrete implementations like `GeminiService`. This design allows the application to easily support different LLM providers while maintaining a consistent internal interface.
+- `prompt`: Provides a flexible, object-oriented abstraction for generating prompts tailored to different assessment types. The `PromptBase` class serves as the foundation, with specific implementations for text, table, and image prompts. Template files are stored in the `templates` subdirectory.
+- `status`: Provides health check and status endpoints for monitoring the application's state and version information.
 
 ## Testing Structure
 
