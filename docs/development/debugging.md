@@ -100,11 +100,14 @@ import { Injectable, Logger } from '@nestjs/common';
 export class YourService {
   private readonly logger = new Logger(YourService.name);
 
-  someMethod(): void {
-    this.logger.debug('Debug information for troubleshooting');
-    this.logger.log('General information');
-    this.logger.warn('Warning message');
-    this.logger.error('Error details', stackTrace);
+  someMethod(someInput: string): void {
+    this.logger.debug('Starting operation...');
+    try {
+      if (!someInput) throw new Error('Input is empty');
+      this.logger.log('Operation successful');
+    } catch (error) {
+      this.logger.error('Operation failed', error.stack);
+    }
   }
 }
 ```
