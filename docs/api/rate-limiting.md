@@ -87,7 +87,7 @@ The rate limiter uses a sliding window approach:
 Rate limits are tracked per:
 
 - **IP Address**: For unauthenticated requests
-- **API Key**: For authenticated requests (when implemented)
+- **API Key**: For authenticated requests
 
 ### Limit Enforcement
 
