@@ -202,7 +202,7 @@ The authentication verification endpoint returns:
 
 ```typescript
 {
-  message: "Authentication successful",
+  message: "This is a protected endpoint",
   user: {
     apiKey: "***redacted***"  // API key is redacted for security
   }
