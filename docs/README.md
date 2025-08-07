@@ -43,11 +43,9 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 
 ### 🧪 Testing
 
-- [Testing Strategy](testing/strategy.md) - _[TODO]_ Overall testing approach and philosophy
-- [Unit Testing](testing/unit.md) - _[TODO]_ Unit testing guidelines and examples
-- [Integration Testing](testing/integration.md) - _[TODO]_ Integration testing practices
-- [End-to-End Testing](../test/README.md) - E2E testing guide and setup
-- [Test Data Management](testing/test-data.md) - _[TODO]_ Managing test data and fixtures
+- [Testing Guide](testing/README.md) - The central hub for all testing information.
+- [Practical Testing Guide](testing/PRACTICAL_GUIDE.md) - Code examples for unit tests, mocking, and data management.
+- [E2E Testing Guide](testing/E2E_GUIDE.md) - Specific instructions for running and creating E2E tests.
 
 ### 🚀 Deployment
 

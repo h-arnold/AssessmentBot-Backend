@@ -78,7 +78,7 @@ The `JsonParserUtil` provides robust JSON parsing with repair capabilities:
 #### Usage Examples
 
 // Parse JSON from markdown
-const result = jsonParser.parse('```json\n{"key": "value"}\n```');
+const result = jsonParser.parse('`json\n{"key": "value"}\n`');
 
 // Extract JSON from mixed content
 const result = jsonParser.parse('Some text {"valid": "json"} more text');
