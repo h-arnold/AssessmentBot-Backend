@@ -73,10 +73,7 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 
 ### 📝 Prompt System
 
-- [Prompt Architecture](prompts/architecture.md) - How the prompt system works
-- [Creating New Prompt Types](prompts/new-types.md) - Adding support for new task types
-- [Template Management](prompts/templates.md) - Managing prompt templates
-- [Prompt Testing](prompts/testing.md) - Testing prompt effectiveness
+- [Prompt System Documentation](prompts/README.md) - Consolidated documentation on the prompt system architecture, usage, and extension.
 
 ### 📦 Module Documentation
 
