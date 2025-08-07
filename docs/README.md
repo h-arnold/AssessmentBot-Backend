@@ -80,9 +80,9 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 
 #### Core Modules
 
-- [App Module](modules/app.md) - _[TODO]_ Main application module
-- [Config Module](modules/config.md) - _[TODO]_ Configuration management
-- [Common Module](modules/common.md) - _[TODO]_ Shared utilities and components
+- [App Module](modules/app.md) - Main application module
+- [Config Module](modules/config.md) - Configuration management
+- [Common Module](modules/common.md) - Shared utilities and components
 
 #### Feature Modules
 
