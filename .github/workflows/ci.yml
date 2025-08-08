@@ -24,12 +24,15 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Lint Dockerfiles
+      - name: Lint Dockerfile
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: |
-            ./Docker/Dockerfile
-            ./Docker/Dockerfile.prod
+          dockerfile: ./Docker/Dockerfile
+
+      - name: Lint Dockerfile.prod
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: ./Docker/Dockerfile.prod
 
   unit-test:
     name: Run Unit Tests
@@ -58,7 +61,7 @@ jobs:
         if: success() || failure()
         with:
           report_paths: './junit/jest-junit.xml'
-          
+
   e2e-test:
     name: Run E2E Tests
     runs-on: ubuntu-latest
