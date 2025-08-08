@@ -1,11 +1,63 @@
+# This file is based on .gitignore and adds Docker-specific ignores.
 
+# From .gitignore
 node_modules
-dist
+.husky/_
+**.log
+# local env files
 .env
-.git
-.vscode
-.devcontainer
+.test.env
+jest-junit.xml
+
+# Log files
+dist/
+.vscode/
+test-path-resolution.js
+
+# SonarLint Connected Mode config
+.sonarlint/connectedMode.json
+
+# E2E Testing Logs
+test/logs
+
+# Docker-specific ignores
+
+# Ignore all test files
+**/*.spec.ts
+
+# Ignore Dockerfiles themselves
 Dockerfile
-docker-compose.yml
-*.log
-npm-debug.log
+Dockerfile.prod
+
+# Ignore git history
+.git
+.gitignore
+
+# Ignore markdown files not needed in the image
+*.md
+# But DO NOT ignore the prompt templates
+!src/prompt/templates/*.md
+
+# Ignore configuration files not needed in the final image
+.prettierrc
+.prettierignore
+.test.env.example
+.env.example
+.env.prod
+Caddyfile
+CONTRIBUTING.md
+GEMINI.md
+eslint.config.js
+jest-e2e.config.cjs
+jest.config.js
+jest.setup.ts
+# nest-cli.json # Needed for build
+sonar-project.properties
+# tsconfig.build.json # Needed for build
+# tsconfig.json # Needed for build
+tsconfig.test.json
+
+# Allow essential config files for the build
+!tsconfig.json
+!tsconfig.build.json
+!nest-cli.json
