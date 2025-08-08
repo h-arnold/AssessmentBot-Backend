@@ -52,7 +52,7 @@
     "zod": "^4.0.8"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.7",
+    "@nestjs/cli": "^11.0.10",
     "@nestjs/schematics": "^11.0.5",
     "@nestjs/testing": "^11.1.5",
     "@stylistic/eslint-plugin": "^5.1.0",
