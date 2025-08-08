@@ -4,6 +4,7 @@ node_modules
 # local env files
 .env
 .test.env
+jest-junit.xml
 
 # Log files
 dist/
@@ -15,3 +16,5 @@ test-path-resolution.js
 
 # E2E Testing Logs
 test/logs
+
+
