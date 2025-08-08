@@ -46,10 +46,10 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 
 ### 🚀 Deployment
 
-- [Docker Deployment](deployment/docker.md) - _[TODO]_ Containerised deployment guide
-- [Production Setup](deployment/production.md) - _[TODO]_ Production environment configuration
-- [CI/CD Pipeline](deployment/cicd.md) - _[TODO]_ Continuous integration and deployment
-- [Monitoring & Observability](deployment/monitoring.md) - _[TODO]_ Application monitoring setup
+- [Docker Deployment](deployment/docker.md) - Containerised deployment guide
+- [Production Setup](deployment/production.md) - Production environment configuration
+- [CI/CD Pipeline](deployment/cicd.md) - Continuous integration and deployment
+- [Monitoring & Observability](deployment/monitoring.md) - Application monitoring setup
 
 ### 🔒 Security
 
