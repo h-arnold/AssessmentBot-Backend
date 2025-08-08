@@ -82,6 +82,7 @@
     <testcase classname="ZodValidationPipe should be defined" name="ZodValidationPipe should be defined" time="0.001">
     </testcase>
     <testcase classname="ZodValidationPipe should throw BadRequestException on invalid data" name="ZodValidationPipe should throw BadRequestException on invalid data" time="0.009">
+<<<<<<< HEAD
     </testcase>
     <testcase classname="ZodValidationPipe should return transformed data on valid payload" name="ZodValidationPipe should return transformed data on valid payload" time="0.001">
     </testcase>
@@ -196,12 +197,14 @@
     <testcase classname="ZodValidationPipe should be defined" name="ZodValidationPipe should be defined" time="0.001">
     </testcase>
     <testcase classname="ZodValidationPipe should throw BadRequestException on invalid data" name="ZodValidationPipe should throw BadRequestException on invalid data" time="0.013">
+=======
+>>>>>>> 6d8664f1d43c796e55aa8a6150949a12b476e815
     </testcase>
-    <testcase classname="ZodValidationPipe should return transformed data on valid payload" name="ZodValidationPipe should return transformed data on valid payload" time="0">
+    <testcase classname="ZodValidationPipe should return transformed data on valid payload" name="ZodValidationPipe should return transformed data on valid payload" time="0.001">
     </testcase>
     <testcase classname="ZodValidationPipe should handle edge cases for empty and null values" name="ZodValidationPipe should handle edge cases for empty and null values" time="0.002">
     </testcase>
-    <testcase classname="ZodValidationPipe array validation should validate a valid array" name="ZodValidationPipe array validation should validate a valid array" time="0.001">
+    <testcase classname="ZodValidationPipe array validation should validate a valid array" name="ZodValidationPipe array validation should validate a valid array" time="0">
     </testcase>
     <testcase classname="ZodValidationPipe array validation should throw BadRequestException on an invalid array" name="ZodValidationPipe array validation should throw BadRequestException on an invalid array" time="0.001">
     </testcase>
@@ -209,9 +212,112 @@
     </testcase>
     <testcase classname="ZodValidationPipe nested validation should handle nested validation schemas with valid data" name="ZodValidationPipe nested validation should handle nested validation schemas with valid data" time="0.001">
     </testcase>
-    <testcase classname="ZodValidationPipe nested validation should throw BadRequestException for invalid nested data" name="ZodValidationPipe nested validation should throw BadRequestException for invalid nested data" time="0.001">
+    <testcase classname="ZodValidationPipe nested validation should throw BadRequestException for invalid nested data" name="ZodValidationPipe nested validation should throw BadRequestException for invalid nested data" time="0">
     </testcase>
+<<<<<<< HEAD
     <testcase classname="ZodValidationPipe should format validation errors consistently" name="ZodValidationPipe should format validation errors consistently" time="0.008">
+=======
+    <testcase classname="ZodValidationPipe should format validation errors consistently" name="ZodValidationPipe should format validation errors consistently" time="0.003">
+>>>>>>> 6d8664f1d43c796e55aa8a6150949a12b476e815
+    </testcase>
+    <testcase classname="ImagePrompt should accept allowed MIME types from env" name="ImagePrompt should accept allowed MIME types from env" time="0.001">
+    </testcase>
+  </testsuite>
+<<<<<<< HEAD
+  <testsuite name="Prompt Base Class" errors="0" failures="0" skipped="0" timestamp="2025-08-06T11:06:29" time="0.119" tests="9">
+    <testcase classname="Prompt Base Class PromptInputSchema should parse a valid input object successfully" name="Prompt Base Class PromptInputSchema should parse a valid input object successfully" time="0.002">
+    </testcase>
+    <testcase classname="Prompt Base Class PromptInputSchema should throw a ZodError if referenceTask is missing" name="Prompt Base Class PromptInputSchema should throw a ZodError if referenceTask is missing" time="0.006">
+    </testcase>
+    <testcase classname="Prompt Base Class PromptInputSchema should throw a ZodError if studentTask is not a string" name="Prompt Base Class PromptInputSchema should throw a ZodError if studentTask is not a string" time="0.001">
+    </testcase>
+=======
+  <testsuite name="ImageValidationPipe" errors="0" failures="0" skipped="0" timestamp="2025-08-06T11:06:28" time="0.638" tests="20">
+    <testcase classname="ImageValidationPipe should be defined" name="ImageValidationPipe should be defined" time="0.012">
+    </testcase>
+    <testcase classname="ImageValidationPipe should inject ConfigService" name="ImageValidationPipe should inject ConfigService" time="0.001">
+    </testcase>
+    <testcase classname="ImageValidationPipe Valid Inputs should allow a valid PNG Buffer within size limit" name="ImageValidationPipe Valid Inputs should allow a valid PNG Buffer within size limit" time="0.051">
+    </testcase>
+    <testcase classname="ImageValidationPipe Valid Inputs should allow a valid JPEG Buffer within size limit" name="ImageValidationPipe Valid Inputs should allow a valid JPEG Buffer within size limit" time="0.008">
+    </testcase>
+    <testcase classname="ImageValidationPipe Valid Inputs should allow a valid base64 PNG string within size limit" name="ImageValidationPipe Valid Inputs should allow a valid base64 PNG string within size limit" time="0.003">
+    </testcase>
+    <testcase classname="ImageValidationPipe Valid Inputs should allow a valid base64 JPEG string within size limit" name="ImageValidationPipe Valid Inputs should allow a valid base64 JPEG string within size limit" time="0.002">
+    </testcase>
+    <testcase classname="ImageValidationPipe Valid Inputs should allow non-image string inputs" name="ImageValidationPipe Valid Inputs should allow non-image string inputs" time="0.001">
+    </testcase>
+    <testcase classname="ImageValidationPipe Valid Inputs should allow non-Buffer/non-string inputs to pass through" name="ImageValidationPipe Valid Inputs should allow non-Buffer/non-string inputs to pass through" time="0.001">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject a Buffer exceeding MAX_IMAGE_UPLOAD_SIZE_MB" name="ImageValidationPipe Invalid Inputs should reject a Buffer exceeding MAX_IMAGE_UPLOAD_SIZE_MB" time="0.01">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject a base64 string exceeding MAX_IMAGE_UPLOAD_SIZE_MB" name="ImageValidationPipe Invalid Inputs should reject a base64 string exceeding MAX_IMAGE_UPLOAD_SIZE_MB" time="0.038">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject a Buffer with a disallowed MIME type" name="ImageValidationPipe Invalid Inputs should reject a Buffer with a disallowed MIME type" time="0.014">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject a base64 string with a disallowed MIME type" name="ImageValidationPipe Invalid Inputs should reject a base64 string with a disallowed MIME type" time="0.002">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject an invalid base64 string format" name="ImageValidationPipe Invalid Inputs should reject an invalid base64 string format" time="0.002">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject an empty Buffer" name="ImageValidationPipe Invalid Inputs should reject an empty Buffer" time="0.002">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject an empty base64 string" name="ImageValidationPipe Invalid Inputs should reject an empty base64 string" time="0.006">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject a Buffer that cannot be identified as an image type" name="ImageValidationPipe Invalid Inputs should reject a Buffer that cannot be identified as an image type" time="0.157">
+    </testcase>
+    <testcase classname="ImageValidationPipe Edge Cases should handle MAX_IMAGE_UPLOAD_SIZE_MB = 0 (reject all images)" name="ImageValidationPipe Edge Cases should handle MAX_IMAGE_UPLOAD_SIZE_MB = 0 (reject all images)" time="0.002">
+    </testcase>
+    <testcase classname="ImageValidationPipe Edge Cases should handle empty ALLOWED_IMAGE_MIME_TYPES (reject all images)" name="ImageValidationPipe Edge Cases should handle empty ALLOWED_IMAGE_MIME_TYPES (reject all images)" time="0.007">
+    </testcase>
+    <testcase classname="ImageValidationPipe Security Edge Cases should reject a base64 image string longer than 10MB" name="ImageValidationPipe Security Edge Cases should reject a base64 image string longer than 10MB" time="0.002">
+    </testcase>
+    <testcase classname="ImageValidationPipe Security Edge Cases should reject crafted input that could cause ReDoS in the old regex" name="ImageValidationPipe Security Edge Cases should reject crafted input that could cause ReDoS in the old regex" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="AssessorService" errors="0" failures="0" skipped="0" timestamp="2025-08-06T11:06:29" time="0.379" tests="4">
+    <testcase classname="AssessorService should be defined" name="AssessorService should be defined" time="0.014">
+    </testcase>
+    <testcase classname="AssessorService createAssessment should call the prompt factory and llm service" name="AssessorService createAssessment should call the prompt factory and llm service" time="0.007">
+    </testcase>
+    <testcase classname="AssessorService createAssessment should correctly handle a multimodal (image) payload" name="AssessorService createAssessment should correctly handle a multimodal (image) payload" time="0.008">
+    </testcase>
+    <testcase classname="AssessorService createAssessment should not have __proto__ property in the DTO" name="AssessorService createAssessment should not have __proto__ property in the DTO" time="0.007">
+    </testcase>
+  </testsuite>
+  <testsuite name="CreateAssessorDto" errors="0" failures="0" skipped="0" timestamp="2025-08-06T11:06:29" time="0.086" tests="12">
+    <testcase classname="CreateAssessorDto Validation should accept a valid TEXT task payload" name="CreateAssessorDto Validation should accept a valid TEXT task payload" time="0.002">
+    </testcase>
+    <testcase classname="CreateAssessorDto Validation should accept a valid TABLE task payload" name="CreateAssessorDto Validation should accept a valid TABLE task payload" time="0.001">
+    </testcase>
+    <testcase classname="CreateAssessorDto Validation should accept a valid IMAGE task payload with strings" name="CreateAssessorDto Validation should accept a valid IMAGE task payload with strings" time="0.001">
+    </testcase>
+    <testcase classname="CreateAssessorDto Validation should accept a valid IMAGE task payload with Buffers" name="CreateAssessorDto Validation should accept a valid IMAGE task payload with Buffers" time="0">
+    </testcase>
+    <testcase classname="CreateAssessorDto Validation should reject when taskType is missing" name="CreateAssessorDto Validation should reject when taskType is missing" time="0.001">
+    </testcase>
+    <testcase classname="CreateAssessorDto Validation should reject when a required field is missing" name="CreateAssessorDto Validation should reject when a required field is missing" time="0.001">
+    </testcase>
+    <testcase classname="CreateAssessorDto Validation should reject empty strings for required fields" name="CreateAssessorDto Validation should reject empty strings for required fields" time="0.001">
+    </testcase>
+    <testcase classname="CreateAssessorDto Validation should reject payloads with extra fields" name="CreateAssessorDto Validation should reject payloads with extra fields" time="0">
+    </testcase>
+    <testcase classname="CreateAssessorDto Validation should reject null for a required field" name="CreateAssessorDto Validation should reject null for a required field" time="0.001">
+    </testcase>
+    <testcase classname="CreateAssessorDto Validation should reject undefined for a required field" name="CreateAssessorDto Validation should reject undefined for a required field" time="0">
+    </testcase>
+    <testcase classname="CreateAssessorDto Validation should reject an IMAGE task payload with mixed string and Buffer types" name="CreateAssessorDto Validation should reject an IMAGE task payload with mixed string and Buffer types" time="0.001">
+    </testcase>
+    <testcase classname="CreateAssessorDto Validation should accept a valid IMAGE task payload with base64 strings" name="CreateAssessorDto Validation should accept a valid IMAGE task payload with base64 strings" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="ImagePrompt" errors="0" failures="0" skipped="0" timestamp="2025-08-06T11:06:29" time="0.119" tests="5">
+    <testcase classname="ImagePrompt should build a structured payload with text and images" name="ImagePrompt should build a structured payload with text and images" time="0.003">
+    </testcase>
+    <testcase classname="ImagePrompt should reject images with disallowed MIME types" name="ImagePrompt should reject images with disallowed MIME types" time="0.007">
+    </testcase>
+    <testcase classname="ImagePrompt should reject images with missing MIME type" name="ImagePrompt should reject images with missing MIME type" time="0">
+    </testcase>
+    <testcase classname="ImagePrompt should reject images with path traversal in filename" name="ImagePrompt should reject images with path traversal in filename" time="0.001">
     </testcase>
     <testcase classname="ImagePrompt should accept allowed MIME types from env" name="ImagePrompt should accept allowed MIME types from env" time="0.001">
     </testcase>
@@ -223,6 +329,7 @@
     </testcase>
     <testcase classname="Prompt Base Class PromptInputSchema should throw a ZodError if studentTask is not a string" name="Prompt Base Class PromptInputSchema should throw a ZodError if studentTask is not a string" time="0.001">
     </testcase>
+>>>>>>> 6d8664f1d43c796e55aa8a6150949a12b476e815
     <testcase classname="Prompt Base Class PromptInputSchema should throw a ZodError if emptyTask is missing" name="Prompt Base Class PromptInputSchema should throw a ZodError if emptyTask is missing" time="0">
     </testcase>
     <testcase classname="Prompt Base Class PromptInputSchema should accept empty strings as valid input" name="Prompt Base Class PromptInputSchema should accept empty strings as valid input" time="0">
@@ -332,6 +439,8 @@
   </testsuite>
   <testsuite name="LlmResponseSchema" errors="0" failures="0" skipped="0" timestamp="2025-08-06T11:06:30" time="0.078" tests="7">
     <testcase classname="LlmResponseSchema should validate a correct payload" name="LlmResponseSchema should validate a correct payload" time="0.001">
+<<<<<<< HEAD
+=======
     </testcase>
     <testcase classname="LlmResponseSchema should reject a payload with a missing criterion" name="LlmResponseSchema should reject a payload with a missing criterion" time="0.001">
     </testcase>
@@ -348,12 +457,32 @@
   </testsuite>
   <testsuite name="ConfigModule" errors="0" failures="0" skipped="0" timestamp="2025-08-06T11:06:30" time="0.175" tests="3">
     <testcase classname="ConfigModule should be defined" name="ConfigModule should be defined" time="0.031">
+>>>>>>> 6d8664f1d43c796e55aa8a6150949a12b476e815
+    </testcase>
+    <testcase classname="LlmResponseSchema should reject a payload with a missing criterion" name="LlmResponseSchema should reject a payload with a missing criterion" time="0.001">
+    </testcase>
+    <testcase classname="LlmResponseSchema should reject a payload with an invalid score" name="LlmResponseSchema should reject a payload with an invalid score" time="0.001">
+    </testcase>
+    <testcase classname="LlmResponseSchema should reject a payload with a non-integer score" name="LlmResponseSchema should reject a payload with a non-integer score" time="0">
+    </testcase>
+    <testcase classname="LlmResponseSchema should reject a payload with empty reasoning" name="LlmResponseSchema should reject a payload with empty reasoning" time="0.001">
+    </testcase>
+    <testcase classname="LlmResponseSchema should reject a payload with a missing score" name="LlmResponseSchema should reject a payload with a missing score" time="0">
+    </testcase>
+    <testcase classname="LlmResponseSchema should reject a payload with missing reasoning" name="LlmResponseSchema should reject a payload with missing reasoning" time="0.001">
+    </testcase>
+  </testsuite>
+<<<<<<< HEAD
+  <testsuite name="ConfigModule" errors="0" failures="0" skipped="0" timestamp="2025-08-06T11:06:30" time="0.175" tests="3">
+    <testcase classname="ConfigModule should be defined" name="ConfigModule should be defined" time="0.031">
     </testcase>
     <testcase classname="CreateAssessorDto Validation should accept a valid TABLE task payload" name="CreateAssessorDto Validation should accept a valid TABLE task payload" time="0.001">
     </testcase>
     <testcase classname="CreateAssessorDto Validation should accept a valid IMAGE task payload with strings" name="CreateAssessorDto Validation should accept a valid IMAGE task payload with strings" time="0">
     </testcase>
   </testsuite>
+=======
+>>>>>>> 6d8664f1d43c796e55aa8a6150949a12b476e815
   <testsuite name="ResourceExhaustedError Integration" errors="0" failures="0" skipped="0" timestamp="2025-08-06T11:06:30" time="0.104" tests="4">
     <testcase classname="ResourceExhaustedError Integration should be exportable and usable for E2E tests" name="ResourceExhaustedError Integration should be exportable and usable for E2E tests" time="0.002">
     </testcase>
@@ -439,7 +568,13 @@
   <testsuite name="getCurrentDirname" errors="0" failures="0" skipped="0" timestamp="2025-08-06T11:06:30" time="0.033" tests="3">
     <testcase classname="getCurrentDirname should return process.cwd() in Jest test environment" name="getCurrentDirname should return process.cwd() in Jest test environment" time="0">
     </testcase>
+<<<<<<< HEAD
     <testcase classname="ResourceExhaustedError should work without original error" name="ResourceExhaustedError should work without original error" time="0.001">
+=======
+    <testcase classname="getCurrentDirname should use fallback directory when provided" name="getCurrentDirname should use fallback directory when provided" time="0.001">
+    </testcase>
+    <testcase classname="getCurrentDirname should return process.cwd() when no fallback is provided" name="getCurrentDirname should return process.cwd() when no fallback is provided" time="0">
+>>>>>>> 6d8664f1d43c796e55aa8a6150949a12b476e815
     </testcase>
   </testsuite>
   <testsuite name="PromptModule" errors="0" failures="0" skipped="0" timestamp="2025-08-06T11:06:30" time="0.113" tests="2">
