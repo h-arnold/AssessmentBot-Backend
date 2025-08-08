@@ -111,6 +111,7 @@ function hasReqId(
               options: { singleLine: true },
             },
             serializers,
+            customProps,
           },
         };
       },

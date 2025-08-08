@@ -44,3 +44,4 @@ Thumbs.db
 
 # Temporary files
 test-path-resolution.js
+junit/jest-junit.xml
