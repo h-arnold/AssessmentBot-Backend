@@ -112,9 +112,14 @@ sequenceDiagram
 ```typescript
 interface CreateAssessorDto {
   taskType: 'TEXT' | 'TABLE' | 'IMAGE';
-  reference: string; // Reference solution
-  template: string; // Task template/prompt
-  studentResponse: string; // Student's submission
+  // For TEXT/TABLE, these are strings.
+  // For IMAGE, these can be base64 strings or Buffer instances.
+  reference: string | Buffer;
+  template: string | Buffer;
+  studentResponse: string | Buffer;
+  // Optional fields for IMAGE task type
+  images?: { path: string; mimeType: string }[];
+  systemPromptFile?: string;
 }
 ```
 

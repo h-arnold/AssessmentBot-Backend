@@ -119,7 +119,7 @@ graph LR
 
     ASSESSOR --> LLM
     ASSESSOR --> PROMPT
-    ASSESSOR --> AUTH
+
 
     LLM --> CONFIG
     PROMPT --> CONFIG
@@ -165,6 +165,7 @@ The system uses NestJS's built-in dependency injection container with the follow
 ### Runtime and Framework
 
 - **Node.js (22-alpine)**: JavaScript runtime environment
+- **Node.js 22**: JavaScript runtime environment (Debian-based)
 - **NestJS**: Progressive Node.js framework for building scalable applications
 - **TypeScript**: Strongly typed programming language
 - **Express.js**: Underlying HTTP server framework
@@ -183,8 +184,7 @@ The system uses NestJS's built-in dependency injection container with the follow
 
 ### LLM Integration
 
-- **@google/generative-ai**: Google Gemini API client
-- **json-repair**: Robust JSON parsing for LLM responses
+- **jsonrepair**: Robust JSON parsing for LLM responses
 - **Mustache**: Template engine for prompt generation
 
 ### Testing and Development

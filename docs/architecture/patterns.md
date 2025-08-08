@@ -315,47 +315,61 @@ export class AssessorService {
 
 ### Chain of Responsibility Pattern
 
-**Implementation**: Exception Handling (`src/common/http-exception.filter.ts`)
+**Implementation**: NestJS Request Pipeline (Guards and Interceptors)
 
-The Chain of Responsibility pattern handles different types of exceptions through a processing chain.
+The Chain of Responsibility pattern is embodied by the NestJS request pipeline. An incoming request is passed along a chain of handlers—such as middleware, guards, and interceptors—each of which can process the request, pass it to the next handler, or terminate the request cycle. The client that initiates the request is unaware of which handler in the chain will ultimately process it.
 
 ```typescript
-@Catch()
-export class HttpExceptionFilter extends BaseExceptionFilter {
-  catch(exception: unknown, host: ArgumentsHost): void {
-    // Chain of exception handling
-    if (exception instanceof HttpException) {
-      this.handleHttpException(exception, host);
-    } else if (exception instanceof ZodError) {
-      this.handleZodError(exception, host);
-    } else {
-      this.handleGenericError(exception, host);
+// A Guard is a handler in the chain. It decides if a request is authorized.
+@Injectable()
+export class ApiKeyGuard extends AuthGuard('bearer') {
+  // canActivate is the handler method.
+  // Returning true passes the request to the next handler.
+  // Returning false or throwing an exception stops the chain.
+  canActivate(context: ExecutionContext) {
+    // The parent class handles the logic and decides whether to proceed
+    // or throw an UnauthorizedException, stopping the chain.
+    return super.canActivate(context);
+  }
+}
+
+// The ThrottlerGuard is another handler in the same chain.
+@Injectable()
+export class ThrottlerGuard implements CanActivate {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    // ... logic to check if the request exceeds rate limits ...
+    // This is a simplified example of what @nestjs/throttler does.
+    const isAllowed = await this.checkRateLimit(context);
+
+    if (!isAllowed) {
+      // Stops the chain by throwing an exception.
+      throw new ThrottlerException('Too Many Requests');
     }
-  }
 
-  private handleHttpException(
-    exception: HttpException,
-    host: ArgumentsHost,
-  ): void {
-    // Specific handling for HTTP exceptions
+    // Passes the request to the next handler.
+    return true;
   }
+  // ... helper methods
+}
 
-  private handleZodError(exception: ZodError, host: ArgumentsHost): void {
-    // Specific handling for validation errors
-  }
-
-  private handleGenericError(exception: unknown, host: ArgumentsHost): void {
-    // Generic error handling
+// The chain is defined on a controller or globally.
+@Controller('v1/assessor')
+@UseGuards(ApiKeyGuard, ThrottlerGuard) // Defines the chain of responsibility
+export class AssessorController {
+  @Post()
+  createAssessment(@Body() dto: CreateAssessorDto) {
+    // This method is only reached if all guards in the chain
+    // allow the request to proceed.
   }
 }
 ```
 
 **Benefits**:
 
-- Organised error handling logic
-- Easy to add new error types
-- Consistent error response format
-- Separation of concerns for different error types
+- **Decoupling**: The sender of a request is decoupled from the receivers.
+- **Flexibility**: Handlers can be added or removed from the chain dynamically or via configuration.
+- **Single Responsibility**: Each handler is responsible for a specific task (e.g., authentication, rate limiting).
+- **Clean Code**: Avoids large conditional statements in a single handler by distributing responsibility among multiple objects.
 
 ### Command Pattern
 
