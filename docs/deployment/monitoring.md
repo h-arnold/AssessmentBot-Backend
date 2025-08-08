@@ -18,7 +18,7 @@ The monitoring strategy focuses on:
 
 The application includes several built-in monitoring features:
 
-1. **Health check endpoint** (`/status`)
+1. **Health check endpoint** (`/health`)
 2. **Docker health checks** in production containers
 3. **Structured logging** with Pino
 4. **Rate limiting metrics** via NestJS Throttler
