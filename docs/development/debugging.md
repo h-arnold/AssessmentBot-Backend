@@ -217,15 +217,6 @@ Check for:
 [DEBUG] API key validation result: success
 ```
 
-#### CORS Issues
-
-If making requests from a browser:
-
-```bash
-# Check for CORS-related errors in browser console
-Access to XMLHttpRequest at 'http://localhost:3000' blocked by CORS policy
-```
-
 ## Testing and Debugging
 
 ### Debugging Unit Tests

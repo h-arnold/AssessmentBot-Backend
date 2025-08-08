@@ -99,20 +99,18 @@ function handleResponse(response: any): any {
 ### Interface and Type Definitions
 
 ```typescript
-// ✅ Correct - Clear interface definition
-interface CreateUserRequest {
-  readonly name: string;
-  readonly email: string;
-  readonly roles: ReadonlyArray<UserRole>;
+// ✅ Correct - Clear type and enum definitions
+export enum TaskType {
+  TEXT = 'TEXT',
+  TABLE = 'TABLE',
+  IMAGE = 'IMAGE',
 }
 
-// ✅ Correct - Type alias for unions
-type UserRole = 'admin' | 'user' | 'moderator';
+export type CreateAssessorDto = z.infer<typeof createAssessorDtoSchema>;
 
 // ✅ Correct - Generic constraints
-interface Repository<T extends BaseEntity> {
-  findById(id: string): Promise<T | null>;
-  save(entity: T): Promise<T>;
+interface LlmService<T> {
+  send(message: T): Promise<LlmResponse>;
 }
 ```
 
@@ -125,27 +123,25 @@ Follow NestJS modular architecture patterns:
 ```typescript
 // ✅ Correct module structure
 @Module({
-  imports: [ConfigModule, LoggerModule],
-  controllers: [UserController],
-  providers: [UserService, UserRepository],
-  exports: [UserService], // Only export what other modules need
+  imports: [ConfigModule, LlmModule, PromptModule],
+  controllers: [AssessorController],
+  providers: [AssessorService],
 })
-export class UserModule {}
+export class AssessorModule {}
 ```
 
 ### File Naming Conventions
 
 ```
 src/
-├── user/
-│   ├── user.controller.ts      # HTTP endpoints
-│   ├── user.service.ts         # Business logic
-│   ├── user.module.ts          # Module definition
-│   ├── user.controller.spec.ts # Controller tests
-│   ├── user.service.spec.ts    # Service tests
-│   └── dto/
-│       ├── create-user.dto.ts  # Input DTOs
-│       └── user-response.dto.ts # Output DTOs
+└── v1/
+    └── assessor/
+        ├── assessor.controller.ts      # HTTP endpoints
+        ├── assessor.service.ts         # Business logic
+        ├── assessor.module.ts          # Module definition
+        ├── assessor.service.spec.ts    # Service tests
+        └── dto/
+            └── create-assessor.dto.ts  # Input DTOs
 ```
 
 ### Import Organisation
@@ -154,19 +150,19 @@ ESLint enforces import ordering:
 
 ```typescript
 // 1. Node.js built-in modules
-import { readFile } from 'fs/promises';
+import * as fs from 'fs/promises';
 
 // 2. External dependencies
-import { Injectable, Logger } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { z } from 'zod';
 
 // 3. Internal modules (absolute paths)
-import { ConfigService } from 'src/config/config.service';
-import { UserEntity } from 'src/user/entities/user.entity';
+import { ApiKeyGuard } from 'src/auth/api-key.guard';
+import { LlmResponse } from 'src/llm/types';
 
 // 4. Relative imports
-import { CreateUserDto } from './dto/create-user.dto';
-import { UserRepository } from './user.repository';
+import { AssessorService } from './assessor.service';
+import { createAssessorDtoSchema } from './dto/create-assessor.dto';
 ```
 
 ## NestJS Conventions
@@ -176,12 +172,10 @@ import { UserRepository } from './user.repository';
 ```typescript
 // ✅ Correct - Constructor injection
 @Injectable()
-export class UserService {
-  private readonly logger = new Logger(UserService.name);
-
+export class AssessorService {
   constructor(
-    private readonly userRepository: UserRepository,
-    private readonly configService: ConfigService,
+    private readonly llmService: LLMService,
+    private readonly promptFactory: PromptFactory,
   ) {}
 }
 ```
@@ -190,25 +184,17 @@ export class UserService {
 
 ```typescript
 // ✅ Correct - RESTful controller
-@Controller('v1/users')
-@UseGuards(AuthGuard)
-export class UserController {
-  private readonly logger = new Logger(UserController.name);
-
-  constructor(private readonly userService: UserService) {}
-
-  @Get(':id')
-  @ApiOperation({ summary: 'Get user by ID' })
-  @ApiResponse({ status: 200, type: UserResponseDto })
-  async findOne(@Param('id') id: string): Promise<UserResponseDto> {
-    return await this.userService.findById(id);
-  }
+@Controller('v1/assessor')
+@UseGuards(ApiKeyGuard)
+export class AssessorController {
+  constructor(private readonly assessorService: AssessorService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create new user' })
-  @UsePipes(new ZodValidationPipe(CreateUserDtoSchema))
-  async create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    return await this.userService.create(createUserDto);
+  async create(
+    @Body(new ZodValidationPipe(createAssessorDtoSchema))
+    createAssessorDto: CreateAssessorDto,
+  ): Promise<LlmResponse> {
+    return this.assessorService.createAssessment(createAssessorDto);
   }
 }
 ```
@@ -218,29 +204,26 @@ export class UserController {
 ```typescript
 // ✅ Correct - Service with proper error handling
 @Injectable()
-export class UserService {
-  private readonly logger = new Logger(UserService.name);
+export class AssessorService {
+  constructor(
+    private readonly llmService: LLMService,
+    private readonly promptFactory: PromptFactory,
+  ) {}
 
-  constructor(private readonly userRepository: UserRepository) {}
-
-  async findById(id: string): Promise<UserResponseDto> {
-    this.logger.debug(`Finding user with ID: ${id}`);
-
-    const user = await this.userRepository.findById(id);
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+  async createAssessment(dto: CreateAssessorDto): Promise<LlmResponse> {
+    try {
+      const prompt = await this.promptFactory.create(dto);
+      const message = await prompt.buildMessage();
+      return await this.llmService.send(message);
+    } catch (error) {
+      // Assuming a logger is available
+      this.logger.error('Assessment creation failed', {
+        error: error.message,
+        stack: error.stack,
+        taskType: dto.taskType,
+      });
+      throw new InternalServerErrorException('Failed to create assessment');
     }
-
-    return this.mapToResponseDto(user);
-  }
-
-  private mapToResponseDto(user: UserEntity): UserResponseDto {
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      createdAt: user.createdAt,
-    };
   }
 }
 ```
@@ -253,27 +236,22 @@ export class UserService {
 
 ```typescript
 // ✅ Correct - Comprehensive Zod schema
-export const CreateUserDtoSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Name is required')
-    .max(100, 'Name must be less than 100 characters')
-    .regex(/^[a-zA-Z\s]+$/, 'Name must contain only letters and spaces'),
+export const createAssessorDtoSchema = z.discriminatedUnion('taskType', [
+  z.object({
+    taskType: z.literal(TaskType.TEXT),
+    reference: z.string().min(1),
+    template: z.string().min(1),
+    studentResponse: z.string().min(1),
+  }),
+  z.object({
+    taskType: z.literal(TaskType.IMAGE),
+    reference: z.union([z.string().min(1), z.instanceof(Buffer)]),
+    template: z.union([z.string().min(1), z.instanceof(Buffer)]),
+    studentResponse: z.union([z.string().min(1), z.instanceof(Buffer)]),
+  }),
+]);
 
-  email: z.string().email('Invalid email format').min(1, 'Email is required'),
-
-  age: z
-    .number()
-    .int('Age must be an integer')
-    .min(18, 'Must be at least 18 years old')
-    .max(120, 'Age must be realistic'),
-
-  roles: z
-    .array(z.enum(['admin', 'user', 'moderator']))
-    .min(1, 'At least one role is required'),
-});
-
-export type CreateUserDto = z.infer<typeof CreateUserDtoSchema>;
+export type CreateAssessorDto = z.infer<typeof createAssessorDtoSchema>;
 ```
 
 ### Custom Validation Pipes
@@ -281,7 +259,7 @@ export type CreateUserDto = z.infer<typeof CreateUserDtoSchema>;
 ```typescript
 // ✅ Correct - Reusable validation pipe
 @Injectable()
-export class ZodValidationPipe<T> implements PipeTransform {
+export class ZodValidationPipe implements PipeTransform {
   constructor(private schema: ZodSchema<T>) {}
 
   transform(value: unknown, metadata: ArgumentMetadata): T {
@@ -306,20 +284,16 @@ export class ZodValidationPipe<T> implements PipeTransform {
 
 ```typescript
 // ✅ Correct - Specific exceptions with context
-if (!user) {
-  throw new NotFoundException({
-    message: 'User not found',
-    code: 'USER_NOT_FOUND',
-    userId: id,
-  });
-}
-
-if (user.isDeleted) {
-  throw new ConflictException({
-    message: 'Cannot modify deleted user',
-    code: 'USER_DELETED',
-    userId: id,
-  });
+if (createAssessorDto.taskType === 'IMAGE') {
+  const imagePipe = new ImageValidationPipe(this.configService);
+  try {
+    await imagePipe.transform(createAssessorDto.reference);
+  } catch (e) {
+    throw new UnprocessableEntityException({
+      message: 'Image validation failed for reference image',
+      code: 'IMAGE_VALIDATION_FAILED',
+    });
+  }
 }
 ```
 
@@ -328,15 +302,14 @@ if (user.isDeleted) {
 ```typescript
 // ✅ Correct - Structured error logging
 try {
-  await this.riskyOperation();
+  await this.llmService.send(message);
 } catch (error) {
-  this.logger.error('Risk operation failed', {
+  this.logger.error('LLM request failed', {
     error: error.message,
     stack: error.stack,
-    userId: userId,
-    operation: 'riskyOperation',
+    operation: 'sendToLlm',
   });
-  throw new InternalServerErrorException('Operation failed');
+  throw new InternalServerErrorException('LLM request failed');
 }
 ```
 
@@ -346,55 +319,50 @@ try {
 
 ```typescript
 // ✅ Correct - Comprehensive unit test
-describe('UserService', () => {
-  let service: UserService;
-  let repository: jest.Mocked<UserRepository>;
+describe('AssessorService', () => {
+  let service: AssessorService;
+  let llmService: jest.Mocked<LLMService>;
+  let promptFactory: jest.Mocked<PromptFactory>;
 
   beforeEach(async () => {
-    const mockRepository = {
-      findById: jest.fn(),
-      save: jest.fn(),
-      delete: jest.fn(),
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        UserService,
-        { provide: UserRepository, useValue: mockRepository },
+        AssessorService,
+        { provide: LLMService, useValue: { send: jest.fn() } },
+        { provide: PromptFactory, useValue: { create: jest.fn() } },
       ],
     }).compile();
 
-    service = module.get<UserService>(UserService);
-    repository = module.get(UserRepository);
+    service = module.get<AssessorService>(AssessorService);
+    llmService = module.get(LLMService);
+    promptFactory = module.get(PromptFactory);
   });
 
-  describe('findById', () => {
-    it('should return user when found', async () => {
+  describe('createAssessment', () => {
+    it('should call the LLM service with a generated prompt', async () => {
       // Arrange
-      const userId = 'test-id';
-      const mockUser = { id: userId, name: 'Test User' };
-      repository.findById.mockResolvedValue(mockUser);
+      const dto: CreateAssessorDto = {
+        taskType: 'TEXT',
+        reference: 'a',
+        template: 'b',
+        studentResponse: 'c',
+      };
+      const mockPrompt = {
+        buildMessage: jest.fn().mockResolvedValue('prompt'),
+      };
+      promptFactory.create.mockResolvedValue(mockPrompt as any);
+      llmService.send.mockResolvedValue({
+        accuracy: 1,
+        completeness: 1,
+        spag: 1,
+      });
 
       // Act
-      const result = await service.findById(userId);
+      await service.createAssessment(dto);
 
       // Assert
-      expect(result).toEqual(
-        expect.objectContaining({
-          id: userId,
-          name: 'Test User',
-        }),
-      );
-      expect(repository.findById).toHaveBeenCalledWith(userId);
-    });
-
-    it('should throw NotFoundException when user not found', async () => {
-      // Arrange
-      const userId = 'non-existent-id';
-      repository.findById.mockResolvedValue(null);
-
-      // Act & Assert
-      await expect(service.findById(userId)).rejects.toThrow(NotFoundException);
+      expect(promptFactory.create).toHaveBeenCalledWith(dto);
+      expect(llmService.send).toHaveBeenCalledWith('prompt');
     });
   });
 });
@@ -404,37 +372,45 @@ describe('UserService', () => {
 
 ```typescript
 // ✅ Correct - E2E test with proper setup
-describe('UserController (e2e)', () => {
-  let app: INestApplication;
+describe('AssessorController (e2e)', () => {
+  let app: AppInstance;
+  let apiKey: string;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
+  beforeAll(async () => {
+    ({ app, apiKey } = await startApp());
   });
 
-  afterEach(async () => {
-    await app.close();
+  afterAll(async () => {
+    await stopApp(app);
   });
 
-  describe('/users (POST)', () => {
-    it('should create user successfully', () => {
+  describe('/v1/assessor (POST)', () => {
+    it('should return 401 Unauthorized for missing API key', () => {
       return request(app.getHttpServer())
-        .post('/v1/users')
-        .set('Authorization', 'Bearer valid-api-key')
+        .post('/v1/assessor')
         .send({
-          name: 'Test User',
-          email: 'test@example.com',
-          age: 25,
-          roles: ['user'],
+          taskType: 'TEXT',
+          reference: 'a',
+          template: 'b',
+          studentResponse: 'c',
+        })
+        .expect(401);
+    });
+
+    it('should return 201 for a valid TEXT assessment request', () => {
+      return request(app.getHttpServer())
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${apiKey}`)
+        .send({
+          taskType: 'TEXT',
+          reference: 'a',
+          template: 'b',
+          studentResponse: 'c',
         })
         .expect(201)
         .expect((res) => {
-          expect(res.body).toHaveProperty('id');
-          expect(res.body.name).toBe('Test User');
+          expect(res.body).toHaveProperty('completeness');
+          expect(res.body).toHaveProperty('accuracy');
         });
     });
   });
@@ -445,61 +421,42 @@ describe('UserController (e2e)', () => {
 
 ### JSDoc Comments
 
-````typescript
+```typescript
 /**
- * Processes user authentication and returns JWT token.
+ * Creates an assessment based on the provided data transfer object (DTO).
+ * This method generates a prompt using the `promptFactory`, builds a message,
+ * and sends it to the LLM service for processing.
  *
- * @param credentials - User login credentials
- * @param credentials.email - User's email address
- * @param credentials.password - User's password
- * @returns Promise resolving to authentication result with JWT token
- *
- * @throws {UnauthorizedException} When credentials are invalid
- * @throws {TooManyRequestsException} When rate limit is exceeded
- *
- * @example
- * ```typescript
- * const result = await authService.authenticate({
- *   email: 'user@example.com',
- *   password: 'secretPassword'
- * });
- * console.log(result.accessToken);
- * ```
+ * @param dto - The data transfer object containing the details required to create an assessment.
+ * @returns A promise that resolves to an `LlmResponse` containing the result of the assessment.
  */
-async authenticate(credentials: LoginCredentials): Promise<AuthResult> {
+async createAssessment(dto: CreateAssessorDto): Promise<LlmResponse> {
   // Implementation
 }
-````
+```
 
 ### API Documentation
 
 ```typescript
 // ✅ Correct - Comprehensive Swagger documentation
-@ApiOperation({
-  summary: 'Create new user account',
-  description: 'Creates a new user account with the provided information. Requires admin privileges.',
-})
-@ApiResponse({
-  status: 201,
-  description: 'User successfully created',
-  type: UserResponseDto,
-})
-@ApiResponse({
-  status: 400,
-  description: 'Invalid input data',
-  schema: {
-    type: 'object',
-    properties: {
-      message: { type: 'string' },
-      errors: { type: 'array', items: { type: 'object' } },
-    },
-  },
-})
-@ApiResponse({ status: 401, description: 'Unauthorised access' })
-@ApiResponse({ status: 403, description: 'Insufficient permissions' })
-@Post()
-async create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
-  return await this.userService.create(createUserDto);
+@Controller('v1/assessor')
+@UseGuards(ApiKeyGuard)
+@Throttle(authenticatedThrottler)
+export class AssessorController {
+  /**
+   * Creates a new assessment by processing the provided task data.
+   *
+   * This endpoint serves as the primary entry point for assessment requests.
+   * It performs comprehensive validation including schema validation via Zod
+   * and specialized image validation for IMAGE task types.
+   */
+  @Post()
+  async create(
+    @Body(new ZodValidationPipe(createAssessorDtoSchema))
+    createAssessorDto: CreateAssessorDto,
+  ): Promise<LlmResponse> {
+    // ...
+  }
 }
 ```
 

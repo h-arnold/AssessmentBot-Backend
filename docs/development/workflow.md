@@ -90,7 +90,6 @@ The development server will:
 
 - **API Base URL**: `http://localhost:3000`
 - **Health Check**: `http://localhost:3000/status`
-- **Swagger Documentation**: Available via NestJS Swagger (if enabled)
 
 ## Development Workflow
 
@@ -157,10 +156,10 @@ The project uses Husky to run quality checks before commits:
 1. **Create or modify a controller**:
 
    ```typescript
-   @Controller('your-resource')
-   export class YourController {
+   @Controller('v1/assessor')
+   export class AssessorController {
      @Post()
-     async create(@Body() dto: CreateYourDto): Promise<YourResponse> {
+     async create(@Body() dto: CreateAssessorDto): Promise<LlmResponse> {
        // Implementation
      }
    }
@@ -169,18 +168,19 @@ The project uses Husky to run quality checks before commits:
 2. **Create DTOs with Zod validation**:
 
    ```typescript
-   export const CreateYourDtoSchema = z.object({
-     name: z.string().min(1),
+   export const createAssessorDtoSchema = z.object({
+     taskType: z.nativeEnum(TaskType),
+     reference: z.string().min(1),
      // ... other fields
    });
 
-   export type CreateYourDto = z.infer<typeof CreateYourDtoSchema>;
+   export type CreateAssessorDto = z.infer<typeof createAssessorDtoSchema>;
    ```
 
 3. **Add tests**:
    ```typescript
-   describe('YourController', () => {
-     it('should create resource', async () => {
+   describe('AssessorController (e2e)', () => {
+     it('should create assessment', async () => {
        // Test implementation
      });
    });
@@ -192,13 +192,13 @@ Use the NestJS CLI for consistency:
 
 ```bash
 # Generate a new module
-npx nest generate module your-module
+npx nest generate module v1/assessor
 
 # Generate a controller
-npx nest generate controller your-module
+npx nest generate controller v1/assessor
 
 # Generate a service
-npx nest generate service your-module
+npx nest generate service v1/assessor
 ```
 
 ### Writing Tests
@@ -210,15 +210,15 @@ npx nest generate service your-module
 Test structure example:
 
 ```typescript
-describe('YourService', () => {
-  let service: YourService;
+describe('AssessorService', () => {
+  let service: AssessorService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [YourService],
+      providers: [AssessorService, ...mockProviders],
     }).compile();
 
-    service = module.get<YourService>(YourService);
+    service = module.get<AssessorService>(AssessorService);
   });
 
   it('should be defined', () => {
