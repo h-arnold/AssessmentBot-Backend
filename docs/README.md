@@ -83,11 +83,11 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 
 #### Feature Modules
 
-- [Assessor Module (v1)](modules/assessor.md) - _[TODO]_ Core assessment functionality
-- [Authentication Module](modules/auth.md) - _[TODO]_ Authentication and security
-- [LLM Module](modules/llm.md) - _[TODO]_ Large Language Model integration
-- [Prompt Module](modules/prompt.md) - _[TODO]_ Prompt generation and management
-- [Status Module](modules/status.md) - _[TODO]_ Health checks and system status
+- [Assessor Module (v1)](modules/assessor.md) - Core assessment functionality
+- [Authentication Module](modules/auth.md) - Authentication and security
+- [LLM Module](modules/llm.md) - Large Language Model integration
+- [Prompt Module](modules/prompt.md) - Prompt generation and management
+- [Status Module](modules/status.md) - Health checks and system status
 
 #### Utilities & Components
 
