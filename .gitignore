@@ -21,20 +21,12 @@ yarn-error.log*
 .test.env
 
 # Test reports and coverage
-jest-junit.xml
 junit/
 coverage/
 # (SonarCloud expects coverage/lcov.info to be generated in CI, not committed)
 
 # IDE and editor directories
 .vscode/
-.env.prod
-
-test-path-resolution.js
 
 # SonarLint Connected Mode config
 .sonarlint/
-
-# Temporary files
-test-path-resolution.js
-junit/jest-junit.xml
