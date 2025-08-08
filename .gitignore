@@ -24,6 +24,7 @@ yarn-error.log*
 jest-junit.xml
 junit/
 coverage/
+# (SonarCloud expects coverage/lcov.info to be generated in CI, not committed)
 
 # IDE and editor directories
 .vscode/
