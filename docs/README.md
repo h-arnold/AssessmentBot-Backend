@@ -63,11 +63,11 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 
 ### 🤖 LLM Integration
 
-- [LLM Service Architecture](llm/architecture.md) - _[TODO]_ LLM integration architecture
-- [Adding New LLM Providers](llm/providers.md) - _[TODO]_ How to add support for new LLM providers
-- [Gemini Integration](llm/gemini.md) - _[TODO]_ Google Gemini specific implementation
-- [Error Handling](llm/error-handling.md) - _[TODO]_ LLM error handling and retry logic
-- [Performance Optimisation](llm/performance.md) - _[TODO]_ LLM performance considerations
+- [LLM Service Architecture](llm/architecture.md) - LLM integration architecture and design patterns
+- [Adding New LLM Providers](llm/providers.md) - How to add support for new LLM providers
+- [Gemini Integration](llm/gemini.md) - Google Gemini specific implementation details
+- [Error Handling](llm/error-handling.md) - LLM error handling and retry logic
+- [Performance Optimisation](llm/performance.md) - LLM performance considerations and optimisation strategies
 
 ### 📝 Prompt System
 
