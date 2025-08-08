@@ -1,4 +1,4 @@
-name: CI - Unit & E2E Tests
+name: CI
 
 on:
   pull_request:
@@ -6,40 +6,86 @@ on:
       - '*'
 
 jobs:
-  test:
-    permissions:
-      contents: read
-    name: Run Unit & E2E Tests
+  lint:
+    name: Lint Code and Dockerfiles
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Lint Dockerfiles
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: |
+            ./Docker/Dockerfile
+            ./Docker/Dockerfile.prod
+
+  unit-test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
     env:
-      NODE_ENV: development
-      APP_NAME: AssessmentBot-Backend
-      APP_VERSION: 1.0.0
-      LOG_LEVEL: debug
-      PORT: 3000
+      NODE_ENV: test
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Use Node.js 22
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+
       - name: Install dependencies
         run: npm install
-      - name: Prepare Husky hooks
-        run: npm run prepare
+
+      - name: Run unit tests
+        run: npm test -- --verbose --coverage
+
+      - name: Publish Unit Test Report
+        uses: mikepenz/action-junit-report@v5
+        if: success() || failure()
+        with:
+          report_paths: './junit/jest-junit.xml'
+          
+  e2e-test:
+    name: Run E2E Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    env:
+      NODE_ENV: test
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
       - name: Create .test.env for E2E tests
         run: |
-          if [ ! -f .test.env ]; then
-            cp .test.env.example .test.env
-            echo "GEMINI_API_KEY=${GEMINI_API_KEY}" > .test.env
-          fi
-      - name: Run unit tests
-        run: npm test -- --verbose
-      - name: Run e2e tests
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .test.env
+
+      - name: Run E2E tests
         run: npm run test:e2e -- --verbose
-      - name: Publish JUnit Test Report
+
+      - name: Publish E2E Test Report
         uses: mikepenz/action-junit-report@v5
         if: success() || failure()
         with:

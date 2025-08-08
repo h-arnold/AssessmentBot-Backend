@@ -1,0 +1,74 @@
+# Dockerfile.prod
+# This Dockerfile is optimised for production builds following advanced best practices.
+# It uses a multi-stage build to create a small, secure final image.
+
+# Stage 1: Build the application
+FROM node:22-alpine AS build
+
+WORKDIR /app
+
+# Copy package files.
+COPY package*.json ./ 
+
+# Use BuildKit cache mounts to speed up dependency installation.
+# This command mounts a cache directory for npm, which persists between builds.
+RUN --mount=type=cache,target=/root/.npm npm install
+
+# Copy only the source and configuration files necessary for the build.
+# This avoids copying the entire repository and other non-essential files
+# into the build context, keeping the build stage leaner.
+COPY tsconfig.json ./ 
+COPY tsconfig.build.json ./ 
+COPY nest-cli.json ./ 
+COPY src ./src
+
+# The build process, configured via tsconfig.build.json, excludes test
+# files (e.g., *.spec.ts) from the compiled output in the 'dist' directory.
+# This ensures test code is not included in the final production image.
+RUN npm run build
+
+# Stage 2: Create the slim production image
+FROM node:22-alpine AS production
+
+# Add metadata labels for better image organisation and management.
+# See https://github.com/opencontainers/image-spec/blob/main/annotations.md
+LABEL org.opencontainers.image.source="https://github.com/assessment-bot/backend"
+LABEL org.opencontainers.image.description="The backend API for the Assessment Bot service."
+LABEL org.opencontainers.image.licenses="MIT"
+
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+
+# Create a dedicated, non-root user and group for running the application
+# as a security best practice.
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+WORKDIR /app
+
+# Copy package files and install only production dependencies.
+# The --omit=dev flag skips devDependencies, reducing the image size.
+COPY package*.json ./ 
+# Use BuildKit cache mount for production dependencies as well.
+RUN --mount=type=cache,target=/root/.npm npm install --omit=dev --no-optional --ignore-scripts
+
+# Copy the compiled application code from the 'build' stage using --link
+# to optimise caching with BuildKit.
+COPY --from=build --link /app/dist ./dist
+
+# Copy the health-check script into the image.
+COPY scripts/health-check.js .
+
+# Set the correct ownership for all application files.
+RUN chown -R appuser:appgroup /app
+
+# Switch to the non-root user.
+USER appuser
+
+EXPOSE 3000
+
+# Set the HEALTHCHECK instruction to use the script.
+# This command will be run inside the container to determine its health.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD [ "node", "./health-check.js" ]
+
+CMD ["node", "dist/src/main.js"]
