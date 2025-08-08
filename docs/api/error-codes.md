@@ -82,23 +82,93 @@ Invalid request body that doesn't match the expected schema:
 
 When required fields are omitted:
 
+# Error Codes
+
+This document details the common error codes and response formats for the Assessment Bot Backend API.
+
+## Standard Error Response Format
+
+All API errors follow a standardised JSON structure:
+
+```typescript
+{
+  statusCode: number,        // HTTP status code
+  timestamp: string,         // ISO 8601 timestamp of the error
+  path: string,              // Request path that caused the error
+  message: string | string[],// Error description or validation messages
+  error?: string             // Short error description (e.g., "Bad Request")
+}
+```
+
+When validation fails, the `message` field will often contain an array of detailed error objects from Zod.
+
+## Common HTTP Status Codes
+
+### 400 - Bad Request
+
+Returned when the request is malformed or fails validation. This is the most common client-side error.
+
+**Common Causes:**
+
+- **Invalid `taskType`**: e.g., `"taskType": "INVALID"`
+- **Missing Required Fields**: e.g., omitting `reference`.
+- **Incorrect Data Types**: e.g., providing a `number` where a `string` is expected.
+- **Image Validation Failures**:
+  - Image size exceeds the `MAX_IMAGE_UPLOAD_SIZE_MB` limit.
+  - Image MIME type is not in the `ALLOWED_IMAGE_MIME_TYPES` list.
+- **Inconsistent `IMAGE` Task Types**: `reference`, `template`, and `studentResponse` must all be of the same type (all strings or all Buffers).
+
+**Example (Invalid Enum)**
+
 ```json
 {
   "statusCode": 400,
-  "timestamp": "2025-01-07T12:00:00.000Z",
-  "path": "/v1/assessor",
-  "message": "Validation failed",
-  "errors": [
+  "message": [
     {
-      "code": "invalid_type",
-      "expected": "string",
-      "received": "undefined",
-      "path": ["reference"],
-      "message": "Required"
+      "code": "invalid_enum_value",
+      "options": ["TEXT", "TABLE", "IMAGE"],
+      "path": ["taskType"],
+      "message": "Invalid enum value. Expected 'TEXT' | 'TABLE' | 'IMAGE', received 'INVALID'"
     }
-  ]
+  ],
+  "error": "Bad Request",
+  "timestamp": "2025-08-08T10:00:00.000Z",
+  "path": "/v1/assessor"
 }
 ```
+
+### 401 - Unauthorized
+
+Returned when authentication fails.
+
+**Common Causes:**
+
+- **Missing API Key**: The `Authorization` header is not provided.
+- **Invalid API Key**: The provided API key is incorrect.
+- **Malformed Header**: The `Authorization` header is not in the format `Bearer <key>`.
+
+**Example Response**
+
+```json
+{
+  "statusCode": 401,
+  "message": "Unauthorized",
+  "timestamp": "2025-08-08T10:00:00.000Z",
+  "path": "/v1/assessor"
+}
+```
+
+### 413 - Payload Too Large
+
+Returned when the request body exceeds the server's configured size limit.
+
+### 429 - Too Many Requests
+
+Returned when the rate limit is exceeded. The response will include a `Retry-After` header indicating how many seconds to wait before retrying.
+
+### 500 - Internal Server Error
+
+Returned for unexpected, server-side errors. In production, the message is a generic "Internal server error". In development, it may contain a stack trace.
 
 #### Image Validation Failures
 
