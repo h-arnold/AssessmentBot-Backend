@@ -37,7 +37,7 @@ For comprehensive monitoring, integrate with external services:
 
 ### Health Check Endpoint
 
-The application provides a comprehensive health check at `/status`:
+The application provides a comprehensive health check at `/health`:
 
 **Endpoint**: `GET /status`
 
