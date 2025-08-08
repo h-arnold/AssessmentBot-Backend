@@ -13,10 +13,10 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 
 ### 🔧 Development
 
-- [Development Workflow](development/workflow.md) - _[TODO]_ Local development practices and procedures
-- [Debugging Guide](development/debugging.md) - _[TODO]_ Debugging techniques and tools
-- [Code Style Guide](development/code-style.md) - _[TODO]_ Coding standards and conventions
-- [Git Workflow](development/git-workflow.md) - _[TODO]_ Branching strategy and commit conventions
+- [Development Workflow](development/workflow.md) - Local development practices and procedures
+- [Debugging Guide](development/debugging.md) - Debugging techniques and tools
+- [Code Style Guide](development/code-style.md) - Coding standards and conventions
+- [Git Workflow](development/git-workflow.md) - Branching strategy and commit conventions
 
 ### 🏗️ Architecture & Design
 
