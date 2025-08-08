@@ -1,3 +1,7 @@
+/* This is the health-check script used by the Docker Image
+* It's not linted and doesn't have tests as a result.
+/*
+/* eslint-disable no-console */
 const http = require('http');
 
 const options = {
