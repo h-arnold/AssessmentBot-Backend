@@ -64,7 +64,7 @@ The production image is built from `Docker/Dockerfile.prod` using multi-stage bu
 
 4. **Access the application**:
    - API: `http://localhost:3000`
-   - Health check: `http://localhost:3000/status`
+   - Health check: `http://localhost:3000/health`
 
 ### Development Container Features
 
