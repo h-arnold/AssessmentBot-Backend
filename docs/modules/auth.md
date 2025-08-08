@@ -241,7 +241,7 @@ The module provides detailed error responses:
 
 ### 401 Unauthorised Responses
 
-- **Missing API Key:** `"Unauthorized"`
+- **Missing API Key:** "Unauthorised"
 - **Invalid API Key:** `"Invalid API key"`
 - **Malformed Bearer:** `"Malformed Bearer scheme."`
 
