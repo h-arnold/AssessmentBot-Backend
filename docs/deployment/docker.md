@@ -45,18 +45,21 @@ The production image is built from `Docker/Dockerfile.prod` using multi-stage bu
 ### Quick Start
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/h-arnold/AssessmentBot-Backend.git
    cd AssessmentBot-Backend
    ```
 
 2. **Set up environment variables**:
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration, especially GEMINI_API_KEY
    ```
 
 3. **Build and run the development container**:
+
    ```bash
    docker build -f Docker/Dockerfile -t assessmentbot-backend:dev .
    docker run -p 3000:3000 --env-file .env assessmentbot-backend:dev
@@ -123,7 +126,7 @@ app:
     - NODE_ENV=production
     - LOG_LEVEL=${LOG_LEVEL:-info}
   expose:
-    - "3000"
+    - '3000'
   networks:
     - web
 ```
@@ -140,8 +143,8 @@ app:
 caddy:
   image: caddy:2-alpine
   ports:
-    - "80:80"
-    - "443:443"
+    - '80:80'
+    - '443:443'
   volumes:
     - ./Caddyfile:/etc/caddy/Caddyfile
     - caddy_data:/data
@@ -215,6 +218,7 @@ The `Caddyfile` provides reverse proxy configuration:
 ```
 
 Features:
+
 - **Automatic HTTPS**: Let's Encrypt integration
 - **Reverse proxy**: Routes traffic to the app container
 - **Access logging**: Logs requests for monitoring and security
@@ -235,6 +239,7 @@ bantime = 3600
 ```
 
 Protection features:
+
 - **Rate limiting**: Blocks IPs after 5 failed attempts
 - **Time window**: 10-minute detection window
 - **Ban duration**: 1-hour bans for offending IPs
@@ -251,6 +256,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 ```
 
 The health check script (`scripts/health-check.js`):
+
 - Tests the `/health` endpoint
 - 2-second timeout
 - Returns appropriate exit codes
@@ -316,10 +322,13 @@ docker-compose restart app
 
 Ensure proper file permissions for mounted volumes:
 
-```bash
-# Fix ownership issues
+# Fix ownership issues. Note: The UID/GID (e.g., 1000) should match the 'appuser' inside the container.
+
+# You can find the correct UID by running: docker exec assessmentbot-app id -u
+
 sudo chown -R 1000:1000 ./data
-```
+
+````
 
 #### Network Connectivity
 
@@ -331,7 +340,7 @@ docker-compose exec app sh
 
 # Test connection to other services
 wget -q --spider http://caddy
-```
+````
 
 #### Environment Variables
 

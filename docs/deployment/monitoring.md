@@ -42,24 +42,14 @@ The application provides a comprehensive health check at `/health`:
 **Endpoint**: `GET /status`
 
 **Response format**:
-```json
 {
-  "status": "ok",
-  "info": {
-    "database": {
-      "status": "up"
-    }
-  },
-  "error": {},
-  "details": {
-    "database": {
-      "status": "up"
-    }
-  }
+"version": "0.0.1",
+"timestamp": "2025-01-16T12:00:00.000Z",
+"status": "ok"
 }
-```
 
 **Status codes**:
+
 - `200 OK`: All services healthy
 - `503 Service Unavailable`: One or more services unhealthy
 
@@ -73,6 +63,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 ```
 
 **Health check parameters**:
+
 - **Interval**: 30 seconds between checks
 - **Timeout**: 10 seconds maximum response time
 - **Start period**: 5 seconds grace period after container start
@@ -100,6 +91,7 @@ docker inspect assessmentbot-app --format='{{range .State.Health.Log}}{{.Start}}
 The application uses `nestjs-pino` for structured JSON logging:
 
 **Log levels** (in order of severity):
+
 - `fatal`: Application crashes or critical errors
 - `error`: Error conditions that don't stop the application
 - `warn`: Warning conditions
@@ -108,6 +100,7 @@ The application uses `nestjs-pino` for structured JSON logging:
 - `trace`: Very detailed debug information
 
 **Log format example**:
+
 ```json
 {
   "level": 30,
@@ -132,17 +125,19 @@ The application uses `nestjs-pino` for structured JSON logging:
 ### Log Configuration
 
 **Environment variables**:
+
 ```bash
 # Production logging
 LOG_LEVEL=info
 LOG_FILE=/var/log/app/application.log
 
-# Development logging  
+# Development logging
 LOG_LEVEL=debug
 # No LOG_FILE for console output
 ```
 
 **Log output**:
+
 - **Development**: Pretty-printed console output
 - **Production**: Structured JSON to stdout/stderr
 - **File output**: Optional file logging when `LOG_FILE` is set
@@ -152,6 +147,7 @@ LOG_LEVEL=debug
 #### Option 1: ELK Stack (Elasticsearch, Logstash, Kibana)
 
 **Docker Compose addition**:
+
 ```yaml
 elasticsearch:
   image: docker.elastic.co/elasticsearch/elasticsearch:8.5.0
@@ -159,14 +155,14 @@ elasticsearch:
     - discovery.type=single-node
     - xpack.security.enabled=false
   ports:
-    - "9200:9200"
+    - '9200:9200'
 
 kibana:
   image: docker.elastic.co/kibana/kibana:8.5.0
   environment:
     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
   ports:
-    - "5601:5601"
+    - '5601:5601'
   depends_on:
     - elasticsearch
 
@@ -181,26 +177,28 @@ filebeat:
 ```
 
 **Filebeat configuration** (`filebeat.yml`):
+
 ```yaml
 filebeat.inputs:
-- type: container
-  paths:
-    - '/var/lib/docker/containers/*/*.log'
+  - type: container
+    paths:
+      - '/var/lib/docker/containers/*/*.log'
 
 processors:
-- add_docker_metadata:
-    host: "unix:///var/run/docker.sock"
+  - add_docker_metadata:
+      host: 'unix:///var/run/docker.sock'
 
 output.elasticsearch:
-  hosts: ["elasticsearch:9200"]
+  hosts: ['elasticsearch:9200']
 
 setup.kibana:
-  host: "kibana:5601"
+  host: 'kibana:5601'
 ```
 
 #### Option 2: Fluentd with Cloud Storage
 
 **Fluentd configuration**:
+
 ```yaml
 fluentd:
   image: fluent/fluentd:v1.14
@@ -214,6 +212,7 @@ fluentd:
 #### Option 3: Simple Log Aggregation
 
 **Log collection script**:
+
 ```bash
 #!/bin/bash
 # /opt/assessmentbot/scripts/collect-logs.sh
@@ -236,6 +235,7 @@ find $LOG_DIR -name "*-$(date -d yesterday +%Y%m%d).log" -exec gzip {} \;
 ```
 
 **Cron job setup**:
+
 ```bash
 # Add to crontab
 0 2 * * * /opt/assessmentbot/scripts/collect-logs.sh
@@ -248,6 +248,7 @@ find $LOG_DIR -name "*-$(date -d yesterday +%Y%m%d).log" -exec gzip {} \;
 #### Docker Stats Monitoring
 
 **Real-time monitoring**:
+
 ```bash
 # Monitor resource usage
 docker stats
@@ -259,12 +260,13 @@ docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsa
 #### cAdvisor Integration
 
 **Add to docker-compose.yml**:
+
 ```yaml
 cadvisor:
   image: gcr.io/cadvisor/cadvisor:latest
   container_name: cadvisor
   ports:
-    - "8080:8080"
+    - '8080:8080'
   volumes:
     - /:/rootfs:ro
     - /var/run:/var/run:ro
@@ -299,6 +301,7 @@ METRICS_FILE="/var/log/assessmentbot/system-metrics.log"
 #### Node Exporter (Prometheus)
 
 **Installation**:
+
 ```bash
 # Download and install Node Exporter
 wget https://github.com/prometheus/node_exporter/releases/download/v1.5.0/node_exporter-1.5.0.linux-amd64.tar.gz
@@ -400,7 +403,11 @@ Track usage of the Gemini API:
 export class LlmMetricsService {
   private readonly logger = new Logger(LlmMetricsService.name);
 
-  trackTokenUsage(model: string, inputTokens: number, outputTokens: number): void {
+  trackTokenUsage(
+    model: string,
+    inputTokens: number,
+    outputTokens: number,
+  ): void {
     this.logger.log({
       metric: 'llm_token_usage',
       model,
@@ -429,6 +436,7 @@ export class LlmMetricsService {
 The production setup includes Fail2ban for intrusion prevention:
 
 **Configuration** (`fail2ban/jail.local`):
+
 ```ini
 [caddy-auth]
 enabled = true
@@ -441,6 +449,7 @@ bantime = 3600
 ```
 
 **Monitoring Fail2ban**:
+
 ```bash
 # Check banned IPs
 docker-compose exec fail2ban fail2ban-client status caddy-auth
@@ -538,6 +547,7 @@ fi
 ```
 
 **Cron job setup**:
+
 ```bash
 # Check every 5 minutes
 */5 * * * * /opt/assessmentbot/scripts/health-monitor.sh
@@ -546,6 +556,7 @@ fi
 #### Advanced Monitoring with Prometheus
 
 **Prometheus configuration** (`prometheus.yml`):
+
 ```yaml
 global:
   scrape_interval: 15s
@@ -567,6 +578,7 @@ scrape_configs:
 ```
 
 **Alerting rules** (`alerts.yml`):
+
 ```yaml
 groups:
   - name: assessmentbot.rules
@@ -577,8 +589,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "AssessmentBot service is down"
-          description: "The AssessmentBot service has been down for more than 2 minutes."
+          summary: 'AssessmentBot service is down'
+          description: 'The AssessmentBot service has been down for more than 2 minutes.'
 
       - alert: HighResponseTime
         expr: http_request_duration_seconds{quantile="0.95"} > 5
@@ -586,8 +598,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "High response time detected"
-          description: "95th percentile response time is above 5 seconds."
+          summary: 'High response time detected'
+          description: '95th percentile response time is above 5 seconds.'
 
       - alert: HighErrorRate
         expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
@@ -595,8 +607,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "High error rate detected"
-          description: "Error rate is above 10% for more than 3 minutes."
+          summary: 'High error rate detected'
+          description: 'Error rate is above 10% for more than 3 minutes.'
 ```
 
 ### Slack/Discord Integration
@@ -686,12 +698,14 @@ container_memory_usage_bytes{name="assessmentbot-app"} / container_spec_memory_l
 #### Missing Metrics
 
 1. **Check service endpoints**:
+
    ```bash
    curl http://localhost:3000/status
    curl http://localhost:3000/metrics
    ```
 
 2. **Verify log output**:
+
    ```bash
    docker-compose logs app | grep -i error
    ```
@@ -704,6 +718,7 @@ container_memory_usage_bytes{name="assessmentbot-app"} / container_spec_memory_l
 #### Performance Issues
 
 1. **Check resource usage**:
+
    ```bash
    docker stats assessmentbot-app
    top -p $(docker inspect -f '{{.State.Pid}}' assessmentbot-app)
@@ -718,6 +733,7 @@ container_memory_usage_bytes{name="assessmentbot-app"} / container_spec_memory_l
 #### Log Collection Problems
 
 1. **Verify log permissions**:
+
    ```bash
    ls -la /var/lib/docker/containers/
    docker inspect assessmentbot-app | grep LogPath
