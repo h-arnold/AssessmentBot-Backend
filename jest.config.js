@@ -3,7 +3,8 @@ export default {
   preset: 'ts-jest/presets/default-esm',
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
-  testMatch: ['<rootDir>/src/**/*.spec.ts', '<rootDir>/test/**/*.spec.ts'],
+  roots: ['<rootDir>/src'],
+  testMatch: ['<rootDir>/src/**/*.spec.ts'],
   transform: {
     '^.+\\.(t|j)s$': [
       'ts-jest',
@@ -31,6 +32,9 @@ export default {
     '^test/(.*)$': '<rootDir>/test/$1',
   },
   extensionsToTreatAsEsm: ['.ts'],
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
+  testPathIgnorePatterns: ['<rootDir>/dist/'],
+  watchPathIgnorePatterns: ['<rootDir>/dist/'],
   reporters: [
     'default',
     [

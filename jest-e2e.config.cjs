@@ -3,6 +3,7 @@ module.exports = {
   coverageDirectory: '<rootDir>/coverage',
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
+  roots: ['<rootDir>/test'],
   testEnvironment: 'node',
   transform: {
     '^.+\.(t|j)s$': 'ts-jest',
@@ -14,4 +15,7 @@ module.exports = {
   setupFiles: ['<rootDir>/jest.setup.ts'],
   detectOpenHandles: true,
   testTimeout: 30000,
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
+  testPathIgnorePatterns: ['<rootDir>/dist/'],
+  watchPathIgnorePatterns: ['<rootDir>/dist/'],
 };

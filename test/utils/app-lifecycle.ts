@@ -39,6 +39,9 @@ export async function startApp(
 
   if (fs.existsSync(logFilePath)) {
     fs.truncateSync(logFilePath, 0);
+  } else {
+    // Touch the file to ensure it exists before pino/thread-stream opens it
+    fs.closeSync(fs.openSync(logFilePath, 'a'));
   }
 
   const mainJsPath = path.join(__dirname, '..', '..', 'dist', 'src', 'main.js');
