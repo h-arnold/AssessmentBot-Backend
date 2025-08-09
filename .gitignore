@@ -19,6 +19,7 @@ yarn-error.log*
 .env.production.local
 .env.prod
 .test.env
+.env.prod
 
 # Test reports and coverage
 junit/

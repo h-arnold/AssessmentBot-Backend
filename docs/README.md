@@ -91,10 +91,10 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 
 #### Utilities & Components
 
-- [Validation Pipes](modules/pipes.md) - _[TODO]_ Input validation and transformation
-- [Exception Filters](modules/filters.md) - _[TODO]_ Error handling and filtering
-- [Guards](modules/guards.md) - _[TODO]_ Route protection and authentication
-- [Utilities](modules/utilities.md) - _[TODO]_ Shared utility functions
+- [Validation Pipes](modules/pipes.md) - Input validation and transformation
+- [Exception Filters](modules/filters.md) - Error handling and filtering
+- [Guards](modules/guards.md) - Route protection and authentication
+- [Utilities](modules/utilities.md) - Shared utility functions
 
 ### 🛠️ Troubleshooting
 
