@@ -61,55 +61,59 @@ function hasReqId(
       inject: [ConfigService],
       useFactory: (configService: ConfigService): Params => {
         const logLevel = configService.get('LOG_LEVEL');
-        const logFile = process.env.LOG_FILE;
+        const nodeEnv = configService.get('NODE_ENV');
+        const logFile = process.env.LOG_FILE; // Used for E2E tests
 
+        const serializers = {
+          req: (req: IncomingMessage): IncomingMessage =>
+            LogRedactor.redactRequest(req),
+        };
+
+        const customProps = (
+          req: IncomingMessage,
+          _res: ServerResponse<IncomingMessage>,
+        ): { reqId: string | number | undefined } => ({
+          reqId: hasReqId(req) ? req.id : undefined,
+        });
+
+        // For E2E tests: write JSON logs to a specified file.
         if (logFile) {
-          // For E2E tests: write JSON logs to file
           return {
             pinoHttp: {
               level: logLevel,
               transport: {
                 target: 'pino/file',
-                options: {
-                  destination: logFile,
-                },
+                options: { destination: logFile },
               },
-              serializers: {
-                req: (req: IncomingMessage): IncomingMessage =>
-                  LogRedactor.redactRequest(req),
-              },
-              customProps: (
-                req: IncomingMessage,
-                _res: ServerResponse<IncomingMessage>,
-              ): { reqId: string | number | undefined } => {
-                let reqId: string | number | undefined = undefined;
-                if (hasReqId(req)) {
-                  reqId = req.id;
-                }
-                return {
-                  reqId,
-                };
-              },
-            },
-          };
-        } else {
-          // For development: use pino-pretty for console output
-          return {
-            pinoHttp: {
-              level: logLevel,
-              transport: {
-                target: 'pino-pretty',
-                options: {
-                  singleLine: true,
-                },
-              },
-              serializers: {
-                req: (req: IncomingMessage): IncomingMessage =>
-                  LogRedactor.redactRequest(req),
-              },
+              serializers,
+              customProps,
             },
           };
         }
+
+        // For production: use the default Pino JSON logger.
+        if (nodeEnv === 'production') {
+          return {
+            pinoHttp: {
+              level: logLevel,
+              serializers,
+              customProps,
+            },
+          };
+        }
+
+        // For development: use pino-pretty for more readable console output.
+        return {
+          pinoHttp: {
+            level: logLevel,
+            transport: {
+              target: 'pino-pretty',
+              options: { singleLine: true },
+            },
+            serializers,
+            customProps,
+          },
+        };
       },
     }),
     AuthModule,

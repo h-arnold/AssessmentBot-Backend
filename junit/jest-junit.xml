@@ -13,7 +13,7 @@
     </testcase>
     <testcase classname="HttpExceptionFilter should log not found errors with warn level" name="HttpExceptionFilter should log not found errors with warn level" time="0.001">
     </testcase>
-    <testcase classname="HttpExceptionFilter should use error level for 5xx errors" name="HttpExceptionFilter should use error level for 5xx errors" time="0.002">
+    <testcase classname="HttpExceptionFilter should use error level for 5xx errors" name="HttpExceptionFilter should use error level for 5xx errors" time="0.001">
     </testcase>
   </testsuite>
   <testsuite name="ConfigService" errors="0" failures="0" skipped="0" timestamp="2025-08-08T08:02:15" time="1.206" tests="30">
@@ -27,19 +27,21 @@
     </testcase>
     <testcase classname="ConfigService Zod schema validation should fail when NODE_ENV is missing" name="ConfigService Zod schema validation should fail when NODE_ENV is missing" time="0.026">
     </testcase>
-    <testcase classname="ConfigService Zod schema validation should pass with valid NODE_ENV values" name="ConfigService Zod schema validation should pass with valid NODE_ENV values" time="0.002">
+    <testcase classname="ConfigService Zod schema validation should pass with valid NODE_ENV values" name="ConfigService Zod schema validation should pass with valid NODE_ENV values" time="0.001">
     </testcase>
-    <testcase classname="ConfigService Zod schema validation should fail with invalid NODE_ENV values" name="ConfigService Zod schema validation should fail with invalid NODE_ENV values" time="0.005">
+    <testcase classname="ConfigService Zod schema validation should fail with invalid NODE_ENV values" name="ConfigService Zod schema validation should fail with invalid NODE_ENV values" time="0.003">
     </testcase>
-    <testcase classname="ConfigService Zod schema validation should be validated as a number" name="ConfigService Zod schema validation should be validated as a number" time="0.002">
+    <testcase classname="ConfigService Zod schema validation should be validated as a number" name="ConfigService Zod schema validation should be validated as a number" time="0.001">
     </testcase>
     <testcase classname="ConfigService Zod schema validation should be within valid range" name="ConfigService Zod schema validation should be within valid range" time="0.002">
+    <testcase classname="ConfigService Zod schema validation should be within valid range" name="ConfigService Zod schema validation should be within valid range" time="0.002">
     </testcase>
+    <testcase classname="ConfigService API Key validation should fail when API_KEYS is not a string" name="ConfigService API Key validation should fail when API_KEYS is not a string" time="0.001">
     <testcase classname="ConfigService API Key validation should fail when API_KEYS is not a string" name="ConfigService API Key validation should fail when API_KEYS is not a string" time="0.001">
     </testcase>
     <testcase classname="ConfigService API Key validation should fail when API_KEYS contains malformed keys" name="ConfigService API Key validation should fail when API_KEYS contains malformed keys" time="0.002">
     </testcase>
-    <testcase classname="ConfigService API Key validation should correctly parse a single API key" name="ConfigService API Key validation should correctly parse a single API key" time="0.002">
+    <testcase classname="ConfigService API Key validation should correctly parse a single API key" name="ConfigService API Key validation should correctly parse a single API key" time="0.001">
     </testcase>
     <testcase classname="ConfigService API Key validation should correctly parse multiple comma-separated API keys" name="ConfigService API Key validation should correctly parse multiple comma-separated API keys" time="0.001">
     </testcase>
@@ -48,7 +50,9 @@
     <testcase classname="ConfigService API Key validation should fail gracefully if API_KEYS is missing" name="ConfigService API Key validation should fail gracefully if API_KEYS is missing" time="0.001">
     </testcase>
     <testcase classname="ConfigService Schema defaults and optional values APP_NAME should return default value when not set" name="ConfigService Schema defaults and optional values APP_NAME should return default value when not set" time="0">
+    <testcase classname="ConfigService Schema defaults and optional values APP_NAME should return default value when not set" name="ConfigService Schema defaults and optional values APP_NAME should return default value when not set" time="0">
     </testcase>
+    <testcase classname="ConfigService Schema defaults and optional values APP_VERSION should be optional and return undefined" name="ConfigService Schema defaults and optional values APP_VERSION should be optional and return undefined" time="0.001">
     <testcase classname="ConfigService Schema defaults and optional values APP_VERSION should be optional and return undefined" name="ConfigService Schema defaults and optional values APP_VERSION should be optional and return undefined" time="0.001">
     </testcase>
     <testcase classname="ConfigService Service-level value types ConfigService should return PORT as a number" name="ConfigService Service-level value types ConfigService should return PORT as a number" time="0.001">
@@ -61,13 +65,15 @@
     </testcase>
     <testcase classname="ConfigService Service-level value types ConfigService should load ALLOWED_IMAGE_MIME_TYPES as an array of strings" name="ConfigService Service-level value types ConfigService should load ALLOWED_IMAGE_MIME_TYPES as an array of strings" time="0.001">
     </testcase>
-    <testcase classname="ConfigService Service-level value types ConfigService should use default ALLOWED_IMAGE_MIME_TYPES if not set" name="ConfigService Service-level value types ConfigService should use default ALLOWED_IMAGE_MIME_TYPES if not set" time="0.001">
+    <testcase classname="ConfigService Service-level value types ConfigService should use default ALLOWED_IMAGE_MIME_TYPES if not set" name="ConfigService Service-level value types ConfigService should use default ALLOWED_IMAGE_MIME_TYPES if not set" time="0">
     </testcase>
+    <testcase classname="ConfigService Service-level value types should handle single ALLOWED_IMAGE_MIME_TYPES" name="ConfigService Service-level value types should handle single ALLOWED_IMAGE_MIME_TYPES" time="0.001">
     <testcase classname="ConfigService Service-level value types should handle single ALLOWED_IMAGE_MIME_TYPES" name="ConfigService Service-level value types should handle single ALLOWED_IMAGE_MIME_TYPES" time="0.001">
     </testcase>
     <testcase classname="ConfigService Service-level value types ConfigService should load LOG_LEVEL as a string" name="ConfigService Service-level value types ConfigService should load LOG_LEVEL as a string" time="0">
+    <testcase classname="ConfigService Service-level value types ConfigService should load LOG_LEVEL as a string" name="ConfigService Service-level value types ConfigService should load LOG_LEVEL as a string" time="0">
     </testcase>
-    <testcase classname="ConfigService getGlobalPayloadLimit should calculate correctly for default MAX_IMAGE_UPLOAD_SIZE_MB" name="ConfigService getGlobalPayloadLimit should calculate correctly for default MAX_IMAGE_UPLOAD_SIZE_MB" time="0">
+    <testcase classname="ConfigService getGlobalPayloadLimit should calculate correctly for default MAX_IMAGE_UPLOAD_SIZE_MB" name="ConfigService getGlobalPayloadLimit should calculate correctly for default MAX_IMAGE_UPLOAD_SIZE_MB" time="0.001">
     </testcase>
     <testcase classname="ConfigService getGlobalPayloadLimit should calculate correctly for a different MAX_IMAGE_UPLOAD_SIZE_MB" name="ConfigService getGlobalPayloadLimit should calculate correctly for a different MAX_IMAGE_UPLOAD_SIZE_MB" time="0.001">
     </testcase>
@@ -75,7 +81,7 @@
     </testcase>
     <testcase classname="ConfigService .env.example file validation .env.example should use placeholder values" name="ConfigService .env.example file validation .env.example should use placeholder values" time="0.001">
     </testcase>
-    <testcase classname="ConfigService Missing .env file handling should not cause an error when .env file is missing and required vars are in process.env" name="ConfigService Missing .env file handling should not cause an error when .env file is missing and required vars are in process.env" time="0.004">
+    <testcase classname="ConfigService Missing .env file handling should not cause an error when .env file is missing and required vars are in process.env" name="ConfigService Missing .env file handling should not cause an error when .env file is missing and required vars are in process.env" time="0.003">
     </testcase>
   </testsuite>
   <testsuite name="ZodValidationPipe" errors="0" failures="0" skipped="0" timestamp="2025-08-08T08:02:16" time="0.186" tests="11">
@@ -84,8 +90,86 @@
     <testcase classname="ZodValidationPipe should throw BadRequestException on invalid data" name="ZodValidationPipe should throw BadRequestException on invalid data" time="0.009">
     </testcase>
     <testcase classname="ZodValidationPipe should return transformed data on valid payload" name="ZodValidationPipe should return transformed data on valid payload" time="0.001">
+=======
+  <testsuite name="ImageValidationPipe" errors="0" failures="0" skipped="0" timestamp="2025-08-06T09:51:45" time="0.336" tests="20">
+    <testcase classname="ImageValidationPipe should be defined" name="ImageValidationPipe should be defined" time="0.009">
     </testcase>
-    <testcase classname="ZodValidationPipe should handle edge cases for empty and null values" name="ZodValidationPipe should handle edge cases for empty and null values" time="0.002">
+    <testcase classname="ImageValidationPipe should inject ConfigService" name="ImageValidationPipe should inject ConfigService" time="0.002">
+    </testcase>
+    <testcase classname="ImageValidationPipe Valid Inputs should allow a valid PNG Buffer within size limit" name="ImageValidationPipe Valid Inputs should allow a valid PNG Buffer within size limit" time="0.012">
+    </testcase>
+    <testcase classname="ImageValidationPipe Valid Inputs should allow a valid JPEG Buffer within size limit" name="ImageValidationPipe Valid Inputs should allow a valid JPEG Buffer within size limit" time="0.008">
+    </testcase>
+    <testcase classname="ImageValidationPipe Valid Inputs should allow a valid base64 PNG string within size limit" name="ImageValidationPipe Valid Inputs should allow a valid base64 PNG string within size limit" time="0.003">
+    </testcase>
+    <testcase classname="ImageValidationPipe Valid Inputs should allow a valid base64 JPEG string within size limit" name="ImageValidationPipe Valid Inputs should allow a valid base64 JPEG string within size limit" time="0.003">
+    </testcase>
+    <testcase classname="ImageValidationPipe Valid Inputs should allow non-image string inputs" name="ImageValidationPipe Valid Inputs should allow non-image string inputs" time="0.001">
+    </testcase>
+    <testcase classname="ImageValidationPipe Valid Inputs should allow non-Buffer/non-string inputs to pass through" name="ImageValidationPipe Valid Inputs should allow non-Buffer/non-string inputs to pass through" time="0.002">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject a Buffer exceeding MAX_IMAGE_UPLOAD_SIZE_MB" name="ImageValidationPipe Invalid Inputs should reject a Buffer exceeding MAX_IMAGE_UPLOAD_SIZE_MB" time="0.011">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject a base64 string exceeding MAX_IMAGE_UPLOAD_SIZE_MB" name="ImageValidationPipe Invalid Inputs should reject a base64 string exceeding MAX_IMAGE_UPLOAD_SIZE_MB" time="0.03">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject a Buffer with a disallowed MIME type" name="ImageValidationPipe Invalid Inputs should reject a Buffer with a disallowed MIME type" time="0.008">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject a base64 string with a disallowed MIME type" name="ImageValidationPipe Invalid Inputs should reject a base64 string with a disallowed MIME type" time="0.001">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject an invalid base64 string format" name="ImageValidationPipe Invalid Inputs should reject an invalid base64 string format" time="0.002">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject an empty Buffer" name="ImageValidationPipe Invalid Inputs should reject an empty Buffer" time="0.004">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject an empty base64 string" name="ImageValidationPipe Invalid Inputs should reject an empty base64 string" time="0.002">
+    </testcase>
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject a Buffer that cannot be identified as an image type" name="ImageValidationPipe Invalid Inputs should reject a Buffer that cannot be identified as an image type" time="0.011">
+    </testcase>
+    <testcase classname="ImageValidationPipe Edge Cases should handle MAX_IMAGE_UPLOAD_SIZE_MB = 0 (reject all images)" name="ImageValidationPipe Edge Cases should handle MAX_IMAGE_UPLOAD_SIZE_MB = 0 (reject all images)" time="0.002">
+    </testcase>
+    <testcase classname="ImageValidationPipe Edge Cases should handle empty ALLOWED_IMAGE_MIME_TYPES (reject all images)" name="ImageValidationPipe Edge Cases should handle empty ALLOWED_IMAGE_MIME_TYPES (reject all images)" time="0.01">
+    </testcase>
+    <testcase classname="ImageValidationPipe Security Edge Cases should reject a base64 image string longer than 10MB" name="ImageValidationPipe Security Edge Cases should reject a base64 image string longer than 10MB" time="0.003">
+    </testcase>
+    <testcase classname="ImageValidationPipe Security Edge Cases should reject crafted input that could cause ReDoS in the old regex" name="ImageValidationPipe Security Edge Cases should reject crafted input that could cause ReDoS in the old regex" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="AssessorService" errors="0" failures="0" skipped="0" timestamp="2025-08-06T09:51:45" time="0.22" tests="4">
+    <testcase classname="AssessorService should be defined" name="AssessorService should be defined" time="0.014">
+    </testcase>
+    <testcase classname="AssessorService createAssessment should call the prompt factory and llm service" name="AssessorService createAssessment should call the prompt factory and llm service" time="0.007">
+    </testcase>
+    <testcase classname="AssessorService createAssessment should correctly handle a multimodal (image) payload" name="AssessorService createAssessment should correctly handle a multimodal (image) payload" time="0.005">
+    </testcase>
+    <testcase classname="AssessorService createAssessment should not have __proto__ property in the DTO" name="AssessorService createAssessment should not have __proto__ property in the DTO" time="0.004">
+    </testcase>
+  </testsuite>
+  <testsuite name="StatusController" errors="0" failures="0" skipped="0" timestamp="2025-08-06T09:51:46" time="0.106" tests="4">
+    <testcase classname="StatusController getHello should return a hello message" name="StatusController getHello should return a hello message" time="0.004">
+    </testcase>
+    <testcase classname="StatusController getHealth should return health check response" name="StatusController getHealth should return health check response" time="0.001">
+    </testcase>
+    <testcase classname="StatusController testError should throw an HttpException with the correct message" name="StatusController testError should throw an HttpException with the correct message" time="0.005">
+    </testcase>
+    <testcase classname="StatusController testError should throw an HttpException" name="StatusController testError should throw an HttpException" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="AssessorModule" errors="0" failures="0" skipped="0" timestamp="2025-08-06T09:51:46" time="0.22" tests="3">
+    <testcase classname="AssessorModule should be defined" name="AssessorModule should be defined" time="0.012">
+    </testcase>
+    <testcase classname="AssessorModule should provide AssessorController" name="AssessorModule should provide AssessorController" time="0.007">
+    </testcase>
+    <testcase classname="AssessorModule should provide AssessorService" name="AssessorModule should provide AssessorService" time="0.004">
+    </testcase>
+  </testsuite>
+  <testsuite name="ZodValidationPipe" errors="0" failures="0" skipped="0" timestamp="2025-08-06T09:51:46" time="0.117" tests="11">
+    <testcase classname="ZodValidationPipe should be defined" name="ZodValidationPipe should be defined" time="0.001">
+    </testcase>
+    <testcase classname="ZodValidationPipe should throw BadRequestException on invalid data" name="ZodValidationPipe should throw BadRequestException on invalid data" time="0.016">
+    </testcase>
+    <testcase classname="ZodValidationPipe should return transformed data on valid payload" name="ZodValidationPipe should return transformed data on valid payload" time="0.001">
+>>>>>>> 9852b523cf4dc22872c861c3435d174a7a71aa3a
+    </testcase>
+    <testcase classname="ZodValidationPipe should handle edge cases for empty and null values" name="ZodValidationPipe should handle edge cases for empty and null values" time="0.003">
     </testcase>
     <testcase classname="ZodValidationPipe array validation should validate a valid array" name="ZodValidationPipe array validation should validate a valid array" time="0">
     </testcase>
@@ -135,11 +219,11 @@
     </testcase>
     <testcase classname="ImageValidationPipe Invalid Inputs should reject a Buffer with a disallowed MIME type" name="ImageValidationPipe Invalid Inputs should reject a Buffer with a disallowed MIME type" time="0.012">
     </testcase>
-    <testcase classname="ImageValidationPipe Invalid Inputs should reject a base64 string with a disallowed MIME type" name="ImageValidationPipe Invalid Inputs should reject a base64 string with a disallowed MIME type" time="0.002">
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject a base64 string with a disallowed MIME type" name="ImageValidationPipe Invalid Inputs should reject a base64 string with a disallowed MIME type" time="0.001">
     </testcase>
     <testcase classname="ImageValidationPipe Invalid Inputs should reject an invalid base64 string format" name="ImageValidationPipe Invalid Inputs should reject an invalid base64 string format" time="0.002">
     </testcase>
-    <testcase classname="ImageValidationPipe Invalid Inputs should reject an empty Buffer" name="ImageValidationPipe Invalid Inputs should reject an empty Buffer" time="0.002">
+    <testcase classname="ImageValidationPipe Invalid Inputs should reject an empty Buffer" name="ImageValidationPipe Invalid Inputs should reject an empty Buffer" time="0.004">
     </testcase>
     <testcase classname="ImageValidationPipe Invalid Inputs should reject an empty base64 string" name="ImageValidationPipe Invalid Inputs should reject an empty base64 string" time="0.001">
     </testcase>
@@ -161,16 +245,27 @@
     </testcase>
     <testcase classname="CreateAssessorDto Validation should accept a valid IMAGE task payload with strings" name="CreateAssessorDto Validation should accept a valid IMAGE task payload with strings" time="0.002">
     </testcase>
+<<<<<<< HEAD
+>>>>>>> 5a0c432 (Final review and verification of architecture documentation)
+=======
+>>>>>>> 9852b523cf4dc22872c861c3435d174a7a71aa3a
     <testcase classname="CreateAssessorDto Validation should accept a valid IMAGE task payload with Buffers" name="CreateAssessorDto Validation should accept a valid IMAGE task payload with Buffers" time="0">
     </testcase>
     <testcase classname="CreateAssessorDto Validation should reject when taskType is missing" name="CreateAssessorDto Validation should reject when taskType is missing" time="0.001">
     </testcase>
+<<<<<<< HEAD
     <testcase classname="CreateAssessorDto Validation should reject when a required field is missing" name="CreateAssessorDto Validation should reject when a required field is missing" time="0.001">
+=======
+    <testcase classname="CreateAssessorDto Validation should reject when a required field is missing" name="CreateAssessorDto Validation should reject when a required field is missing" time="0">
+>>>>>>> 9852b523cf4dc22872c861c3435d174a7a71aa3a
     </testcase>
+    <testcase classname="CreateAssessorDto Validation should reject empty strings for required fields" name="CreateAssessorDto Validation should reject empty strings for required fields" time="0">
     <testcase classname="CreateAssessorDto Validation should reject empty strings for required fields" name="CreateAssessorDto Validation should reject empty strings for required fields" time="0">
     </testcase>
     <testcase classname="CreateAssessorDto Validation should reject payloads with extra fields" name="CreateAssessorDto Validation should reject payloads with extra fields" time="0.001">
+    <testcase classname="CreateAssessorDto Validation should reject payloads with extra fields" name="CreateAssessorDto Validation should reject payloads with extra fields" time="0.001">
     </testcase>
+    <testcase classname="CreateAssessorDto Validation should reject null for a required field" name="CreateAssessorDto Validation should reject null for a required field" time="0">
     <testcase classname="CreateAssessorDto Validation should reject null for a required field" name="CreateAssessorDto Validation should reject null for a required field" time="0">
     </testcase>
     <testcase classname="CreateAssessorDto Validation should reject undefined for a required field" name="CreateAssessorDto Validation should reject undefined for a required field" time="0.001">
@@ -187,7 +282,7 @@
     </testcase>
     <testcase classname="ImagePrompt should reject images with missing MIME type" name="ImagePrompt should reject images with missing MIME type" time="0.001">
     </testcase>
-    <testcase classname="ImagePrompt should reject images with path traversal in filename" name="ImagePrompt should reject images with path traversal in filename" time="0.001">
+    <testcase classname="ImagePrompt should reject images with path traversal in filename" name="ImagePrompt should reject images with path traversal in filename" time="0">
     </testcase>
     <testcase classname="ImagePrompt should accept allowed MIME types from env" name="ImagePrompt should accept allowed MIME types from env" time="0.001">
     </testcase>
@@ -219,7 +314,7 @@
     </testcase>
     <testcase classname="Prompt Base Class Prompt Constructor should throw a ZodError via the constructor with invalid input" name="Prompt Base Class Prompt Constructor should throw a ZodError via the constructor with invalid input" time="0.003">
     </testcase>
-    <testcase classname="Prompt Base Class readMarkdown should reject filenames with path traversal" name="Prompt Base Class readMarkdown should reject filenames with path traversal" time="0.001">
+    <testcase classname="Prompt Base Class readMarkdown should reject filenames with path traversal" name="Prompt Base Class readMarkdown should reject filenames with path traversal" time="0.002">
     </testcase>
     <testcase classname="Prompt Base Class readMarkdown should reject filenames that do not end with .md" name="Prompt Base Class readMarkdown should reject filenames that do not end with .md" time="0">
     </testcase>
@@ -258,6 +353,7 @@
     <testcase classname="ApiKeyGuard ApiKeyGuard should be properly configured with ApiKeyStrategy" name="ApiKeyGuard ApiKeyGuard should be properly configured with ApiKeyStrategy" time="0.004">
     </testcase>
     <testcase classname="ApiKeyGuard ApiKeyGuard should extend AuthGuard with &apos;bearer&apos; strategy" name="ApiKeyGuard ApiKeyGuard should extend AuthGuard with &apos;bearer&apos; strategy" time="0.002">
+    <testcase classname="ApiKeyGuard ApiKeyGuard should extend AuthGuard with &apos;bearer&apos; strategy" name="ApiKeyGuard ApiKeyGuard should extend AuthGuard with &apos;bearer&apos; strategy" time="0.002">
     </testcase>
     <testcase classname="ApiKeyGuard ApiKeyGuard should handle execution context correctly" name="ApiKeyGuard ApiKeyGuard should handle execution context correctly" time="0.014">
     </testcase>
@@ -276,6 +372,26 @@
     <testcase classname="LlmResponseSchema should reject a payload with empty reasoning" name="LlmResponseSchema should reject a payload with empty reasoning" time="0.001">
     </testcase>
     <testcase classname="LlmResponseSchema should reject a payload with a missing score" name="LlmResponseSchema should reject a payload with a missing score" time="0">
+=======
+  <testsuite name="ResourceExhaustedError" errors="0" failures="0" skipped="0" timestamp="2025-08-06T09:51:47" time="0.019" tests="2">
+    <testcase classname="ResourceExhaustedError should create an instance" name="ResourceExhaustedError should create an instance" time="0.001">
+    </testcase>
+    <testcase classname="ResourceExhaustedError should work without original error" name="ResourceExhaustedError should work without original error" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="LlmResponseSchema" errors="0" failures="0" skipped="0" timestamp="2025-08-06T09:51:47" time="0.031" tests="7">
+    <testcase classname="LlmResponseSchema should validate a correct payload" name="LlmResponseSchema should validate a correct payload" time="0.001">
+    </testcase>
+    <testcase classname="LlmResponseSchema should reject a payload with a missing criterion" name="LlmResponseSchema should reject a payload with a missing criterion" time="0.001">
+    </testcase>
+    <testcase classname="LlmResponseSchema should reject a payload with an invalid score" name="LlmResponseSchema should reject a payload with an invalid score" time="0">
+    </testcase>
+    <testcase classname="LlmResponseSchema should reject a payload with a non-integer score" name="LlmResponseSchema should reject a payload with a non-integer score" time="0.001">
+    </testcase>
+    <testcase classname="LlmResponseSchema should reject a payload with empty reasoning" name="LlmResponseSchema should reject a payload with empty reasoning" time="0">
+    </testcase>
+    <testcase classname="LlmResponseSchema should reject a payload with a missing score" name="LlmResponseSchema should reject a payload with a missing score" time="0.001">
+>>>>>>> 5a0c432 (Final review and verification of architecture documentation)
     </testcase>
     <testcase classname="LlmResponseSchema should reject a payload with missing reasoning" name="LlmResponseSchema should reject a payload with missing reasoning" time="0.001">
     </testcase>
@@ -345,15 +461,15 @@
     </testcase>
     <testcase classname="JsonParserUtil should successfully parse a valid JSON string" name="JsonParserUtil should successfully parse a valid JSON string" time="0.004">
     </testcase>
-    <testcase classname="JsonParserUtil should repair and parse a malformed JSON string" name="JsonParserUtil should repair and parse a malformed JSON string" time="0.001">
+    <testcase classname="GeminiService resource exhausted error handling should throw ResourceExhaustedError for &quot;resource exhausted&quot; error" name="GeminiService resource exhausted error handling should throw ResourceExhaustedError for &quot;resource exhausted&quot; error" time="0.002">
     </testcase>
     <testcase classname="JsonParserUtil should trim content outside curly brackets by default" name="JsonParserUtil should trim content outside curly brackets by default" time="0">
     </testcase>
     <testcase classname="JsonParserUtil should not trim content when trim is false" name="JsonParserUtil should not trim content when trim is false" time="0.009">
     </testcase>
-    <testcase classname="JsonParserUtil should throw BadRequestException for irreparable JSON and log the original string" name="JsonParserUtil should throw BadRequestException for irreparable JSON and log the original string" time="0.001">
+    <testcase classname="GeminiService resource exhausted error handling should preserve original error in ResourceExhaustedError" name="GeminiService resource exhausted error handling should preserve original error in ResourceExhaustedError" time="0.002">
     </testcase>
-    <testcase classname="JsonParserUtil should handle JSON embedded within other text and markdown" name="JsonParserUtil should handle JSON embedded within other text and markdown" time="0.001">
+    <testcase classname="GeminiService resource exhausted error handling should still retry regular rate limit errors (not resource exhausted)" name="GeminiService resource exhausted error handling should still retry regular rate limit errors (not resource exhausted)" time="0.112">
     </testcase>
   </testsuite>
   <testsuite name="AuthModule" errors="0" failures="0" skipped="0" timestamp="2025-08-08T08:02:17" time="0.218" tests="3">
@@ -423,7 +539,7 @@
   <testsuite name="PromptModule" errors="0" failures="0" skipped="0" timestamp="2025-08-08T08:02:18" time="0.111" tests="2">
     <testcase classname="PromptModule should compile the module" name="PromptModule should compile the module" time="0.004">
     </testcase>
-    <testcase classname="PromptModule should provide the PromptFactory" name="PromptModule should provide the PromptFactory" time="0.002">
+    <testcase classname="GeminiService resource exhausted error handling should still retry regular rate limit errors (not resource exhausted)" name="GeminiService resource exhausted error handling should still retry regular rate limit errors (not resource exhausted)" time="0.19">
     </testcase>
   </testsuite>
 </testsuites>

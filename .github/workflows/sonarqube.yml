@@ -20,6 +20,8 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm ci
+      - name: Run Jest coverage
+        run: npm run test:cov
       - name: Run SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v2
         with:

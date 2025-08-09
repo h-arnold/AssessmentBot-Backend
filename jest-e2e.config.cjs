@@ -1,4 +1,6 @@
 module.exports = {
+  collectCoverageFrom: ['src/**/*.{js,ts}'],
+  coverageDirectory: '<rootDir>/coverage',
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
   testEnvironment: 'node',

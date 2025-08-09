@@ -1,1 +1,8 @@
+#!/bin/sh
+
+# Lint Dockerfiles before commit
+hadolint Docker/Dockerfile || exit 1
+hadolint Docker/Dockerfile.prod || exit 1
+
+# Run lint-staged (existing checks)
 npx lint-staged

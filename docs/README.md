@@ -71,7 +71,7 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 
 ### 📝 Prompt System
 
-- [Prompt System Documentation](prompts/README.md) - Consolidated documentation on the prompt system architecture, usage, and extension.
+- [Prompt System Documentation](prompts/README.md) - Documentation on the prompt system architecture, usage, and extension.
 
 ### 📦 Module Documentation
 

@@ -23,8 +23,8 @@ export default {
     ],
   },
   transformIgnorePatterns: ['node_modules/(?!(.*\\.mjs$))'],
-  collectCoverageFrom: ['**/*.(t|j)s'],
-  coverageDirectory: '../coverage',
+  collectCoverageFrom: ['src/**/*.{js,ts}'],
+  coverageDirectory: '<rootDir>/coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/src/$1',
