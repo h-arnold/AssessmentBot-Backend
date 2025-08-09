@@ -37,9 +37,6 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 ### ⚙️ Configuration
 
 - [Environment Variables](configuration/environment.md) - _[TODO]_ Complete environment configuration guide
-- [Application Settings](configuration/settings.md) - _[TODO]_ Application configuration options
-- [Security Configuration](configuration/security.md) - _[TODO]_ Security-related configuration
-- [LLM Configuration](configuration/llm.md) - _[TODO]_ Large Language Model setup and configuration
 
 ### 🧪 Testing
 
@@ -60,14 +57,6 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 - [Authentication & Authorisation](security/auth.md) - _[TODO]_ Security implementation details
 - [Input Validation](security/validation.md) - _[TODO]_ Input sanitisation and validation
 - [Security Testing](security/testing.md) - _[TODO]_ Security testing procedures
-
-### 🤖 LLM Integration
-
-- [LLM Service Architecture](llm/architecture.md) - _[TODO]_ LLM integration architecture
-- [Adding New LLM Providers](llm/providers.md) - _[TODO]_ How to add support for new LLM providers
-- [Gemini Integration](llm/gemini.md) - _[TODO]_ Google Gemini specific implementation
-- [Error Handling](llm/error-handling.md) - _[TODO]_ LLM error handling and retry logic
-- [Performance Optimisation](llm/performance.md) - _[TODO]_ LLM performance considerations
 
 ### 📝 Prompt System
 
@@ -96,20 +85,6 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 - [Guards](modules/guards.md) - Route protection and authentication
 - [Utilities](modules/utilities.md) - Shared utility functions
 
-### 🛠️ Troubleshooting
-
-- [Common Issues](troubleshooting/common-issues.md) - _[TODO]_ Frequently encountered problems
-- [Error Diagnosis](troubleshooting/diagnosis.md) - _[TODO]_ How to diagnose system issues
-- [Performance Issues](troubleshooting/performance.md) - _[TODO]_ Performance debugging
-- [LLM Issues](troubleshooting/llm.md) - _[TODO]_ LLM-specific troubleshooting
-
-### 📋 Reference
-
-- [Glossary](reference/glossary.md) - _[TODO]_ Terms and definitions
-- [FAQ](reference/faq.md) - _[TODO]_ Frequently asked questions
-- [Changelog](reference/changelog.md) - _[TODO]_ Version history and changes
-- [Migration Guides](reference/migrations.md) - _[TODO]_ Version migration instructions
-
 ## Documentation Standards
 
 All documentation in this project follows these standards:
@@ -130,16 +105,3 @@ When contributing to documentation:
 4. Update this contents page when adding new documentation
 5. Ensure links are working and up-to-date
 6. Follow the project's contributing guidelines
-
-## Getting Help
-
-If you can't find what you're looking for in the documentation:
-
-1. Check the [FAQ](reference/faq.md) for common questions
-2. Review the [Troubleshooting](troubleshooting/common-issues.md) section
-3. Search through existing [GitHub Issues](https://github.com/h-arnold/AssessmentBot-Backend/issues)
-4. Create a new issue with the `documentation` label if information is missing
-
----
-
-_Last updated: January 2025_
