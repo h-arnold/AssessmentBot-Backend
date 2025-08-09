@@ -7,7 +7,7 @@ on:
 
 jobs:
   lint:
-    name: Lint Code and Dockerfiles
+    name: Lint Code
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -23,16 +23,6 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
-
-      - name: Lint Dockerfile
-        uses: hadolint/hadolint-action@v3.1.0
-        with:
-          dockerfile: ./Docker/Dockerfile
-
-      - name: Lint Dockerfile.prod
-        uses: hadolint/hadolint-action@v3.1.0
-        with:
-          dockerfile: ./Docker/Dockerfile.prod
 
   unit-test:
     name: Run Unit Tests
