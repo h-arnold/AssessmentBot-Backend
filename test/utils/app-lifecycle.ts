@@ -31,6 +31,12 @@ export async function startApp(
   logFilePath: string,
   envOverrides: Record<string, string> = {},
 ): Promise<AppInstance> {
+  // Ensure the log directory exists to avoid permission or ENOENT errors
+  const logDir = path.dirname(logFilePath);
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+
   if (fs.existsSync(logFilePath)) {
     fs.truncateSync(logFilePath, 0);
   }
@@ -39,7 +45,10 @@ export async function startApp(
 
   // Load .test.env file
   const testEnvPath = path.join(__dirname, '..', '..', '.test.env');
-  const testEnvConfig = dotenv.parse(fs.readFileSync(testEnvPath));
+  // Load .test.env if present; fall back to defaults otherwise
+  const testEnvConfig = fs.existsSync(testEnvPath)
+    ? dotenv.parse(fs.readFileSync(testEnvPath))
+    : {};
 
   // Define default values for the test run.
   const defaultTestValues = {
