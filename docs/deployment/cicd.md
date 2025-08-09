@@ -34,6 +34,36 @@ The CI pipeline (`/.github/workflows/ci.yml`) runs on every pull request and inc
 
 ### Trigger Conditions
 
+# CI/CD Pipeline
+
+This guide covers the continuous integration and deployment pipeline for the AssessmentBot-Backend project using GitHub Actions.
+
+## Overview
+
+The CI/CD pipeline is designed to:
+
+- **Ensure code quality** through automated testing and linting.
+- **Maintain security** with vulnerability scanning and code analysis.
+- **Automate deployments** with containerised releases.
+- **Provide feedback** on code changes through comprehensive checks.
+
+## Pipeline Architecture
+
+The CI/CD system consists of multiple GitHub Actions workflows:
+
+1.  **Continuous Integration (CI)** - `ci.yml`
+2.  **Docker Image Release** - `docker-release.yml`
+3.  **Security Scanning** - `codeql.yml`, `sonarqube.yml`
+4.  **Dependency Management** - `dependabot.yml`
+
+## Continuous Integration (CI)
+
+The CI pipeline (`/.github/workflows/ci.yml`) runs on every pull request and includes code linting, Dockerfile linting, unit testing, and end-to-end testing.
+
+### Trigger Conditions
+
+The CI pipeline triggers on any pull request to any branch.
+
 ```yaml
 on:
   pull_request:
@@ -41,7 +71,87 @@ on:
       - '*'
 ```
 
+### Pipeline Stages
+
+1.  **Code Quality (`lint`)**: Ensures code quality and consistency by running `npm run lint` and linting Dockerfiles with Hadolint.
+2.  **Unit Testing (`unit-test`)**: Validates individual component functionality by running `npm test`. It requires a `GEMINI_API_KEY` secret.
+3.  **End-to-End Testing (`e2e-test`)**: Validates complete API functionality by running `npm run test:e2e`. It also requires a `GEMINI_API_KEY` secret.
+
+### Secrets Management
+
+The CI pipeline requires the following GitHub repository secret:
+
+- **`GEMINI_API_KEY`**: A valid API key for LLM integration testing.
+
+To set up secrets, navigate to **Settings → Secrets and variables → Actions** in your repository.
+
+### Test Reporting
+
+The pipeline generates JUnit XML reports for integration with GitHub's test reporting features and code coverage reports via Jest and Istanbul.
+
+## Docker Release Pipeline
+
+The release pipeline (`/.github/workflows/docker-release.yml`) automates building and publishing the production Docker image to the GitHub Container Registry.
+
+### Trigger Conditions
+
+This pipeline triggers when a new GitHub release is published.
+
+```yaml
+on:
+  release:
+    types: [published]
+```
+
+### Release Process
+
+When triggered, the pipeline builds a multi-architecture Docker image from `Docker/Dockerfile.prod` and pushes it to the GitHub Container Registry. It creates two tags: a version-specific tag (e.g., `v1.2.3`) and a `latest` tag.
+
+The image is published to `ghcr.io/h-arnold/assessmentbot-backend`.
+
+## Security Scanning
+
+- **CodeQL Analysis**: The `codeql.yml` workflow performs static application security testing (SAST) to identify vulnerabilities in the codebase.
+- **SonarQube Integration**: The `sonarqube.yml` workflow analyses code quality and security, tracking metrics like code coverage, code smells, and security hotspots.
+
+## Dependency Management
+
+The `dependabot.yml` configuration file enables Dependabot to automatically create pull requests for dependency updates, helping to keep the project's dependencies secure and up-to-date.
+
+## Local Development Integration
+
+To ensure code quality locally before pushing, the project uses pre-commit hooks managed by Husky.
+
+**Husky configuration** (`.husky/pre-commit`):
+
+```bash
+#!/usr/bin/env sh
+npx lint-staged
+```
+
+This runs `lint-staged`, which in turn runs ESLint, Prettier, and a British English spelling check on staged files.
+
+You can also run the CI checks manually:
+
+```bash
+# Run all linting checks
+npm run lint
+
+# Run unit tests with coverage
+npm run test:cov
+
+# Run E2E tests
+npm run test:e2e
+```
+
+## Troubleshooting
+
+- **Linting errors**: Run `npm run lint:fix` and `npm run format` to fix common issues.
+- **Test failures**: Run tests locally with `npm test` or `npm run test:e2e`. To debug a specific test, use `npm test -- --testNamePattern="failing test"`.
+- **Missing secrets**: Ensure `GEMINI_API_KEY` is configured in the repository's Actions secrets.
+
 The CI pipeline triggers on:
+
 - Any pull request to any branch
 - Changes to source code, tests, or configuration files
 
@@ -52,6 +162,7 @@ The CI pipeline triggers on:
 **Purpose**: Ensure code quality and consistency
 
 **Steps**:
+
 1. **Checkout code**: Downloads repository content
 2. **Set up Node.js 22**: Installs required Node.js version
 3. **Install dependencies**: Runs `npm install`
@@ -59,6 +170,7 @@ The CI pipeline triggers on:
 5. **Hadolint**: Lints both development and production Dockerfiles
 
 **Commands executed**:
+
 ```bash
 npm install
 npm run lint
@@ -67,6 +179,7 @@ hadolint ./Docker/Dockerfile.prod
 ```
 
 **Quality gates**:
+
 - ESLint must pass with zero errors
 - All Dockerfiles must follow best practices
 - British English compliance must be verified
@@ -78,22 +191,26 @@ hadolint ./Docker/Dockerfile.prod
 **Dependencies**: Requires `lint` stage to complete successfully
 
 **Environment**:
+
 - `NODE_ENV=test`
 - `GEMINI_API_KEY` from GitHub Secrets
 
 **Steps**:
+
 1. **Code checkout** and **Node.js setup**
 2. **Dependency installation**
 3. **Unit test execution** with coverage reporting
 4. **Test report publishing** in JUnit format
 
 **Commands executed**:
+
 ```bash
 npm install
 npm test -- --verbose --coverage
 ```
 
 **Outputs**:
+
 - Test coverage reports
 - JUnit XML reports for GitHub integration
 - Pass/fail status for each test suite
@@ -105,21 +222,25 @@ npm test -- --verbose --coverage
 **Dependencies**: Requires `lint` stage to complete successfully
 
 **Environment**:
+
 - Dedicated test environment variables
 - Real Gemini API integration (using test key)
 
 **Steps**:
+
 1. **Environment setup** with test configuration
 2. **E2E test execution** against built application
 3. **Test result reporting**
 
 **Commands executed**:
+
 ```bash
 npm install
 npm run test:e2e -- --verbose
 ```
 
 **Test coverage**:
+
 - API endpoint functionality
 - Authentication workflows
 - Error handling scenarios
@@ -132,6 +253,7 @@ Required GitHub repository secrets:
 - **`GEMINI_API_KEY`**: Valid API key for LLM integration testing
 
 **Setting up secrets**:
+
 1. Navigate to repository Settings → Secrets and variables → Actions
 2. Add repository secrets with appropriate values
 3. Ensure secrets are available to CI workflows
@@ -167,6 +289,7 @@ on:
 ```
 
 Triggers when:
+
 - A new GitHub release is published
 - Release can be pre-release or full release
 
@@ -175,6 +298,7 @@ Triggers when:
 #### Stage 1: Build Preparation
 
 **Steps**:
+
 1. **Code checkout**: Gets release tag source code
 2. **Docker Buildx setup**: Enables advanced Docker build features
 3. **Registry authentication**: Logs into GitHub Container Registry
@@ -182,16 +306,19 @@ Triggers when:
 #### Stage 2: Image Building and Publishing
 
 **Process**:
+
 1. **Version extraction**: Extracts version from release tag
 2. **Multi-architecture build**: Builds for multiple platforms
 3. **Image tagging**: Creates both version-specific and `latest` tags
 4. **Registry push**: Publishes to GitHub Container Registry
 
 **Image tags created**:
+
 - `ghcr.io/h-arnold/assessmentbot-backend:vX.Y.Z` (version tag)
 - `ghcr.io/h-arnold/assessmentbot-backend:latest` (latest tag)
 
 **Docker build configuration**:
+
 ```yaml
 context: .
 file: ./Docker/Dockerfile.prod
@@ -204,6 +331,7 @@ tags: |
 ### Registry Configuration
 
 **GitHub Container Registry (GHCR)**:
+
 - **URL**: `ghcr.io`
 - **Authentication**: GitHub token with package write permissions
 - **Visibility**: Public (no authentication required for pulling)
@@ -218,6 +346,7 @@ tags: |
 **Purpose**: Static application security testing (SAST)
 
 **Features**:
+
 - **Vulnerability detection**: Identifies security issues in code
 - **Language support**: TypeScript/JavaScript analysis
 - **Integration**: Results appear in GitHub Security tab
@@ -230,12 +359,14 @@ tags: |
 **Purpose**: Code quality and security analysis
 
 **Metrics analyzed**:
+
 - **Code coverage**: Test coverage percentages
 - **Code smells**: Maintainability issues
 - **Security hotspots**: Potential security vulnerabilities
 - **Duplicated code**: Code duplication analysis
 
 **Configuration**: `sonar-project.properties`
+
 ```properties
 sonar.projectKey=assessmentbot-backend
 sonar.organization=your-org
@@ -253,17 +384,19 @@ sonar.test.inclusions=**/*.spec.ts,**/*.e2e-spec.ts
 **Purpose**: Automated dependency updates
 
 **Configuration**:
+
 ```yaml
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     open-pull-requests-limit: 10
 ```
 
 **Features**:
+
 - **Weekly updates**: Checks for dependency updates weekly
 - **Security updates**: Immediate updates for security vulnerabilities
 - **PR management**: Creates pull requests for updates
@@ -285,10 +418,10 @@ Required permissions for workflows:
 
 ```yaml
 permissions:
-  contents: read          # Read repository content
-  packages: write         # Push to container registry
-  security-events: write  # Write security scan results
-  actions: read           # Read action results
+  contents: read # Read repository content
+  packages: write # Push to container registry
+  security-events: write # Write security scan results
+  actions: read # Read action results
 ```
 
 ### Environment Variables
@@ -333,15 +466,15 @@ Configure branch protection rules for `master` branch:
 required_status_checks:
   strict: true
   contexts:
-    - "lint"
-    - "unit-test"
-    - "e2e-test"
-    - "CodeQL"
-    
+    - 'lint'
+    - 'unit-test'
+    - 'e2e-test'
+    - 'CodeQL'
+
 restrictions:
   users: []
   teams: []
-  
+
 required_pull_request_reviews:
   required_approving_review_count: 1
   dismiss_stale_reviews: true
@@ -373,12 +506,14 @@ Track CI/CD performance:
 Align local development with CI pipeline:
 
 **Husky configuration** (`.husky/pre-commit`):
+
 ```bash
 #!/usr/bin/env sh
 npx lint-staged
 ```
 
 **Lint-staged configuration** (`package.json`):
+
 ```json
 {
   "lint-staged": {
@@ -418,6 +553,7 @@ hadolint Docker/Dockerfile.prod
 #### Build Failures
 
 **Linting errors**:
+
 ```bash
 # Fix locally
 npm run lint:fix
@@ -425,6 +561,7 @@ npm run format
 ```
 
 **Test failures**:
+
 ```bash
 # Run tests locally
 npm test
@@ -437,12 +574,14 @@ npm test -- --testNamePattern="failing test"
 #### Docker Build Issues
 
 **Multi-platform build failures**:
+
 ```bash
 # Test locally with BuildKit
 DOCKER_BUILDKIT=1 docker build -f Docker/Dockerfile.prod .
 ```
 
 **Registry authentication**:
+
 - Verify GitHub token permissions
 - Check package write permissions
 - Ensure container registry is accessible
@@ -450,11 +589,13 @@ DOCKER_BUILDKIT=1 docker build -f Docker/Dockerfile.prod .
 #### Environment Issues
 
 **Missing secrets**:
+
 1. Verify secrets are configured in repository settings
 2. Check secret names match workflow references
 3. Ensure secrets are available to workflow branches
 
 **API quota exceeded**:
+
 - Monitor Gemini API usage
 - Consider using test API keys with higher quotas
 - Implement retry logic in tests
@@ -464,6 +605,7 @@ DOCKER_BUILDKIT=1 docker build -f Docker/Dockerfile.prod .
 #### Build Speed
 
 **Optimise dependency installation**:
+
 ```yaml
 # Use npm ci for faster, reliable installs
 - name: Install dependencies
@@ -471,6 +613,7 @@ DOCKER_BUILDKIT=1 docker build -f Docker/Dockerfile.prod .
 ```
 
 **Cache dependencies**:
+
 ```yaml
 - name: Cache Node.js modules
   uses: actions/cache@v3
@@ -482,6 +625,7 @@ DOCKER_BUILDKIT=1 docker build -f Docker/Dockerfile.prod .
 #### Parallel Execution
 
 **Matrix builds** for multiple environments:
+
 ```yaml
 strategy:
   matrix:
