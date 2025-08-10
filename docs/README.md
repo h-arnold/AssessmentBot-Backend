@@ -20,11 +20,11 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 
 ### 🏗️ Architecture & Design
 
-- [Architecture Overview](architecture/overview.md) - _[TODO]_ High-level system architecture
+- [Architecture Overview](architecture/overview.md) - High-level system architecture, components, and design principles
+- [Module Responsibilities](architecture/modules.md) - A detailed breakdown of each module's role and dependencies
+- [Data Flow](architecture/data-flow.md) - A sequence diagram and analysis of the request/response lifecycle
+- [Design Patterns](architecture/patterns.md) - An explanation of the key design patterns used in the codebase
 - [Class Structure](design/ClassStructure.md) - Visual representation of class relationships
-- [Module Responsibilities](architecture/modules.md) - _[TODO]_ Detailed module breakdown
-- [Data Flow](architecture/data-flow.md) - _[TODO]_ Request/response flow through the system
-- [Design Patterns](architecture/patterns.md) - _[TODO]_ Design patterns used in the codebase
 
 ### 🔌 API Documentation
 
