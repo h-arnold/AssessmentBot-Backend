@@ -37,12 +37,13 @@ To get the Assessment Bot backend up and running, follow these steps:
 
 3.  **Set up environment variables**:
 
-    Copy the example environment file and populate it with your settings:
+    Copy the example environment file. You must provide both a `GEMINI_API_KEY` for the LLM and at least one `API_KEYS` for authentication for the application to be functional.
 
     ```bash
     cp .env.example .env
-    # Open .env in your editor and configure as needed
+    # Open .env in your editor and add your keys
     GEMINI_API_KEY=your_gemini_api_key
+    API_KEYS=your_secret_api_key
     ```
 
 ## Stack

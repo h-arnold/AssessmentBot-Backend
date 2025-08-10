@@ -1,14 +1,27 @@
 # Environment Variables
 
-The application uses environment variables for configuration. Copy `.env.example` to `.env` and configure the following variables:
+The application uses environment variables for configuration. All variables are validated at startup using Zod schemas to ensure type safety and proper configuration.
 
-### Required Variables
+Copy `.env.example` to `.env` and configure the following variables:
 
-- `GEMINI_API_KEY`: The API key for the Google Gemini service. Required for LLM functionality.
+## Required for Functionality
 
-### Authentication & Security
+These variables are essential for the application's core features to work.
 
-- `API_KEYS`: Comma-separated list of valid API keys for client authentication. Use strong, randomly generated strings (e.g., `openssl rand -base64 32`).
+- `GEMINI_API_KEY`: The API key for the Google Gemini service. The application will not start without this key.
+- `API_KEYS`: A comma-separated list of valid API keys for client authentication (e.g., `key1,key2,key3`). While the application can start without any keys, no authenticated endpoints will be accessible. Use strong, randomly generated strings (e.g., `openssl rand -base64 32`).
+
+## Optional Variables
+
+These variables have default values but can be customised to change application behaviour.
+
+### Application Settings
+
+- `NODE_ENV`: Application environment (`development`, `production`, `test`). Default is `development`.
+- `PORT`: Port on which the server runs. Default is `3000`.
+- `APP_NAME`: Application name. Default is `AssessmentBot-Backend`.
+- `APP_VERSION`: Application version. Optional, defaults to the version in `package.json`.
+- `LOG_LEVEL`: Logging verbosity level (`fatal`, `error`, `warn`, `info`, `debug`, `verbose`). Default is `info`.
 
 ### Image Upload Configuration
 
@@ -26,23 +39,16 @@ The application uses environment variables for configuration. Copy `.env.example
 - `LLM_BACKOFF_BASE_MS`: Base backoff time in milliseconds for LLM rate limit retries. Default is `1000`.
 - `LLM_MAX_RETRIES`: Maximum number of retry attempts for LLM rate limit errors. Default is `3`.
 
-### Application Settings
-
-- `NODE_ENV`: Application environment (`development`, `production`, `test`). Default is `development`.
-- `PORT`: Port on which the server runs. Default is `3000`.
-- `APP_NAME`: Application name. Default is `AssessmentBot-Backend`.
-- `APP_VERSION`: Application version. Optional, defaults to version from `package.json`.
-- `LOG_LEVEL`: Logging verbosity level (`fatal`, `error`, `warn`, `info`, `debug`, `verbose`). Default is `info`.
-
 ### Example Configuration
 
 ```env
-NODE_ENV=development
-PORT=3000
+# Required
 GEMINI_API_KEY=your_gemini_api_key_here
 API_KEYS=your_secret_key,another_secret_key
-MAX_IMAGE_UPLOAD_SIZE_MB=1
-ALLOWED_IMAGE_MIME_TYPES=image/png,image/jpeg
-```
 
-All variables are validated at startup using Zod schemas to ensure type safety and proper configuration.
+# Optional (showing defaults)
+NODE_ENV=development
+PORT=3000
+LOG_LEVEL=info
+MAX_IMAGE_UPLOAD_SIZE_MB=1
+```
