@@ -36,11 +36,19 @@ Adhere to these principles in all contributions:
 2. **Testing**:
    - **Unit/Integration Tests**: Co-locate test files with source code (e.g., `assessor.service.spec.ts` next to `assessor.service.ts`). Use NestJS's `TestingModule` for integration tests.
    - **E2E Tests**: Place end-to-end tests in the root `test/` directory (e.g., `assessor.e2e-spec.ts`).
+     - **Live API Key**: To run tests that make real calls to the Gemini API (e.g., `assessor-live.e2e-spec.ts`), you must create a `.test.env` file in the project root and add a valid `GEMINI_API_KEY`. Most E2E tests use a mocked key and do not require this file.
+     - Run E2E tests with `npm run test:e2e` or for a specific test file, use `npm run test:e2e -- main.e2e-spec.ts`, or for a specific test case, use `npm run test:e2e -- -t "test case name`.
    - Run tests using the project's npm scripts.
 
 3. **Linting & Committing**:
    - Before committing, ensure all code passes linting checks.
    - Husky hooks are configured to run `lint-staged` automatically on commit. Ensure your changes can pass these checks.
+
+4. **Diagnostics & Debugging**:
+   - The application provides several useful endpoints for diagnostics:
+     - `GET /health`: Returns detailed application and system status.
+     - `GET /check-auth`: A protected endpoint to verify API key authentication.
+     - `GET /test-error`: Intentionally throws an error to test exception handling.
 
 ## 4. Codebase Structure Overview
 
@@ -48,7 +56,7 @@ Adhere to these principles in all contributions:
   - `src/v1/assessor`: Version 1 of the core assessment logic.
   - `src/auth`: Authentication strategies and guards.
   - `src/common`: Shared utilities, filters, and pipes.
-  - `src/config`: Environment variable management via a custom ConfigModule and ConfigService. All configuration is validated with Zod schemas. Do not use @nestjs/config directly outside the config module.
+  - `src/config`: Environment variable management via a custom ConfigModule and ConfigService. All configuration is validated with Zod schemas. Do not use @nestjs/config directly outside the config module. This is a deliberate architectural choice to ensure all environment variables are validated at startup, providing a type-safe and fail-fast approach to configuration.
   - `src/llm`: Abstractions for interacting with Large Language Models.
   - `src/prompt`: Logic for generating prompts for the LLM.
 - `test/`: End-to-end tests.
