@@ -61,16 +61,15 @@ sudo ufw allow 443   # HTTPS
 
 3.  **Configure the domain:**
     Update the `Caddyfile` with your domain name.
-    ```
+    ```caddy
     your-domain.com {
-    reverse_proxy app:3000
-    log {
-    output file /var/log/caddy/access.log
-    format single_field common_log
+        reverse_proxy app:3000
+        log {
+            output file /var/log/caddy/access.log
+            format single_field common_log
+        }
     }
-    }
-
-````
+    ```
     Ensure your domain's DNS records point to the server's IP address.
 
 ### 4. Start the Application
@@ -83,7 +82,7 @@ docker-compose up -d --build
 
 # Verify all containers are running
 docker-compose ps
-````
+```
 
 ### 5. Verify the Deployment
 

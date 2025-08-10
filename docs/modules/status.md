@@ -169,7 +169,7 @@ The service implements business logic for status operations and system informati
 {
   "message": "This is a protected endpoint",
   "user": {
-    "apiKey": "validated-api-key-123"
+    "apiKey": "***redacted***"
   }
 }
 ```

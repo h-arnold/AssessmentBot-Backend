@@ -99,7 +99,10 @@ export class StatusService {
    * @param user - The authenticated user object from the request
    * @returns Object containing confirmation message and user information
    */
-  checkAuth(user: User): { message: string; user: User } {
-    return { message: 'This is a protected endpoint', user };
+  checkAuth(user: User): { message: string; user: { apiKey: string } } {
+    return {
+      message: 'This is a protected endpoint',
+      user: { ...user, apiKey: '***redacted***' },
+    };
   }
 }
