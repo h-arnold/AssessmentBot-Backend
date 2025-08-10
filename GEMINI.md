@@ -37,7 +37,7 @@ Adhere to these principles in all contributions:
    - **Unit/Integration Tests**: Co-locate test files with source code (e.g., `assessor.service.spec.ts` next to `assessor.service.ts`). Use NestJS's `TestingModule` for integration tests.
    - **E2E Tests**: Place end-to-end tests in the root `test/` directory (e.g., `assessor.e2e-spec.ts`).
      - **Live API Key**: To run tests that make real calls to the Gemini API (e.g., `assessor-live.e2e-spec.ts`), you must create a `.test.env` file in the project root and add a valid `GEMINI_API_KEY`. Most E2E tests use a mocked key and do not require this file.
-     - Run E2E tests with `npm run test:e2e` or for a specific test file, use `npm run test:e2e -- test_file_name`, or for a specific test case, use `npm run test:e2e -- -t "test case name`.
+     - Run E2E tests with `npm run test:e2e` or for a specific test file, use `npm run test:e2e -- test_file_name`, or for a specific test case, use `npm run test:e2e -- -t "test case name"`.
    - Run tests using the project's npm scripts.
 
 3. **Linting & Committing**:
