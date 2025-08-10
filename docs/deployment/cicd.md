@@ -79,9 +79,10 @@ on:
 
 ### Secrets Management
 
-The CI pipeline requires the following GitHub repository secret:
+The CI pipeline requires the following GitHub repository secrets:
 
 - **`GEMINI_API_KEY`**: A valid API key for LLM integration testing.
+- **`SONAR_TOKEN`**: Required for SonarQube/SonarCloud static analysis. This token should be generated from your SonarCloud account.
 
 To set up secrets, navigate to **Settings → Secrets and variables → Actions** in your repository.
 
@@ -112,7 +113,7 @@ The image is published to `ghcr.io/h-arnold/assessmentbot-backend`.
 ## Security Scanning
 
 - **CodeQL Analysis**: The `codeql.yml` workflow performs static application security testing (SAST) to identify vulnerabilities in the codebase.
-- **SonarQube Integration**: The `sonarqube.yml` workflow analyses code quality and security, tracking metrics like code coverage, code smells, and security hotspots.
+- **SonarQube Integration**: The `sonarqube.yml` workflow analyses code quality and security, tracking metrics like code coverage, code smells, and security hotspots. **Note**: This workflow requires the `SONAR_TOKEN` to be configured in the repository's secrets.
 
 ## Dependency Management
 

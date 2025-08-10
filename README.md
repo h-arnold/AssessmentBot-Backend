@@ -10,21 +10,6 @@ There is no front end, and is accessible via a REST API only. Configuration valu
 
 It will start initially as a monolithic application that will be run in a minimal Docker container, ensuring cloud agnosticism. If the project expands, the goal should be a collection of microservices that can initially be coordinated via a single Docker Compose file, and later orchestrated with Kubernetes.
 
-## Guiding Principles
-
-1. **Security**: Always prioritise security in your code. Validate inputs, sanitise outputs, and handle sensitive data with care. This includes using environment variables for configuration and secrets, and ensuring that any user-generated content is properly escaped to prevent XSS attacks.
-   - Use structured logging for all authentication attempts and errors, leveraging NestJS's built-in Logger or a compatible logging library. Ensure logs include enough detail (e.g., IP address, timestamp, reason for failure) to support external tools like fail2ban for automated blocking of malicious IPs.
-2. **Ephemerality**: Design the system to be stateless. Assessment Bot prioritises privacy above all else. No student PII is should even be sent to the backend. Maintaining statelessness ensures that any inadvertent data leaks persist only as long as the request is being processed.
-3. **Performance**: Write efficient code that minimises resource usage. Use asynchronous programming patterns to handle I/O operations without blocking the event loop.
-4. **Use well-maintained libraries**: Avoid reinventing the wheel. Use well-maintained libraries and frameworks that are widely adopted in the Node.js ecosystem. This includes libraries for routing, database access, and validation.
-5. **Modularity**: Structure the code in a modular way to promote reusability and maintainability. Use TypeScript interfaces and types to define clear contracts for modules.
-6. **TDD**: Write tests for your code. Use a test framework like Jest or Mocha to ensure that your code is reliable and maintainable. Write unit tests for individual functions and integration tests for the overall system.
-   - Leverage NestJS’s built-in testing utilities (TestingModule) and e2e support with Jest and Supertest; use the Nest CLI to scaffold and run both unit and e2e tests out of the box.
-7. **Strong Object-Oriented Design**: Use object-oriented design principles to create a clean and maintainable codebase. This includes using classes, interfaces, and inheritance where appropriate.
-   a. **Refactor to avoid God Objects**: Avoid creating "God Objects" that have too many responsibilities. Instead, break down complex objects into smaller, more manageable components.
-   b. **SOLID**: Follow the SOLID principles.
-8. **Documentation**: Write clear and concise documentation for your code. Use JSDoc comments to document functions, classes, and modules. Provide examples of how to use the code and explain any complex logic.
-
 ## Getting Started
 
 To get the Assessment Bot backend up and running, follow these steps:
@@ -72,35 +57,6 @@ To get the Assessment Bot backend up and running, follow these steps:
 - **json-repair**: A library to fix malformed JSON strings, making LLM responses more robust.
 - **@google/genai**: The official Google AI SDK for Node.js, used to interact with the Gemini family of models.
 - **mustache**: A logic-less template engine used for rendering prompts.
-
-## Development & QA Strategy
-
-To uphold the guiding principles and ensure a high-quality, secure, and maintainable codebase, the project will adopt a comprehensive linting and Quality Assurance (QA) strategy.
-
-### Automated Linting & Formatting
-
-A consistent code style is enforced automatically to allow developers to focus on business logic.
-
-- **ESLint**: Used to identify and report on problematic patterns in the TypeScript code. The configuration includes plugins for security (`eslint-plugin-security`), Jest best practices, and import ordering to support the **Security** and **Modularity** principles.
-- **Prettier**: An opinionated code formatter integrated with ESLint to ensure a uniform code style across the entire project.
-- **Husky & lint-staged**: Git hooks are used to automatically run the linter on staged files before they can be committed, catching issues early.
-
-### Quality Assurance
-
-QA is a multi-layered approach that builds confidence in the application's stability and security.
-
-1. **Testing Pyramid**: The TDD principle is expanded with a structured testing approach:
-   - **Unit Tests (Jest)**: The foundation. Individual classes and functions are tested in isolation, with external dependencies mocked.
-   - **Integration Tests (NestJS `TestingModule`)**: The middle layer. Tests the interaction _between_ internal modules (e.g., Controller -> Service) to ensure they are wired correctly, without making external network calls.
-   - **E2E Tests (Jest & Supertest)**: The top of the pyramid. The entire application is spun up to test the full request-response cycle via real HTTP requests, validating everything from authentication to the final response shape.
-
-2. **Code Coverage Enforcement**: Jest's `--coverage` flag will be used within a CI/CD pipeline to enforce a minimum test coverage threshold. This ensures the TDD principle is consistently applied.
-
-3. **Automated Security Scanning**:
-   - **Dependency Scanning**: Tools like `npm audit` and GitHub's Dependabot will be used to automatically scan for vulnerabilities in third-party packages and facilitate updates.
-   - **Static Application Security Testing (SAST)**: The `eslint-plugin-security` provides a baseline. Further analysis can be performed by tools like SonarQube/SonarCloud to detect more complex security vulnerabilities and track code quality over time.
-
-4. **API Schema & Documentation**: To support the **Documentation** principle and provide clarity for API consumers, the project will use `@nestjs/swagger`. This package automatically generates an interactive OpenAPI (Swagger) specification directly from the code (Controllers and DTOs), ensuring the documentation is always in sync with the implementation.
 
 ## Expected Data Flow
 
@@ -294,68 +250,9 @@ The testing strategy follows the classic testing pyramid model:
 - **Purpose**: To test the entire application from the outside in. It starts the full NestJS application and sends real HTTP requests to its endpoints using a library like `supertest`.
 - **Scope**: Validates the full request/response lifecycle, including authentication, request validation (DTOs/Pipes), controller logic, service execution, and the final HTTP response format and status code. These tests are the most comprehensive but also the slowest to run.
 
-## Environment Variables
-
-The application uses environment variables for configuration. Copy `.env.example` to `.env` and configure the following variables:
-
-### Required Variables
-
-- `GEMINI_API_KEY`: The API key for the Google Gemini service. Required for LLM functionality.
-
-### Authentication & Security
-
-- `API_KEYS`: Comma-separated list of valid API keys for client authentication. Use strong, randomly generated strings (e.g., `openssl rand -base64 32`).
-
-### Image Upload Configuration
-
-- `MAX_IMAGE_UPLOAD_SIZE_MB`: Sets the maximum allowed image size (in megabytes) for uploads. Default is `1` MB.
-- `ALLOWED_IMAGE_MIME_TYPES`: Comma-separated list of allowed image MIME types (e.g., `image/png,image/jpeg`). Default is `image/png`.
-
-### Rate Limiting (Throttling)
-
-- `THROTTLER_TTL`: Time-to-live for rate-limiting windows in milliseconds. Default is `10000`.
-- `UNAUTHENTICATED_THROTTLER_LIMIT`: Maximum requests per TTL window for unauthenticated routes. Default is `10`.
-- `AUTHENTICATED_THROTTLER_LIMIT`: Maximum requests per TTL window for authenticated routes. Default is `90`.
-
-### LLM Configuration
-
-- `LLM_BACKOFF_BASE_MS`: Base backoff time in milliseconds for LLM rate limit retries. Default is `1000`.
-- `LLM_MAX_RETRIES`: Maximum number of retry attempts for LLM rate limit errors. Default is `3`.
-
-### Application Settings
-
-- `NODE_ENV`: Application environment (`development`, `production`, `test`). Default is `development`.
-- `PORT`: Port on which the server runs. Default is `3000`.
-- `APP_NAME`: Application name. Default is `AssessmentBot-Backend`.
-- `APP_VERSION`: Application version. Optional, defaults to version from `package.json`.
-- `LOG_LEVEL`: Logging verbosity level (`fatal`, `error`, `warn`, `info`, `debug`, `verbose`). Default is `info`.
-
-### Example Configuration
-
-```env
-NODE_ENV=development
-PORT=3000
-GEMINI_API_KEY=your_gemini_api_key_here
-API_KEYS=your_secret_key,another_secret_key
-MAX_IMAGE_UPLOAD_SIZE_MB=1
-ALLOWED_IMAGE_MIME_TYPES=image/png,image/jpeg
-```
-
-All variables are validated at startup using Zod schemas to ensure type safety and proper configuration.
-
 ## Security & Quality Assurance
 
 This project includes automated penetration testing and security validation through dedicated E2E tests. These tests help proactively validate the robustness of the API against various attack vectors including prototype pollution, NoSQL injection, brute force attempts, and advanced input attacks.
-
-### Required GitHub Secrets
-
-The following secrets must be configured in the GitHub repository settings for workflows to function properly:
-
-- **`SONAR_TOKEN`**: Required for SonarQube/SonarCloud static analysis. This token should be generated from your SonarCloud account and have permissions to analyse the `h-arnold_AssessmentBot-Backend` project.
-  - Go to [SonarCloud My Account](https://sonarcloud.io/account/security) → Security → Generate Token
-  - Add the token to GitHub repository Settings → Secrets and variables → Actions → New repository secret
-
-**Note**: The SonarQube configuration (project key, organisation, and host URL) is already defined in `sonar-project.properties`.
 
 ### Security Testing
 
