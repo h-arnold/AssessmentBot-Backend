@@ -1,5 +1,9 @@
 #!/bin/sh
 
+
+# Remove junit and coverage folders before commit to avoid merge conflicts
+rm -rf junit coverage
+
 # Lint Dockerfiles before commit
 hadolint Docker/Dockerfile || exit 1
 hadolint Docker/Dockerfile.prod || exit 1
