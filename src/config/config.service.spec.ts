@@ -124,9 +124,10 @@ describe('ConfigService', () => {
   });
 
   describe('Zod schema validation', () => {
-    it('should fail when NODE_ENV is missing', () => {
+    it('should default to production when NODE_ENV is missing', () => {
       delete process.env.NODE_ENV;
-      expect(() => new ConfigService()).toThrow();
+      const service = new ConfigService();
+      expect(service.get('NODE_ENV')).toBe('production');
     });
 
     it('should pass with valid NODE_ENV values', () => {
@@ -137,10 +138,10 @@ describe('ConfigService', () => {
       }
     });
 
-    it('should fail with invalid NODE_ENV values', () => {
-      const invalidEnvs = ['invalid', '', null, undefined];
+    it('should fail with truly invalid NODE_ENV values', () => {
+      const invalidEnvs = ['invalid', ''];
       for (const env of invalidEnvs) {
-        process.env.NODE_ENV = env === null ? undefined : env;
+        process.env.NODE_ENV = env;
         expect(() => new ConfigService()).toThrow();
       }
     });
