@@ -54,7 +54,7 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 ### 🔒 Security
 
 - [Security Overview](security/overview.md) - _[TODO]_ Security architecture and principles
-- [Authentication & Authorisation](security/auth.md) - _[TODO]_ Security implementation details
+- [Authentication & Authorisation](security/auth.md) - Security implementation details
 - [Input Validation](security/validation.md) - _[TODO]_ Input sanitisation and validation
 - [Security Testing](security/testing.md) - _[TODO]_ Security testing procedures
 
