@@ -35,7 +35,7 @@ import { z } from 'zod';
  * @property {number} LLM_MAX_RETRIES - The maximum number of retry attempts for LLM rate limit errors.
  */
 export const configSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   APP_NAME: z.string().default('AssessmentBot-Backend'),
   APP_VERSION: z.string().optional(),

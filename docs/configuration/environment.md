@@ -17,7 +17,7 @@ These variables have default values but can be customised to change application 
 
 ### Application Settings
 
-- `NODE_ENV`: Application environment (`development`, `production`, `test`). Default is `development`.
+- `NODE_ENV`: Application environment (`development`, `production`, `test`). Default is `production`.
 - `PORT`: Port on which the server runs. Default is `3000`.
 - `APP_NAME`: Application name. Default is `AssessmentBot-Backend`.
 - `APP_VERSION`: Application version. Optional, defaults to the version in `package.json`.
