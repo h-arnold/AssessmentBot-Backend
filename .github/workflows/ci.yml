@@ -43,11 +43,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Prepare report directory
-        run: |
-          mkdir -p junit
-          chmod -R u+rwX,g+rwX junit || true
-
       - name: Run unit tests
         run: npm test -- --verbose --coverage
 
@@ -75,14 +70,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
-      - name: Prepare log and report directories
-        run: |
-          mkdir -p test/logs junit
-          chmod -R u+rwX,g+rwX test/logs junit || true
-
-      - name: Build application (required for E2E startApp)
-        run: npm run build
 
       - name: Create .test.env for E2E tests
         run: |
