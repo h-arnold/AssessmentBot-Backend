@@ -6,7 +6,7 @@ This document tracks discrepancies and necessary updates for the project documen
 
 - [x] **Fix `CommonModule` Documentation**: The documentation in `docs/modules/common.md` incorrectly lists several utilities as being provided by the module. Update the document to accurately reflect that `CommonModule` only provides `Logger`, `JsonParserUtil`, and the global `HttpExceptionFilter`. The other utilities (`ZodValidationPipe`, `ImageValidationPipe`, etc.) are standalone.
 
-- [ ] **Implement Correct Error Handling for `ResourceExhaustedError`**: The code returns a `500 Internal Server Error` for a `ResourceExhaustedError`, but `docs/architecture/data-flow.md` states it should be a `503 Service Unavailable`. Update the `HttpExceptionFilter` to handle this custom error type and return the correct status code.
+- [x] **Implement Correct Error Handling for `ResourceExhaustedError`**: The code returns a `500 Internal Server Error` for a `ResourceExhaustedError`, but `docs/architecture/data-flow.md` states it should be a `503 Service Unavailable`. Update the `HttpExceptionFilter` to handle this custom error type and return the correct status code.
 
 - [ ] **Correct `/health` Endpoint Schema**: The schema in `docs/api/schemas.md` for the `GET /health` endpoint is incorrect. It should be updated to remove the `applicationName` field and include the `systemInfo` object, matching the actual response from the `StatusService`.
 

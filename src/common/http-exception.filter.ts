@@ -8,6 +8,8 @@ import {
 import { BaseExceptionFilter } from '@nestjs/core';
 import { Request, Response } from 'express';
 
+import { ResourceExhaustedError } from '../llm/resource-exhausted.error';
+
 /**
  * Interface for Zod validation error details.
  */
@@ -66,6 +68,12 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
       return;
     }
 
+    // Handle custom ResourceExhaustedError to return 503.
+    if (exception instanceof ResourceExhaustedError) {
+      this.handleResourceExhaustedError(exception, request, response);
+      return;
+    }
+
     // Process HttpException and any other unknown errors.
     const { status, message, errors } = this.getErrorDetails(exception);
 
@@ -108,6 +116,24 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
     const message = 'Payload Too Large';
 
     this.logError(status, message, request, null); // No exception object needed here
+    this.sendResponse(response, status, message, request.url);
+  }
+
+  /**
+   * Handles the specific case of a ResourceExhaustedError.
+   * @param exception - The ResourceExhaustedError instance.
+   * @param request - The incoming request object.
+   * @param response - The outgoing response object.
+   */
+  private handleResourceExhaustedError(
+    exception: ResourceExhaustedError,
+    request: Request,
+    response: Response,
+  ): void {
+    const status = HttpStatus.SERVICE_UNAVAILABLE;
+    const message = exception.message;
+
+    this.logError(status, message, request, exception);
     this.sendResponse(response, status, message, request.url);
   }
 
