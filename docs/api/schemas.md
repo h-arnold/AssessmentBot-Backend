@@ -62,9 +62,18 @@ Each `AssessmentCriterion` has the following structure:
 ```typescript
 {
   status: "ok",
-  applicationName: string, // From package.json
   version: string,         // From package.json
-  timestamp: string        // ISO 8601 timestamp
+  timestamp: string,       // ISO 8601 timestamp
+  systemInfo: {
+    platform: string,
+    arch: string,
+    release: string,
+    uptime: number,        // System uptime in seconds
+    hostname: string,
+    totalMemory: number,   // Total system memory in bytes
+    freeMemory: number,    // Free system memory in bytes
+    cpus: number           // Number of CPU cores
+  }
 }
 ```
 

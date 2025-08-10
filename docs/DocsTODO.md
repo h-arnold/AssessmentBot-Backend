@@ -8,7 +8,7 @@ This document tracks discrepancies and necessary updates for the project documen
 
 - [x] **Implement Correct Error Handling for `ResourceExhaustedError`**: The code returns a `500 Internal Server Error` for a `ResourceExhaustedError`, but `docs/architecture/data-flow.md` states it should be a `503 Service Unavailable`. Update the `HttpExceptionFilter` to handle this custom error type and return the correct status code.
 
-- [ ] **Correct `/health` Endpoint Schema**: The schema in `docs/api/schemas.md` for the `GET /health` endpoint is incorrect. It should be updated to remove the `applicationName` field and include the `systemInfo` object, matching the actual response from the `StatusService`.
+- [x] **Correct `/health` Endpoint Schema**: The schema in `docs/api/schemas.md` for the `GET /health` endpoint is incorrect. It should be updated to remove the `applicationName` field and include the `systemInfo` object, matching the actual response from the `StatusService`.
 
 ## ⚠️ Minor Discrepancies and Documentation Issues
 
