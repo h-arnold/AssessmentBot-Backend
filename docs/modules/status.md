@@ -8,7 +8,6 @@ The Status Module serves as the monitoring and diagnostics foundation that:
 
 - Provides health check endpoints for application monitoring
 - Offers connectivity testing and basic application status verification
-- Implements authentication testing for security validation
 - Delivers comprehensive system information for operational insights
 - Provides error testing capabilities for exception handling validation
 - Supports both development and production monitoring requirements
@@ -38,7 +37,6 @@ The controller provides HTTP endpoints for status monitoring and diagnostics:
 - `GET /` - Basic connectivity test
 - `GET /health` - Comprehensive health check information
 - `GET /test-error` - Error handling testing endpoint
-- `GET /check-auth` - Authentication validation endpoint (protected)
 
 ### 2. StatusService
 
@@ -50,7 +48,6 @@ The service implements business logic for status operations and system informati
 
 - Collecting system metrics and application information
 - Providing standardised health check responses
-- Validating authentication functionality
 - Generating diagnostic data for monitoring systems
 
 ## API Endpoints
@@ -157,41 +154,6 @@ The service implements business logic for status operations and system informati
 - Monitoring system alert testing
 - Development debugging
 
-### GET /check-auth
-
-**Purpose:** Authentication system validation and testing
-
-**Authentication:** **Required** - API key via Bearer token
-
-**Response:**
-
-```typescript
-{
-  "message": "This is a protected endpoint",
-  "user": {
-    "apiKey": "***redacted***"
-  }
-}
-```
-
-**Authentication Flow:**
-
-1. **API Key Validation:** Requires valid Bearer token
-2. **User Context:** Returns authenticated user information
-3. **Protection Verification:** Confirms authentication guard functionality
-
-**Error Responses:**
-
-- **401 Unauthorised:** Missing or invalid API key
-- **Rate Limited:** If throttling limits exceeded
-
-**Use Cases:**
-
-- Authentication system testing
-- API key validation verification
-- Security monitoring
-- Integration testing
-
 ## System Information Collection
 
 The Status Module provides comprehensive system metrics:
@@ -272,13 +234,6 @@ The Status Module is designed for integration with monitoring systems:
 - **Monitoring Frequency:** High frequency checks (every 10-30 seconds)
 - **Use Case:** Load balancer health checks
 
-### Authentication Monitoring
-
-- **Endpoint:** `GET /check-auth` (with valid API key)
-- **Expected Response:** `200 OK` with user information
-- **Monitoring Frequency:** Lower frequency (every 5-10 minutes)
-- **Use Case:** Security system validation
-
 ## Testing
 
 The module includes comprehensive test coverage:
@@ -315,12 +270,6 @@ The module includes comprehensive test coverage:
 
 ## Security Features
 
-### Authentication Testing
-
-- **Protected Endpoints:** `check-auth` validates API key functionality
-- **Security Monitoring:** Confirms authentication pipeline integrity
-- **Access Control:** Demonstrates proper guard implementation
-
 ### Information Disclosure
 
 - **System Information:** Health endpoint provides system metrics
@@ -348,12 +297,6 @@ The module includes comprehensive test coverage:
 
 ```bash
 curl http://localhost:3000/health
-```
-
-### Authentication Test
-
-```bash
-curl -H "Authorization: Bearer your-api-key" http://localhost:3000/check-auth
 ```
 
 ### Error Testing
@@ -385,12 +328,11 @@ The Status Module depends on:
 - **@nestjs/common** - Core NestJS functionality and HTTP handling
 - **@nestjs/throttler** - Rate limiting for protected endpoints (inherited)
 - **ConfigModule** - Application configuration access
-- **AuthModule** - API key authentication for protected endpoints
+
 - **Node.js os module** - System information collection
 
 ## Related Documentation
 
-- [Authentication Module](auth.md) - API key authentication for protected endpoints
 - [App Module](app.md) - Main application module that includes StatusModule
 - [API Reference](../api/API_Documentation.md) - Complete API endpoint documentation
 - [Monitoring Guide](../deployment/monitoring.md) - Production monitoring setup
