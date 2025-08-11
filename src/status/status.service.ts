@@ -88,21 +88,4 @@ export class StatusService {
       },
     };
   }
-
-  /**
-   * Validates authentication and returns user information.
-   *
-   * This method is used by protected endpoints to confirm that authentication
-   * is working correctly. It returns the authenticated user's information
-   * along with a confirmation message.
-   *
-   * @param user - The authenticated user object from the request
-   * @returns Object containing confirmation message and user information
-   */
-  checkAuth(user: User): { message: string; user: { apiKey: string } } {
-    return {
-      message: 'This is a protected endpoint',
-      user: { ...user, apiKey: '***redacted***' },
-    };
-  }
 }
