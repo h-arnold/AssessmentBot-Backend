@@ -4,23 +4,36 @@
 ![CodeQL](https://github.com/h-arnold/AssessmentBot-Backend/actions/workflows/codeql.yml/badge.svg)
 ![SonarQube](https://github.com/h-arnold/AssessmentBot-Backend/actions/workflows/sonarqube.yml/badge.svg)
 
-This repository contains the backend code for the Assessment Bot, which is responsible for managing assessments, grading, and providing feedback. It is written in TypeScript and uses Node.js as the runtime environment.
+## Introduction
 
-There is no front end, and is accessible via a REST API only. Configuration values are stored in environment variables, and prompt templates are stored as markdown files. It is designed to be stateless, meaning that it does not store any user data or session information on the server.
+Welcome to the backend for the Assessment Bot project. This repository contains a stateless, NestJS-based API responsible for receiving assessment tasks, interacting with a Large Language Model (LLM) for evaluation, and returning a structured grade.
 
-It will start initially as a monolithic application that will be run in a minimal Docker container, ensuring cloud agnosticism. If the project expands, the goal should be a collection of microservices that can initially be coordinated via a single Docker Compose file, and later orchestrated with Kubernetes.
+This service is the backend component of a larger system. The primary business logic and user interface are managed by the frontend, available at: **[h-arnold/AssessmentBot](https://github.com/h-arnold/AssessmentBot)**.
 
-## Getting Started
+This README provides a quick start guide and a high-level overview. For detailed information on architecture, development, and API usage, please refer to our comprehensive **[documentation](./docs/README.md)**.
 
-To get the Assessment Bot backend up and running, follow these steps:
+## ✨ Features
+
+- **Stateless Design**: No user data or session information is stored on the server, ensuring privacy and scalability.
+- **Modular Architecture**: Built with NestJS, following SOLID principles for a clean, maintainable, and scalable codebase.
+- **LLM Integration**: Abstracted service layer for interacting with LLMs (currently Google's Gemini) to perform assessments.
+- **Robust Validation**: All inputs are strictly validated using Zod for enhanced security and type safety.
+- **Comprehensive Testing**: Adheres to Test-Driven Development (TDD) with a full suite of unit, integration, and E2E tests.
+- **Containerised**: Ships with Docker and Docker Compose configurations for easy development and production deployment.
+
+## 🚀 Quick Start
+
+You can get the backend running locally using either Docker Compose (recommended for a full environment) or Node.js directly.
 
 ### Prerequisites
 
-- **Node.js**: Version 22.x. You can download it from [nodejs.org](https://nodejs.org/).
-- **Docker**: Docker Desktop (or Docker Engine and Docker Compose) installed and running. Follow the instructions for your operating system on the [Docker website](https://www.docker.com/get-started).
-- **Git**: Git installed and configured. You can download it from [git-scm.com](https://git-scm.com/downloads).
+- **Node.js**: Version 22.x
+- **Docker**: Docker Engine and Docker Compose
+- **Git**
 
-### Initial Setup
+### 1. Using Docker Compose (Recommended)
+
+This method starts the application along with a Caddy reverse proxy and Fail2ban for security.
 
 1.  **Clone the repository**:
 
@@ -29,248 +42,76 @@ To get the Assessment Bot backend up and running, follow these steps:
     cd AssessmentBot-Backend
     ```
 
-2.  **Install dependencies**:
-
-    ```bash
-    npm install
-    ```
-
-3.  **Set up environment variables**:
-
-    Copy the example environment file. You must provide both a `GEMINI_API_KEY` for the LLM and at least one `API_KEYS` for authentication for the application to be functional.
+2.  **Set up environment variables**:
+    Copy the example environment file. You must provide a `GEMINI_API_KEY` and at least one `API_KEYS` for the application to be functional.
 
     ```bash
     cp .env.example .env
-    # Open .env in your editor and add your keys
-    GEMINI_API_KEY=your_gemini_api_key
-    API_KEYS=your_secret_api_key
     ```
 
-## Stack
+    Now, open `.env` in your editor and add your keys.
 
-- **Docker**: Use base image `node:22-alpine` for a minimal and efficient container.
-- **Node.js**: The runtime environment for the backend code.
-- **TypeScript**: The programming language used for the backend code, providing static typing and modern JavaScript features.
-- **Passport.js**: For handling authentication strategies (e.g., API Keys via `passport-http-bearer`).
-- **NestJS**: The core web framework. It is a progressive Node.js framework for building efficient, reliable and scalable server-side applications. It strongly aligns with the OOP and SOLID principles outlined above.
-- **Zod**: A TypeScript-first schema declaration and validation library. It's essential for fulfilling the security principle of validating all inputs.
-- **Jest**: The testing framework. An all-in-one framework that simplifies the TDD process mentioned in the guiding principles.
-- **json-repair**: A library to fix malformed JSON strings, making LLM responses more robust.
-- **@google/genai**: The official Google AI SDK for Node.js, used to interact with the Gemini family of models.
-- **mustache**: A logic-less template engine used for rendering prompts.
+3.  **Start the services**:
+    ```bash
+    docker-compose up -d
+    ```
 
-## Expected Data Flow
+The API will be available at `http://localhost:80`. For more details, see the [Docker Deployment Guide](./docs/deployment/docker.md).
 
-1. Request comes in via the REST API. Contains Auth Token (API Key in the header) and a JSON body with reference task, template task and student response. A typical request payload looks like this:
+### 2. Using Node.js
 
-```json
-{
-  "taskType": "One of: text, table, image (ENUM)",
-  "referenceTask": "A string or blob containing the reference task",
-  "templateTask": "A string or blob containing the template task",
-  "studentTask": "A string or blob containing the student's response"
-}
-```
+1.  **Clone and install**:
 
-- The `taskType` field is an ENUM, not a resource. It is not possible to list, create, or delete task types via the API. Only the above values are valid, and new types can only be added by updating the codebase.
-- The API exposes only a single endpoint for assessment submission (e.g., `POST /assessment`). There are no endpoints for listing, updating, or deleting assessment types.
+    ```bash
+    git clone https://github.com/h-arnold/AssessmentBot-Backend.git
+    cd AssessmentBot-Backend
+    npm install
+    ```
 
-### Assessor Endpoint (`POST /v1/assessor`)
+2.  **Set up environment variables**:
 
-This endpoint is responsible for initiating an assessment. It accepts a JSON payload containing the details of the assessment task, including the type of task (text, table, or image), a reference solution, a template, and the student's response. The endpoint is secured with an API key.
+    ```bash
+    cp .env.example .env
+    # Open .env and add your GEMINI_API_KEY and API_KEYS
+    ```
 
-**Request Example:**
+3.  **Start the development server**:
+    `bash
+    npm run start:dev
+    `
+    The API will be available at `http://localhost:3000`.
 
-```json
-{
-  "taskType": "TEXT",
-  "reference": "The quick brown fox jumps over the lazy dog.",
-  "template": "Write a sentence about a fox.",
-  "studentResponse": "A fox is a mammal."
-}
-```
+## 🛠️ Tech Stack
 
-**Response Example (201 Created):**
+- **Framework**: [NestJS](https://nestjs.com/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Runtime**: [Node.js](https://nodejs.org/)
+- **Containerisation**: [Docker](https://www.docker.com/)
+- **Authentication**: [Passport.js](http://www.passportjs.org/) (`passport-http-bearer`)
+- **Validation**: [Zod](https://zod.dev/)
+- **Testing**: [Jest](https://jestjs.io/) & [Supertest](https://github.com/ladjs/supertest)
+- **LLM**: [Google Gemini](https://ai.google.dev/)
 
-```json
-{
-  "completeness": {
-    "score": 5,
-    "reasoning": "The response is complete and addresses all aspects of the prompt."
-  },
-  "accuracy": {
-    "score": 4,
-    "reasoning": "The response is mostly accurate, but contains a minor factual error."
-  },
-  "spag": {
-    "score": 3,
-    "reasoning": "The response contains several spelling and grammar errors."
-  }
-}
-```
+## 🔌 API Overview
 
-**Error Responses:**
+The backend exposes a simple REST API. The primary endpoint is used to submit tasks for assessment.
 
-- `400 Bad Request`: If the payload is invalid (e.g., missing required fields, incorrect data types).
-- `401 Unauthorized`: If no API key is provided or the API key is invalid.
+- **Endpoint**: `POST /v1/assessor`
+- **Authentication**: `Bearer` token (API Key)
+- **Body**: A JSON payload containing the task type, reference solution, template, and the student's response.
 
-2. Request is validated using Zod schemas.
-3. If the request is valid, it is authenticated using Passport.js.
-4. The request is handled by a NestJS `Controller`, which delegates the core logic to an appropriate `AssessorService` (e.g., for text, tables, or images).
-5. A prompt object is generated using the reference, template and student response.
-6. The prompt is sent to an LLMService superclass, which handles the interaction with the the chosen LLM. Each LLM (e.g. OpenAI, Anthropic) will have its own subclass that implements the specific API calls.
-7. The LLM processes the prompt and returns a raw string response.
-8. The raw response is passed through a resilient parsing mechanism. First, it attempts a standard `JSON.parse()`. If that fails, it uses `json-repair` to fix common syntax errors before attempting to parse again.
-9. The repaired and parsed JSON object is validated against a Zod schema to ensure it conforms to the expected structure.
-10. The validated response is processed by the `AssessorService`, which cleans the data and formats it for the client.
-11. The final response is returned to the client via the REST API.
+For a complete reference including request/response schemas, error codes, and rate limiting, please see the **[API Documentation](./docs/api/API_Documentation.md)**.
 
-## Initial Class Structure
+## 🏗️ Architecture
 
-To support the guiding principles and the expected data flow, the initial backend structure will be organized into modules, each with a distinct responsibility. This modular approach, central to the NestJS framework, enhances maintainability, testability, and separation of concerns.
+The application is built using a modular, layered architecture that separates concerns between controllers, services, and integration points.
 
-### Directory Layout
+For a detailed breakdown, please see the **[Architecture Overview](./docs/architecture/overview.md)**.
 
-The proposed structure within the `src/` directory is as follows:
+## 📚 Documentation
 
-src
-├── app.module.ts
-├── main.ts
-│
-├── v1
-│ └── assessor
-│ ├── dto
-│ │ └── create-assessor.dto.ts
-│ ├── assessor.controller.ts
-│ ├── assessor.module.ts
-│ └── assessor.service.ts
-│
-├── auth
-│ ├── api-key.guard.ts
-│ ├── api-key.service.ts
-│ ├── api-key.strategy.ts
-│ ├── auth.module.ts
-│ └── user.interface.ts
-│
-├── common
-│ ├── common.module.ts
-│ ├── file-utils.ts
-│ ├── http-exception.filter.ts
-│ ├── json-parser.util.ts
-│ ├── pipes
-│ │ └── image-validation.pipe.ts
-│ ├── utils
-│ │ ├── log-redactor.util.ts
-│ │ └── type-guards.ts
-│ └── zod-validation.pipe.ts
-│
-├── config
-│ ├── config.module.ts
-│ ├── config.service.ts
-│ ├── env.schema.ts
-│ ├── index.ts
-│ └── throttler.config.ts
-│
-├── llm
-│ ├── gemini.service.ts
-│ ├── llm.module.ts
-│ ├── llm.service.interface.ts
-│ ├── resource-exhausted.error.ts
-│ └── types.ts
-│
-├── prompt
-│ ├── image.prompt.ts
-│ ├── prompt.base.ts
-│ ├── prompt.factory.ts
-│ ├── prompt.module.ts
-│ ├── table.prompt.ts
-│ ├── templates
-│ │ ├── image.system.prompt.md
-│ │ ├── table.system.prompt.md
-│ │ ├── table.user.prompt.md
-│ │ ├── text.system.prompt.md
-│ │ └── text.user.prompt.md
-│ └── text.prompt.ts
-│
-└── status
-├── status.controller.ts
-├── status.module.ts
-└── status.service.ts
-│
+This project includes comprehensive documentation covering development, architecture, and usage. Please start with the main **[Documentation Hub](./docs/README.md)**.
 
-### Component Breakdown
+## 🤝 Contributing
 
-- `v1/assessor`: The versioned core feature module. The `AssessorController` serves as the entry point for API requests, the `AssessorService` orchestrates the business logic (calling the LLM, parsing the response), and the `dto` subdirectory defines the shape of the data using Zod schemas. Versioning allows for future API evolution without breaking existing clients.
-- `auth`: This module handles all authentication concerns. It contains the Passport.js `ApiKeyStrategy` for validating API keys, the `ApiKeyGuard` to protect endpoints, and the `ApiKeyService` for key management, keeping security logic isolated.
-- `common`: A module for shared, reusable components that don't belong to a specific feature. This includes custom `pipes` (for Zod validation and image validation), `utils` (like the resilient JSON parser and logging utilities), and the global HTTP exception filter.
-- `config`: Manages environment variables using a custom ConfigModule and ConfigService. All configuration is validated centrally using Zod schemas and is accessible in a type-safe manner. Includes throttler configuration for rate limiting.
-- `llm`: This module abstracts the interaction with Large Language Models. It features the `LlmService` interface and concrete implementations like `GeminiService`. This design allows the application to easily support different LLM providers while maintaining a consistent internal interface.
-- `prompt`: Provides a flexible, object-oriented abstraction for generating prompts tailored to different assessment types. The `PromptBase` class serves as the foundation, with specific implementations for text, table, and image prompts. Template files are stored in the `templates` subdirectory.
-- `status`: Provides health check and status endpoints for monitoring the application's state and version information.
-
-## Testing Structure
-
-In line with the **TDD** and **QA Strategy** principles, the project will maintain a comprehensive and organized testing suite. The structure is designed to clearly separate different types of tests, making them easy to write, find, and maintain.
-
-### Directory Layout
-
-Tests are co-located with the source code for unit and integration tests, while end-to-end tests reside in a dedicated `test/` directory at the project root.
-
-src
-test/
-
-```
-src
-└── ...
-└── v1
-    └── assessor
-        ├── assessor.controller.spec.ts  # Unit/Integration test for the controller
-        ├── assessor.controller.ts
-        ├── assessor.service.spec.ts     # Unit test for the service
-        └── assessor.service.ts
-
-
-├── assessor.e2e-spec.ts                 # E2E test for the assessor endpoint
-├── jest-e2e.json                        # Jest config for E2E tests
-└── setup.ts                             # Optional global setup for tests
-```
-
-### Test Type Breakdown
-
-The testing strategy follows the classic testing pyramid model:
-
-- **Location**: Co-located with the source file (e.g., `assessor.service.spec.ts` is next to `assessor.service.ts`).
-- **Purpose**: To test a single class or function in complete isolation. All external dependencies (like other services, repositories, or external APIs) are mocked using Jest's mocking capabilities (`jest.fn()`, `jest.spyOn()`).
-- **Scope**: Forms the largest part of the test suite, ensuring individual components behave as expected.
-
-- **Location**: Also co-located with the source files, often testing the module's primary entry point, like a controller.
-- **Purpose**: To test the interaction _between_ multiple, co-dependent classes within the application's dependency injection container. NestJS's `Test.createTestingModule()` is used to build a testing module that mirrors the actual application module, but with external infrastructure (like LLM clients or databases) mocked.
-- **Scope**: Verifies that modules are wired correctly and that components like controllers, services, and guards work together as intended.
-
-- **Location**: In the root `test/` directory.
-- **Purpose**: To test the entire application from the outside in. It starts the full NestJS application and sends real HTTP requests to its endpoints using a library like `supertest`.
-- **Scope**: Validates the full request/response lifecycle, including authentication, request validation (DTOs/Pipes), controller logic, service execution, and the final HTTP response format and status code. These tests are the most comprehensive but also the slowest to run.
-
-## Security & Quality Assurance
-
-This project includes automated penetration testing and security validation through dedicated E2E tests. These tests help proactively validate the robustness of the API against various attack vectors including prototype pollution, NoSQL injection, brute force attempts, and advanced input attacks.
-
-### Security Testing
-
-Security tests are integrated into the E2E test suite and can be run using:
-
-```bash
-npm run test:e2e
-```
-
-The test suite includes:
-
-- Penetration testing for common vulnerabilities
-- API key authentication validation
-- Rate limiting verification
-- Input validation and sanitisation testing
-- Advanced attack vector simulation
-
-> **Note:** These tests are for internal security validation only. Do not use them against production systems without explicit authorisation.
-
----
+Contributions are welcome! Please read our **[Contributing Guide](./CONTRIBUTING.md)** and follow the **[Development Workflow](./docs/development/workflow.md)**.
