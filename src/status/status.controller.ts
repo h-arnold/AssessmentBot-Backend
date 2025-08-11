@@ -1,10 +1,6 @@
-import { Controller, Get, HttpException, UseGuards, Req } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
-import type { Request } from 'express';
+import { Controller, Get, HttpException, Req } from '@nestjs/common';
 
 import { StatusService, HealthCheckResponse } from './status.service';
-import { ApiKeyGuard } from '../auth/api-key.guard';
-import type { User } from '../auth/user.interface';
 
 /**
  * Controller responsible for providing application status and health endpoints.

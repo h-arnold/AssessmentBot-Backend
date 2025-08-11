@@ -3,7 +3,6 @@ import * as os from 'os';
 import { Injectable } from '@nestjs/common';
 
 import * as packageJson from '../../package.json';
-import { User } from '../auth/user.interface';
 
 /**
  * Interface representing system information for health checks.
