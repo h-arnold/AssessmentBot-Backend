@@ -41,10 +41,11 @@ The Config Module implements a **boundary pattern** that:
 
 The custom Config Module provides several advantages over direct usage:
 
-1. **Validation at Startup**: Configuration is validated when the service is instantiated, causing the application to fail fast on invalid config
-2. **Type Safety**: All configuration keys are strongly typed through Zod inference
-3. **Centralisation**: Prevents configuration sprawl throughout the codebase
-4. **Testability**: Makes mocking configuration significantly easier
+1. **Validation at Startup**: Configuration is validated when the service is instantiated, causing the application to fail fast on invalid config.
+2. **Type Safety**: All configuration keys are strongly typed through Zod inference.
+3. **Centralisation**: Prevents configuration sprawl throughout the codebase.
+4. **Testability**: Makes mocking configuration significantly easier.
+5. **Compile-Time Configuration**: Some NestJS features, like the `@Throttle()` decorator for rate-limiting, are evaluated at compile time and cannot use a runtime service like `ConfigService`. By having a separate configuration system that uses a shared Zod schema (`env.schema.ts`), we can safely parse `process.env` directly for these compile-time needs (see `throttler.config.ts`) while ensuring validation rules are consistent with the rest of the application.
 
 ## ConfigService
 

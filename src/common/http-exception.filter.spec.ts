@@ -6,8 +6,75 @@ import {
 } from '@nestjs/common';
 
 import { HttpExceptionFilter } from './http-exception.filter';
+import { ResourceExhaustedError } from '../llm/resource-exhausted.error';
 
 describe('HttpExceptionFilter', () => {
+  let filter: HttpExceptionFilter;
+  let logger: Logger;
+
+  beforeEach(() => {
+    logger = new Logger();
+    filter = new HttpExceptionFilter(logger);
+    jest.clearAllMocks();
+  });
+
+  it('should be defined', () => {
+    expect(filter).toBeDefined();
+  });
+
+  it('should handle ResourceExhaustedError and return 503', () => {
+    const resourceExhaustedError = new ResourceExhaustedError(
+      'Quota has been exceeded.',
+    );
+    const mockJson = jest.fn();
+    const mockStatus = jest.fn().mockImplementation(() => ({ json: mockJson }));
+    const mockGetResponse = jest
+      .fn()
+      .mockImplementation(() => ({ status: mockStatus }));
+    const mockGetRequest = jest.fn().mockImplementation(() => ({
+      url: '/test-resource-exhausted',
+      method: 'POST',
+      ip: '127.0.0.1',
+      headers: { 'user-agent': 'jest' },
+    }));
+    const mockHttpArgumentsHost = jest.fn().mockImplementation(() => ({
+      getResponse: mockGetResponse,
+      getRequest: mockGetRequest,
+    }));
+    const mockArgumentsHost: ArgumentsHost = {
+      switchToHttp: mockHttpArgumentsHost,
+      getArgByIndex: jest.fn(),
+      getArgs: jest.fn(),
+      getType: jest.fn(),
+      switchToRpc: jest.fn(),
+      switchToWs: jest.fn(),
+    };
+    const loggerSpy = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation();
+
+    filter.catch(resourceExhaustedError, mockArgumentsHost);
+
+    expect(mockStatus).toHaveBeenCalledWith(HttpStatus.SERVICE_UNAVAILABLE);
+    expect(mockJson).toHaveBeenCalledWith({
+      statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+      message: 'Quota has been exceeded.',
+      timestamp: expect.any(String),
+      path: '/test-resource-exhausted',
+    });
+    expect(loggerSpy).toHaveBeenCalledWith(
+      {
+        method: 'POST',
+        path: '/test-resource-exhausted',
+        ip: '127.0.0.1',
+        headers: { 'user-agent': 'jest' },
+        userAgent: 'jest',
+      },
+      `HTTP ${HttpStatus.SERVICE_UNAVAILABLE} - Quota has been exceeded.`,
+      expect.any(String),
+    );
+  });
+
   it('should handle Express PayloadTooLargeError and return 413', () => {
     // Simulate Express body-parser PayloadTooLargeError
     const payloadTooLargeError = {
@@ -59,17 +126,6 @@ describe('HttpExceptionFilter', () => {
       },
       `HTTP ${HttpStatus.PAYLOAD_TOO_LARGE} - Payload Too Large`,
     );
-  });
-  let filter: HttpExceptionFilter;
-  let logger: Logger;
-
-  beforeEach(() => {
-    logger = new Logger();
-    filter = new HttpExceptionFilter(logger);
-  });
-
-  it('should be defined', () => {
-    expect(filter).toBeDefined();
   });
 
   it('should format custom error response with timestamp and path', () => {

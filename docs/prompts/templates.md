@@ -206,28 +206,6 @@ Follow this structure for new user prompts:
 
 Then update the JSON output structure:
 
-````markdown
-```json
-{
-    "existingCriterion": {...},
-    "newCriterion": {
-        "score": {score},
-        "reasoning": "{reasoning}"
-    }
-}
-```
-````
-
-```markdown
-### 3. **New Criterion** (0-5):
-
-- Score 0 if condition not met
-- Score 5 if condition fully met
-- Intermediate scoring guidance
-```
-
-Then update the JSON output structure:
-
 ```json
 {
   "existingCriterion": {...},

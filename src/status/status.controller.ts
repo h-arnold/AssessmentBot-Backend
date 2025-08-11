@@ -1,10 +1,6 @@
-import { Controller, Get, HttpException, UseGuards, Req } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
-import type { Request } from 'express';
+import { Controller, Get, HttpException, Req } from '@nestjs/common';
 
 import { StatusService, HealthCheckResponse } from './status.service';
-import { ApiKeyGuard } from '../auth/api-key.guard';
-import type { User } from '../auth/user.interface';
 
 /**
  * Controller responsible for providing application status and health endpoints.
@@ -60,21 +56,5 @@ export class StatusController {
   @Get('test-error')
   testError(): void {
     throw new HttpException('This is a test error', 400);
-  }
-
-  /**
-   * Tests authentication functionality by returning authenticated user information.
-   *
-   * This protected endpoint verifies that the authentication system is working
-   * correctly by requiring a valid API key and returning information about
-   * the authenticated user.
-   *
-   * @param req - Express request object containing the authenticated user
-   * @returns Object containing success message and authenticated user information
-   */
-  @UseGuards(ApiKeyGuard)
-  @Get('check-auth')
-  checkAuth(@Req() req: Request): { message: string; user: User } {
-    return this.statusService.checkAuth(req.user as User);
   }
 }

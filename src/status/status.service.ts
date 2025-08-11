@@ -3,7 +3,6 @@ import * as os from 'os';
 import { Injectable } from '@nestjs/common';
 
 import * as packageJson from '../../package.json';
-import { User } from '../auth/user.interface';
 
 /**
  * Interface representing system information for health checks.
@@ -87,19 +86,5 @@ export class StatusService {
         cpus: os.cpus().length,
       },
     };
-  }
-
-  /**
-   * Validates authentication and returns user information.
-   *
-   * This method is used by protected endpoints to confirm that authentication
-   * is working correctly. It returns the authenticated user's information
-   * along with a confirmation message.
-   *
-   * @param user - The authenticated user object from the request
-   * @returns Object containing confirmation message and user information
-   */
-  checkAuth(user: User): { message: string; user: User } {
-    return { message: 'This is a protected endpoint', user };
   }
 }
