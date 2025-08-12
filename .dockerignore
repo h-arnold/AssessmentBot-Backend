@@ -34,9 +34,10 @@ Dockerfile.prod
 .gitignore
 
 # Ignore markdown files not needed in the image
-*.md
-# But DO NOT ignore the prompt templates
-!src/prompt/templates/*.md
+README.md
+CONTRIBUTING.md
+GEMINI.md
+docs/**/*.md
 
 # Ignore configuration files not needed in the final image
 .prettierrc
@@ -45,8 +46,6 @@ Dockerfile.prod
 .env.example
 .env.prod
 Caddyfile
-CONTRIBUTING.md
-GEMINI.md
 eslint.config.js
 jest-e2e.config.cjs
 jest.config.js
