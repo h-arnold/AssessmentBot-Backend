@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
 
 env:
-  GAR_LOCATION: europe-west2
+  GAR_LOCATION: ${{ secrets.GAR_LOCATION }}
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  GAR_REPOSITORY: assessment-bot
+  GAR_REPOSITORY: ${{ secrets.GAR_REPOSITORY }}
   IMAGE_NAME: backend
 
 jobs:
