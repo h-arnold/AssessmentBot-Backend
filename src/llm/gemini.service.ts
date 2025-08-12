@@ -120,9 +120,7 @@ export class GeminiService extends LLMService {
    * @returns The configured ModelParams object.
    */
   private buildModelParams(payload: LlmPayload): ModelParams {
-    const modelName = this.isImagePromptPayload(payload)
-      ? 'gemini-2.5-flash'
-      : 'gemini-2.5-flash-lite';
+    const modelName = 'gemini-2.5-flash-lite';
 
     const systemInstruction = payload.system;
     // Use temperature from payload, default to 0

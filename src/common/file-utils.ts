@@ -37,18 +37,55 @@ export async function readMarkdown(
   name: string,
   basePath?: string,
 ): Promise<string> {
-  basePath = basePath ?? 'src/prompt/templates';
   if (!name) return '';
   if (name.includes('..') || !name.endsWith('.md')) {
     throw new Error('Invalid markdown filename');
   }
-  const baseDir = path.resolve(basePath);
-  const resolvedPath = path.resolve(baseDir, name);
-  if (!resolvedPath.startsWith(baseDir)) {
-    throw new Error('Unauthorised file path');
+
+  // If caller provided a basePath use only that, otherwise try known candidates.
+  const candidates: string[] = [];
+  if (basePath) {
+    candidates.push(basePath);
+  } else {
+    // Development (ts-node / nest start) location
+    candidates.push('src/prompt/templates');
+    // Production (compiled assets copied by Nest build) location
+    candidates.push('dist/src/prompt/templates');
+    // Relative to this file at runtime (dist/src/common/file-utils.js -> ../prompt/templates)
+    try {
+      const currentDir = getCurrentDirname();
+      candidates.push(path.resolve(currentDir, '../prompt/templates'));
+    } catch {
+      // ignore
+    }
   }
-  // resolvedPath is validated above, safe to use as argument
-  // eslint-disable-next-line security/detect-non-literal-fs-filename
-  const content = await fs.readFile(resolvedPath, { encoding: 'utf-8' });
-  return content;
+
+  const tried: string[] = [];
+  for (const candidate of candidates) {
+    const baseDir = path.resolve(candidate);
+    const resolvedPath = path.resolve(baseDir, name);
+    // Security: ensure resolved path is within baseDir
+    if (!resolvedPath.startsWith(baseDir)) continue;
+    tried.push(resolvedPath);
+    try {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      const content = await fs.readFile(resolvedPath, { encoding: 'utf-8' });
+      return content;
+    } catch (err: unknown) {
+      if (
+        err &&
+        typeof err === 'object' &&
+        'code' in err &&
+        (err as { code?: string }).code === 'ENOENT'
+      ) {
+        // Try next candidate
+        continue;
+      }
+      // Re-throw other errors (e.g., permission issues)
+      throw err;
+    }
+  }
+  throw new Error(
+    `Markdown file not found in candidate paths: ${tried.join(', ')}`,
+  );
 }
