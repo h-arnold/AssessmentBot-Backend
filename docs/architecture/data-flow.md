@@ -227,8 +227,8 @@ async createAssessment(dto: CreateAssessorDto): Promise<LlmResponse> {
 
 ```typescript
 1. Select model based on payload type:
-   - Text/Table: gemini-2.0-flash-lite
-   - Image: gemini-2.5-flash
+   - Text/Table: gemini-2.5-flash-lite
+   - Image: gemini-2.5-flash-lite
 2. Build model parameters with system instruction and temperature
 3. Create content array (text or text + images)
 4. Make API call to Google Gemini

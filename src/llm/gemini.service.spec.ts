@@ -86,8 +86,6 @@ describe('GeminiService', () => {
       parse: jest.fn((json: string) => JSON.parse(json)),
     } as unknown as JsonParserUtil;
 
-    logger = new Logger();
-
     service = new GeminiService(configService, jsonParserUtil);
   });
 

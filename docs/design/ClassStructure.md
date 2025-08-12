@@ -50,7 +50,6 @@ classDiagram
     AppModule <|-- AssessorModule
     AppModule <|-- AuthModule
     AppModule <|-- ConfigModule
-    AppModule <|-- SwaggerModule
     AppModule <|-- LoggerModule
     AppModule <|-- ThrottlerModule
     AppModule <|-- CommonModule

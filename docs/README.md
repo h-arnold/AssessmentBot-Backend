@@ -36,7 +36,7 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 
 ### ⚙️ Configuration
 
-- [Environment Variables](configuration/environment.md) - _[TODO]_ Complete environment configuration guide
+- [Environment Variables](configuration/environment.md) - Complete environment configuration guide
 
 ### 🧪 Testing
 

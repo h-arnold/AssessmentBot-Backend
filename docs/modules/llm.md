@@ -223,8 +223,8 @@ The service implements sophisticated retry logic:
 
 ### Model Configuration
 
-- **Text Model:** `gemini-2.0-flash-lite` (fast, efficient for text)
-- **Image Model:** `gemini-2.5-flash` (multimodal capabilities)
+- **Text Model:** `gemini-2.5-flash-lite` (fast, efficient for all tasks)
+- **Image Model:** `gemini-2.5-flash-lite` (multimodal capabilities)
 - **Temperature:** Defaults to 0 for consistent, deterministic responses
 
 ## Usage Examples

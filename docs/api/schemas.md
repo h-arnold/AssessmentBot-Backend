@@ -76,14 +76,3 @@ Each `AssessmentCriterion` has the following structure:
   }
 }
 ```
-
-### Authentication Check (`/check-auth`)
-
-```typescript
-{
-  message: "This is a protected endpoint",
-  user: {
-    apiKey: "***redacted***"
-  }
-}
-```
