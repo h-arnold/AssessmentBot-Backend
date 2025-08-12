@@ -37,7 +37,7 @@ Our strategy uses three primary types of tests:
 
 ### 3. Production Image Tests
 
-- **Location**: In the `prod-tests/` directory (`*.prod-spec.ts`).
+- **Location**: In the `test/prod-tests/` directory (`*.prod-spec.ts`).
 - **Purpose**: To validate the final, production-ready Docker image. These tests build the image, run it, and perform smoke tests to ensure it starts and operates correctly.
 - **Framework**: [Jest](https://jestjs.io/), [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), and [Supertest](https://github.com/ladjs/supertest).
 - **Details**: For setup and environment details, see the [PROD_TESTS_GUIDE.md](./PROD_TESTS_GUIDE.md).

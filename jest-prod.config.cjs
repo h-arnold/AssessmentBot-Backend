@@ -8,7 +8,6 @@ module.exports = {
   moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/src/$1',
     '^test/(.*)$': '<rootDir>/test/$1',
-    '^prod-tests/(.*)$': '<rootDir>/test/prod-tests/$1',
   },
   setupFiles: ['<rootDir>/jest.setup.ts'],
   detectOpenHandles: true,
