@@ -12,7 +12,7 @@ const options = {
 };
 
 const request = http.request(options, (res) => {
-  console.log(`STATUS: ${res.statusCode}`);
+  console.info(`STATUS: ${res.statusCode}`);
   if (res.statusCode === 200) {
     process.exit(0); // Success
   } else {
