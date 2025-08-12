@@ -14,11 +14,12 @@ We follow a **test-driven development (TDD)** approach, prioritising security, r
 | `npm run test:watch` | Run unit/integration tests in watch mode.         |
 | `npm run test:cov`   | Run unit/integration tests and generate coverage. |
 | `npm run test:e2e`   | Run all end-to-end tests (`*.e2e-spec.ts`).       |
+| `npm run test:prod`  | Run production image tests (`*.prod-spec.ts`).    |
 | `npm run test:debug` | Debug tests with the Node.js inspector.           |
 
 ## Test Architecture
 
-Our strategy uses two primary types of tests:
+Our strategy uses three primary types of tests:
 
 ### 1. Unit & Integration Tests
 
@@ -33,6 +34,13 @@ Our strategy uses two primary types of tests:
 - **Purpose**: To test complete API workflows from the perspective of a client, covering HTTP endpoints, authentication, and error handling.
 - **Framework**: [Jest](https://jestjs.io/) and [Supertest](https://github.com/ladjs/supertest).
 - **Details**: For setup and environment details, see the [E2E_GUIDE.md](./E2E_GUIDE.md).
+
+### 3. Production Image Tests
+
+- **Location**: In the `prod-tests/` directory (`*.prod-spec.ts`).
+- **Purpose**: To validate the final, production-ready Docker image. These tests build the image, run it, and perform smoke tests to ensure it starts and operates correctly.
+- **Framework**: [Jest](https://jestjs.io/), [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), and [Supertest](https://github.com/ladjs/supertest).
+- **Details**: For setup and environment details, see the [PROD_TESTS_GUIDE.md](./PROD_TESTS_GUIDE.md).
 
 ## Core Concepts
 
