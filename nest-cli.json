@@ -3,7 +3,12 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "assets": ["../docs/Prompts/**/*"],
+    "assets": [
+      {
+        "include": "prompt/templates",
+        "outDir": "dist/src"
+      }
+    ],
     "watchAssets": true
   }
 }
