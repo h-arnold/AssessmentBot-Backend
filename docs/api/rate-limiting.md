@@ -33,7 +33,6 @@ These defaults are designed to support a typical classroom scenario of 30 studen
 | Endpoint       | Method | Limit (per 10s) | Notes           |
 | -------------- | ------ | --------------- | --------------- |
 | `/v1/assessor` | POST   | 90              | Authenticated   |
-| `/check-auth`  | GET    | 90              | Authenticated   |
 | `/health`      | GET    | 10              | Unauthenticated |
 | `/`            | GET    | 10              | Unauthenticated |
 | `/test-error`  | GET    | 10              | Unauthenticated |

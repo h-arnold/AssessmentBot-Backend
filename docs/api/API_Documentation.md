@@ -89,14 +89,3 @@ These endpoints are for monitoring and testing the application status.
 | `/health`     | `GET`  | No    | Returns application status, version, and timestamp.   |
 | `/check-auth` | `GET`  | Yes   | Verifies API key authentication is working correctly. |
 | `/test-error` | `GET`  | No    | Intentionally throws a 400 error for testing.         |
-
-#### `check-auth` Success Response
-
-```json
-{
-  "message": "This is a protected endpoint",
-  "user": {
-    "apiKey": "***redacted***"
-  }
-}
-```
