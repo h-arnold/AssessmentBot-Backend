@@ -1,9 +1,9 @@
 // See https://containers.dev/ for full reference
 {
   "name": "AssessmentBot-Backend DevContainer",
-  // Use the alpine variant to match the production image specified in README.md
-  // The -alpine variant is not available for Node 22. Using the default Debian-based image.
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  // Use the Ubuntu variant so the Docker-in-Docker feature can install Moby packages
+  // (Debian 'trixie' lacked moby packages; Ubuntu is compatible for this feature).
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/git:1": {},
@@ -19,7 +19,7 @@
       "settings": {
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-          "source.fixAll.eslint": true
+          "source.fixAll": true
         },
         "eslint.enable": true,
         "typescript.tsdk": "node_modules/typescript/lib"
