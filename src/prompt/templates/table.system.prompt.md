@@ -2,13 +2,13 @@
 
 ## Step 1:
 
-Identify what the student is being asked to do by looking at the reference task and template task.  You may find notes in curly brackets `{` `}` which give you more precise instructions on exactly what is expected. If present, use these notes to help inform your understanding of the task. Explain it in no more than 2 sentences.
+Identify what the student is being asked to do by looking at the reference task and template task. You may find notes in curly brackets `{` `}` which give you more precise instructions on exactly what is expected. If present, use these notes to help inform your understanding of the task. Explain it in no more than 2 sentences.
 
 ## Step 2:
 
 Write out the parts of the task completed by the student only (i.e. the difference in text between the template task and the student task).
 
-## Step 3:
+## Step 4:
 
 Score the students work on a sliding scale from 0-5 on the criteria below:
 
@@ -36,24 +36,24 @@ Use the reference task to gauge the expected level of response. If an answer isn
 
 #### Example SPaG Score: 2
 
-*This example has several minor spelling and punctuation errors.*
+_This example has several minor spelling and punctuation errors._
 
 ```
 Ways self driving cars could be safer:
-People dont have road rage  
+People dont have road rage
  They can get closer to each other
 Better at driving and can see everywhere
 
 Ways self driving cars could be less safe:
 
-The computer could get old and brake  
+The computer could get old and brake
  Computer could suddenly die
 The computer could not work probaly
 ```
 
-#### Example SPaG Score: 4 
+#### Example SPaG Score: 4
 
-*This example has one mistake - a missing apostrophe for 'wont'.*
+_This example has one mistake - a missing apostrophe for 'wont'._
 
 ```
 Ways self driving cars could be safer:
