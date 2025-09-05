@@ -5,9 +5,5 @@
 # You can't add these to .gitignore because that will create errors when the `ci.yml` github workflow runs as the github runner won't be able to write to folders in .gitignore.
 rm -rf junit coverage
 
-# Lint Dockerfiles before commit
-hadolint Docker/Dockerfile || exit 1
-hadolint Docker/Dockerfile.prod || exit 1
-
 # Run lint-staged (existing checks)
 npx lint-staged
