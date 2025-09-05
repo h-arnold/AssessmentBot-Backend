@@ -46,10 +46,12 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 
 # Copy package files and install only production dependencies.
-# The --omit=dev flag skips devDependencies, reducing the image size.
 COPY package*.json ./ 
-# Use BuildKit cache mount for production dependencies as well.
-RUN --mount=type=cache,target=/root/.npm npm install --omit=dev --no-optional --ignore-scripts
+# Use BuildKit cache mount for production dependencies and install libmagic (`file`) in a
+# single RUN to keep image layers small and cacheable. This is required for runtime MIME
+# detection (e.g. mime-detect) which needs the `file` utility.
+RUN --mount=type=cache,target=/root/.npm apk add --no-cache file \
+  && npm install --omit=dev --no-optional --ignore-scripts
 
 # Copy the compiled application code from the 'build' stage using --link
 # to optimise caching with BuildKit.
