@@ -1,14 +1,21 @@
 // See https://containers.dev/ for full reference
 {
   "name": "AssessmentBot-Backend DevContainer",
-  // Use the alpine variant to match the production image specified in README.md
-  // The -alpine variant is not available for Node 22. Using the default Debian-based image.
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  // Use the Ubuntu variant so the Docker-in-Docker feature can install Moby packages
+  // (Debian 'trixie' lacked moby packages; Ubuntu is compatible for this feature).
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers-extra/features/act": {}
+    "ghcr.io/devcontainers-extra/features/act": {},
+    // Ensure the `file` (libmagic) utility is available for tests and runtime tools that rely on it
+    "ghcr.io/devcontainers/features/apt-packages:1": {
+      "packages": "file"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    }
   },
   // Install Gemini CLI globally when the container is created.
   "postCreateCommand": "npm install -g @google/gemini-cli",
@@ -19,7 +26,7 @@
       "settings": {
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-          "source.fixAll.eslint": true
+          "source.fixAll.eslint": "always"
         },
         "eslint.enable": true,
         "typescript.tsdk": "node_modules/typescript/lib"
@@ -39,7 +46,5 @@
         "SonarSource.sonarlint-vscode"
       ]
     }
-  },
-  "forwardPorts": [3000],
-  "remoteUser": "node"
+  }
 }
