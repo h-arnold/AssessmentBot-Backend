@@ -12,7 +12,7 @@ COPY package*.json ./
 
 # Use BuildKit cache mounts to speed up dependency installation.
 # This command mounts a cache directory for npm, which persists between builds.
-RUN --mount=type=cache,target=/root/.npm npm install
+RUN --mount=type=cache,target=/root/.npm npm install --ignore_scripts
 
 # Copy only the source and configuration files necessary for the build.
 # This avoids copying the entire repository and other non-essential files
