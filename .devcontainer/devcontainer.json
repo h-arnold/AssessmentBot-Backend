@@ -10,9 +10,6 @@
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers-extra/features/act": {},
     // Ensure the `file` (libmagic) utility is available for tests and runtime tools that rely on it
-    "ghcr.io/devcontainers/features/apt-packages:1": {
-      "packages": "file"
-    },
     "ghcr.io/devcontainers/features/node:1": {
       "version": "22"
     }
