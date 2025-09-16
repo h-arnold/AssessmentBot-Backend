@@ -43,6 +43,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Verify GEMINI_API_KEY secret is available
+        run: |
+          if [ -z "${{ secrets.GEMINI_API_KEY }}" ]; then
+            echo "Error: GEMINI_API_KEY secret is not set or is empty"
+            exit 1
+          fi
+          echo "GEMINI_API_KEY secret is available"
+
       - name: Run unit tests
         run: npm test -- --verbose --coverage
 
@@ -73,7 +81,13 @@ jobs:
 
       - name: Create .test.env for E2E tests
         run: |
+          if [ -z "${{ secrets.GEMINI_API_KEY }}" ]; then
+            echo "Error: GEMINI_API_KEY secret is not set or is empty"
+            exit 1
+          fi
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .test.env
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
       - name: Run E2E tests
         run: npm run test:e2e -- --verbose
