@@ -89,7 +89,8 @@
     "typescript-eslint": "^8.43.0"
   },
   "overrides": {
-    "micromatch": ">=4.0.8"
+    "micromatch": ">=4.0.8",
+    "test-exclude": "7.0.1"
   },
   "homepage": "https://github.com/h-arnold/AssessmentBot-Backend#readme",
   "lint-staged": {
