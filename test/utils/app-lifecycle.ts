@@ -132,6 +132,8 @@ export function stopApp(appProcess: ChildProcessWithoutNullStreams): void {
   }
 }
 
+export const API_CALL_DELAY_MS = 2000;
+
 /**
  * Delays execution for a specified number of milliseconds.
  * Useful for rate limiting test API calls to avoid hitting Gemini API limits.
