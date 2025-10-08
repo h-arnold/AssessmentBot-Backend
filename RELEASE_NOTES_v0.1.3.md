@@ -123,7 +123,7 @@ None. This release is fully backwards compatible.
 ## Links
 
 - [Full Changelog](https://github.com/h-arnold/AssessmentBot-Backend/compare/v0.1.2...v0.1.3)
-- [Pull Request](https://github.com/h-arnold/AssessmentBot-Backend/pull/[number])
+- [Pull Request](https://github.com/h-arnold/AssessmentBot-Backend/pull/42)
 
 ---
 
