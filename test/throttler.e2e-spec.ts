@@ -2,7 +2,7 @@ import * as path from 'path';
 
 import request from 'supertest';
 
-import { startApp, stopApp, AppInstance } from './utils/app-lifecycle';
+import { startApp, stopApp, AppInstance, delay } from './utils/app-lifecycle';
 
 describe('Throttler (e2e)', () => {
   let app: AppInstance;
@@ -12,9 +12,9 @@ describe('Throttler (e2e)', () => {
 
   beforeAll(async () => {
     // As we are not testing the throttler service itself, but rather the implementation of the throttler,
-    // we can use a short ttl and custom limits to speed up the tests and ensure config is picked up from process.env.
+    // we can use a longer ttl to accommodate API rate limiting delays and custom limits to ensure config is picked up from process.env.
     const envOverrides = {
-      THROTTLER_TTL: '5000',
+      THROTTLER_TTL: '20000', // Increased to 20 seconds to accommodate delays for API rate limiting
       UNAUTHENTICATED_THROTTLER_LIMIT: '5',
       AUTHENTICATED_THROTTLER_LIMIT: '10',
     };
@@ -46,7 +46,7 @@ describe('Throttler (e2e)', () => {
       await new Promise((resolve) => setTimeout(resolve, app.throttlerTtl));
       const afterResetResponse = await request(app.appUrl).get('/health');
       expect(afterResetResponse.status).toBe(200);
-    }, 15000); // Increased timeout to account for all sequential steps
+    }, 30000); // Increased timeout to accommodate longer TTL (20s + overhead)
   });
 
   describe('Authenticated Routes', () => {
@@ -58,19 +58,19 @@ describe('Throttler (e2e)', () => {
         studentResponse: 'A fox is a mammal.',
       };
 
-      // 1. Allow requests up to the limit
-      const successfulRequests = Array(app.authenticatedThrottlerLimit)
-        .fill(0)
-        .map(() =>
-          request(app.appUrl)
-            .post('/v1/assessor')
-            .set('Authorization', `Bearer ${app.apiKey}`)
-            .send(postData)
-            .expect(201),
-        );
-      await Promise.all(successfulRequests);
+      // 1. Allow requests up to the limit - make them sequential with delays
+      // to avoid API rate limiting while staying within the throttle window (20s)
+      // Balance between avoiding API rate limits and staying within throttle window
+      for (let i = 0; i < app.authenticatedThrottlerLimit; i++) {
+        await delay(600); // 600ms delay between requests (6s + response times ~= 10-12s total, well within 20s window)
+        await request(app.appUrl)
+          .post('/v1/assessor')
+          .set('Authorization', `Bearer ${app.apiKey}`)
+          .send(postData)
+          .expect(201);
+      }
 
-      // 2. Reject requests exceeding the limit
+      // 2. Reject requests exceeding the limit (should happen immediately without delay)
       const throttledResponse = await request(app.appUrl)
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${app.apiKey}`)
@@ -79,12 +79,14 @@ describe('Throttler (e2e)', () => {
 
       // 3. Reset the limit after the TTL expires
       await new Promise((resolve) => setTimeout(resolve, app.throttlerTtl));
+
+      await delay(1500); // Longer delay after reset before final request
       const afterResetResponse = await request(app.appUrl)
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${app.apiKey}`)
         .send(postData);
       expect(afterResetResponse.status).toBe(201);
-    }, 15000); // Increased timeout to account for all sequential steps
+    }, 120000); // Increased timeout to 2 minutes to accommodate longer TTL and sequential requests
   });
 
   it.todo('should log throttled requests (requires log capture setup)');

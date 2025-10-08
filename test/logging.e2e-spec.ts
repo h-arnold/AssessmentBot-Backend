@@ -37,7 +37,7 @@ import * as path from 'path';
 
 import request from 'supertest';
 
-import { startApp, stopApp, AppInstance } from './utils/app-lifecycle';
+import { startApp, stopApp, AppInstance, delay } from './utils/app-lifecycle';
 import { getLogObjects, waitForLog } from './utils/log-watcher';
 
 describe('Logging (True E2E)', () => {
@@ -62,6 +62,10 @@ describe('Logging (True E2E)', () => {
     // As such, this test needs to run first because the way the test tracks when a request begins is when we get the message
     // `API key authentication attempt successful` which you will get in most of the tests. Should it be necessary to create
     // more request tracking type tests, I'll need to implement a more robust solution to this, but for now, this works.
+
+    // Add delay before API call to avoid rate limiting
+    await delay(2000);
+
     await request(app.appUrl)
       .post('/v1/assessor')
       .set('Authorization', `Bearer ${app.apiKey}`)
@@ -164,6 +168,9 @@ describe('Logging (True E2E)', () => {
   });
 
   it('5. Should Log Errors with Stack Traces', async () => {
+    // Add delay before API call to avoid rate limiting
+    await delay(2000);
+
     await request(app.appUrl)
       .post('/v1/assessor')
       .set('Authorization', `Bearer ${app.apiKey}`)

@@ -59,6 +59,8 @@ jobs:
     env:
       NODE_ENV: test
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      LLM_BACKOFF_BASE_MS: '2000'
+      LLM_MAX_RETRIES: '5'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

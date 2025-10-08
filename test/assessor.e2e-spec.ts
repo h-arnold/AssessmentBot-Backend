@@ -3,7 +3,7 @@ import * as path from 'path';
 
 import request from 'supertest';
 
-import { startApp, stopApp, AppInstance } from './utils/app-lifecycle';
+import { startApp, stopApp, AppInstance, delay } from './utils/app-lifecycle';
 
 // Helper function to load a file and convert it to a data URI
 const loadFileAsDataURI = async (filePath: string): Promise<string> => {
@@ -71,6 +71,9 @@ describe('AssessorController (e2e)', () => {
   });
 
   it('/v1/assessor (POST) should return 201 Created for valid DTO', async () => {
+    // Add delay before API call to avoid rate limiting
+    await delay(2000);
+
     const validPayload = {
       taskType: 'TEXT',
       reference: 'test',

@@ -3,7 +3,7 @@ import * as path from 'path';
 
 import request from 'supertest';
 
-import { startApp, stopApp } from './utils/app-lifecycle';
+import { startApp, stopApp, delay } from './utils/app-lifecycle';
 import { waitForLog } from './utils/log-watcher';
 
 describe('Authentication E2E Tests', () => {
@@ -48,6 +48,9 @@ describe('Authentication E2E Tests', () => {
   });
 
   it('Protected route with valid API key returns 201 Created and a valid assessment', async () => {
+    // Add delay before API call to avoid rate limiting
+    await delay(2000);
+
     await request(appUrl)
       .post('/v1/assessor')
       .set('Authorization', `Bearer ${apiKey}`)
