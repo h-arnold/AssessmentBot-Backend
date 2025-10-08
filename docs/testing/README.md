@@ -55,6 +55,11 @@ Test environments are designed to be consistent and isolated.
   GEMINI_API_KEY=your_real_api_key_here
   ```
   This file is git-ignored and is the **only** place where environment-specific secrets should be managed for testing.
+- **API Rate Limiting**: E2E tests are configured to avoid hitting Google Gemini API rate limits on the free tier:
+  - Enhanced retry settings: `LLM_BACKOFF_BASE_MS=2000` (2s), `LLM_MAX_RETRIES=5`
+  - Strategic delays between API calls (2s for most tests, 600ms for throttler tests)
+  - Sequential rather than parallel execution of tests that call the Gemini API
+  - These settings are automatically applied and don't require manual configuration
 
 ### Test Data & Mocking
 

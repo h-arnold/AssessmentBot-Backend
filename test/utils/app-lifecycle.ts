@@ -64,6 +64,8 @@ export async function startApp(
     THROTTLER_TTL: '36000000',
     UNAUTHENTICATED_THROTTLER_LIMIT: '9',
     AUTHENTICATED_THROTTLER_LIMIT: '12',
+    LLM_BACKOFF_BASE_MS: '2000', // Increased backoff for rate limiting (2 seconds instead of 1)
+    LLM_MAX_RETRIES: '5', // Increased retries for rate limiting (5 instead of 3)
   };
 
   // Merge environment variables: process.env < defaults < .test.env < overrides
@@ -128,4 +130,17 @@ export function stopApp(appProcess: ChildProcessWithoutNullStreams): void {
   if (appProcess && !appProcess.killed) {
     appProcess.kill('SIGTERM');
   }
+}
+
+export const API_CALL_DELAY_MS = 2000;
+
+/**
+ * Delays execution for a specified number of milliseconds.
+ * Useful for rate limiting test API calls to avoid hitting Gemini API limits.
+ *
+ * @param ms - The number of milliseconds to delay.
+ * @returns A Promise that resolves after the delay.
+ */
+export function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
