@@ -87,7 +87,7 @@ it('should assess a submission', async () => {
 
   const response = await request(app.appUrl)
     .post('/v1/assessor')
-    .set('Authorization', `******
+    .set('Authorization', `Bearer ${app.apiKey}`)
     .send(payload);
 
   expect(response.status).toBe(201);
