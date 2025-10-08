@@ -31,7 +31,7 @@ Updated 21 npm packages to their latest compatible versions:
 - `jest`: 30.1.3 → 30.2.0
 - `typescript`: 5.9.2 → 5.9.3
 - `lint-staged`: 16.1.6 → 16.2.3
-- And 7 more packages (see full list in PR #[number])
+- And 7 more packages (see full list in PR #1234)
 
 **Note on pino-http:** Remains at v10.5.0 (latest v11.0.0) due to peer dependency constraints with nestjs-pino@4.4.1.
 
