@@ -1,14 +1,13 @@
 // See https://containers.dev/ for full reference
 {
   "name": "AssessmentBot-Backend DevContainer",
-  // Use the Ubuntu variant so the Docker-in-Docker feature can install Moby packages
-  // (Debian 'trixie' lacked moby packages; Ubuntu is compatible for this feature).
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  // Use the typescript-node base image (Node.js + TypeScript tooling).
+  // Keep the Ubuntu variant behavior from the original image where applicable.
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers-extra/features/act": {},
     // Ensure the `file` (libmagic) utility is available for tests and runtime tools that rely on it
     "ghcr.io/devcontainers/features/node:1": {
       "version": "22"
