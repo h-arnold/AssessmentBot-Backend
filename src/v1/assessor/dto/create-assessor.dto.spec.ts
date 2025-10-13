@@ -76,7 +76,7 @@ describe('CreateAssessorDto', () => {
       expect(error.issues[0].path).toContain('reference');
     });
 
-    it('should reject empty strings for required fields', () => {
+    it('should reject an empty string for reference', () => {
       const payload: CreateAssessorDto = {
         taskType: TaskType.TEXT,
         reference: '',
@@ -87,6 +87,28 @@ describe('CreateAssessorDto', () => {
       expect(result.success).toBe(false);
       const error = (result as { error: ZodError }).error;
       expect(error.issues[0].path).toContain('reference');
+    });
+
+    it('should accept an empty string for template', () => {
+      const payload: CreateAssessorDto = {
+        taskType: TaskType.TEXT,
+        reference: 'test',
+        template: '',
+        studentResponse: 'test',
+      };
+      const result = createAssessorDtoSchema.safeParse(payload);
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept an empty string for studentResponse', () => {
+      const payload: CreateAssessorDto = {
+        taskType: TaskType.TEXT,
+        reference: 'test',
+        template: 'test',
+        studentResponse: '',
+      };
+      const result = createAssessorDtoSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it('should reject payloads with extra fields', () => {

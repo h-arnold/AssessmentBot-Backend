@@ -16,6 +16,9 @@ export enum TaskType {
 export const createAssessorDtoSchema = z
   .discriminatedUnion('taskType', [
     z
+      // For text tasks, we need to allow template and student submissions to be empty strings.
+      // This is because while we'd always expect the reference task to have content, we wouldn't necessarily
+      // expect the template or student content to be populated.
       .object({
         taskType: z.literal(TaskType.TEXT),
         /**
@@ -27,15 +30,17 @@ export const createAssessorDtoSchema = z
          * The template text for TEXT taskType.
          * @example "Write a sentence about a fox."
          */
-        template: z.string().min(1),
+        template: z.string(),
         /**
          * The student's response text for TEXT taskType.
          * @example "A fox is a mammal."
          */
-        studentResponse: z.string().min(1),
+        studentResponse: z.string(),
       })
       .strict(),
     z
+      // Note that while the 'Text' type input needs to accept zero length strings as the inputs could easily be blank in the case of template or student submissions,
+      // the Table task type will always have a markdown skeleton as an absolute minimum so we'd always expect a minimum of one character.
       .object({
         taskType: z.literal(TaskType.TABLE),
         /**

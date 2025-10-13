@@ -13,8 +13,8 @@ The request schema is a discriminated union based on the `taskType` field.
 ### `TEXT` Task
 
 - `reference`: `string` (min 1 char)
-- `template`: `string` (min 1 char)
-- `studentResponse`: `string` (min 1 char)
+- `template`: `string` (may be empty)
+- `studentResponse`: `string` (may be empty)
 
 ### `TABLE` Task
 

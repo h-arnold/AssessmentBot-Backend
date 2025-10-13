@@ -240,8 +240,8 @@ export const createAssessorDtoSchema = z.discriminatedUnion('taskType', [
   z.object({
     taskType: z.literal(TaskType.TEXT),
     reference: z.string().min(1),
-    template: z.string().min(1),
-    studentResponse: z.string().min(1),
+    template: z.string(),
+    studentResponse: z.string(),
   }),
   z.object({
     taskType: z.literal(TaskType.IMAGE),
