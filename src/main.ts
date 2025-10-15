@@ -68,6 +68,6 @@ async function bootstrap(): Promise<void> {
 
   // Bind to all interfaces so remote port-forwarding (Codespaces, containers)
   // can reach the server. Some environments require an explicit host.
-  await app.listen(port, '0.0.0.0');
+  await app.listen(port);
 }
 bootstrap();

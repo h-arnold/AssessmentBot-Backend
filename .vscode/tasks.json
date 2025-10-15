@@ -7,7 +7,7 @@
       "label": "Start Dev Server",
       "type": "npm",
       "script": "start:dev",
-      "isBackground": true,
+      "isBackground": false,
       "problemMatcher": "$tsc-watch",
       "group": {
         "kind": "build",
@@ -30,8 +30,8 @@
       "type": "npm",
       "script": "test:e2e",
       "group": {
-      "kind": "test",
-      "isDefault": true
+        "kind": "test",
+        "isDefault": true
       },
       "detail": "Runs 'npm run test:e2e' to execute all end-to-end tests."
     },
