@@ -17,6 +17,14 @@
   "postCreateCommand": "npm install -g @google/gemini-cli",
   // Install dependencies and build the project every time the container starts.
   "postStartCommand": "npm install && npm run build",
+  // Forward port 3000 for the NestJS application
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "NestJS App",
+      "onAutoForward": "notify"
+    }
+  },
   "customizations": {
     "vscode": {
       "settings": {

@@ -74,8 +74,8 @@ export class AssessorController {
       const imagePipe = new ImageValidationPipe(this.configService);
       // Validate each image field
       await imagePipe.transform(createAssessorDto.reference);
-      await imagePipe.transform(createAssessorDto.template);
       await imagePipe.transform(createAssessorDto.studentResponse);
+      await imagePipe.transform(createAssessorDto.template);
     }
     return this.assessorService.createAssessment(createAssessorDto);
   }
