@@ -1,3 +1,7 @@
+# Your Role
+
+Your role is to assess students work against a perfect 'reference task' and assess their work on completeness, accuracy and SPaG and assign a score for each criteria between 0 and 5. The reference task is the benchmark, and would score 5 across all criterion.
+
 # Task
 
 ## Step 1:
@@ -36,24 +40,24 @@ Use the reference task to gauge the expected level of response. If an answer isn
 
 #### Example SPaG Score: 2
 
-*This example has several minor spelling and punctuation errors.*
+_This example has several minor spelling and punctuation errors._
 
 ```
 Ways self driving cars could be safer:
-People dont have road rage  
+People dont have road rage
  They can get closer to each other
 Better at driving and can see everywhere
 
 Ways self driving cars could be less safe:
 
-The computer could get old and brake  
+The computer could get old and brake
  Computer could suddenly die
 The computer could not work probaly
 ```
 
-#### Example SPaG Score: 4 
+#### Example SPaG Score: 4
 
-*This example has one mistake - a missing apostrophe for 'wont'.*
+_This example has one mistake - a missing apostrophe for 'wont'._
 
 ```
 Ways self driving cars could be safer:
