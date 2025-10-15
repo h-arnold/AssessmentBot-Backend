@@ -116,11 +116,17 @@ export class GeminiService extends LLMService {
 
   /**
    * Builds the model parameters for the Gemini API call.
+   * Selects the appropriate Gemini model based on payload type:
+   * - Image prompts use gemini-2.5-flash (full multimodal capabilities)
+   * - Text/Table prompts use gemini-2.5-flash-lite (optimised for text-only)
    * @param payload The LlmPayload to be sent.
    * @returns The configured ModelParams object.
    */
   private buildModelParams(payload: LlmPayload): ModelParams {
-    const modelName = 'gemini-2.5-flash-lite';
+    // Select model based on payload type
+    const modelName = this.isImagePromptPayload(payload)
+      ? 'gemini-2.5-flash' // Full model for multimodal tasks
+      : 'gemini-2.5-flash-lite'; // Lite model for text-only tasks
 
     const systemInstruction = payload.system;
     // Use temperature from payload, default to 0

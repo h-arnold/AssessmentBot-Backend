@@ -120,7 +120,7 @@ describe('GeminiService', () => {
       const result = await service.send(payload);
 
       expect(mockGetGenerativeModel).toHaveBeenCalledWith({
-        model: 'gemini-2.5-flash-lite',
+        model: 'gemini-2.5-flash',
         systemInstruction: 'system prompt',
         generationConfig: { temperature: 0 },
       });
