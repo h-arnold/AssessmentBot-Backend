@@ -66,6 +66,8 @@ async function bootstrap(): Promise<void> {
 
   app.use(json({ limit: payloadLimit }));
 
-  await app.listen(port);
+  // Bind to all interfaces so remote port-forwarding (Codespaces, containers)
+  // can reach the server. Some environments require an explicit host.
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();

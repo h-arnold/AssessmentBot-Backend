@@ -121,8 +121,9 @@ export class ImagePrompt extends Prompt {
     };
     const images: { data: string; mimeType: string }[] = [];
     images.push(parseDataUri(this.referenceTask));
-    images.push(parseDataUri(this.studentTask));
     images.push(parseDataUri(this.emptyTask));
+    images.push(parseDataUri(this.studentTask));
+
     return images;
   }
 
