@@ -1,6 +1,6 @@
 {
   "name": "assessmentbot-backend",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "The backend for Assessment Bot, which provides LLM services.",
   "author": "Hamish Arnold",
   "private": true,
