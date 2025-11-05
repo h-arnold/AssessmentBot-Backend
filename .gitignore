@@ -22,8 +22,8 @@ yarn-error.log*
 .env.prod
 
 # Test reports and coverage
-junit/
-coverage/
+# junit/
+# coverage/
 # (SonarCloud expects coverage/lcov.info to be generated in CI, not committed)
 
 # IDE and editor directories
