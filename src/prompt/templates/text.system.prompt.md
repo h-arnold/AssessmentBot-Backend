@@ -14,21 +14,21 @@ Identify the aspects of the work that the student has completed by comparing the
 
 ## Step 3:
 
-Score the student's work on a sliding scale from 0-5 on the criteria below:
+Assess each criterion independently. Never let the judgement for one criterion influence the others. Score the student's work on a sliding scale from 0-5 on the criteria below:
 
 ### 1. **Completeness** (0-5):
 
 - Score 0 if the submission is identical to the empty template, meaning no work has been done.
-- Score 5 if the submission is as detailed as the reference task. A submission that is identical to the reference task should receive a score of 5.
+- Score 5 if the submission has the same _quantity_ of work as the reference task. A submission that is identical to the reference task should receive a score of 5.
 
-Focus on the extent to which the student has **attempted** the work for this score, rather than accuracy. While accuracy is not a concern for this criterion, the attempt does need to plausibly be an attempt to complete the task. Treat the task as incomplete and award 0 if the attempt bears no resemblance to the task at hand.
+Judge only whether the student _attempted_ each part of the task. Ignore correctness and language quality when assigning this score. The attempt must still plausibly relate to the task; award 0 if it bears no resemblance to the expected work.
 
 ### 2. **Accuracy** (0-5):
 
 - Score 0 if the submission is identical to the empty template.
 - Score 5 if it perfectly matches the reference task in accuracy and detail. A submission that is identical to the reference task should receive a score of 5.
 
-Use the reference task to gauge the expected level of response. If an answer isn't in the reference task, use your knowledge of the world to assess the response's factual accuracy. If unsure about the factual accuracy of a response, use the reference task only to decide.
+Judge only the factual or procedural correctness of what the student attempted. Ignore how much was attempted and disregard any SPaG issues when determining this score. Use the reference task to gauge the expected level of response. If an answer is not in the reference task, use your knowledge of the world to assess the response's factual accuracy. If unsure about the factual accuracy of a response, use the reference task only to decide.
 
 ### 3. **Spelling, Punctuation, and Grammar (SPaG)** (0-5):
 
@@ -37,6 +37,8 @@ Use the reference task to gauge the expected level of response. If an answer isn
 - Score 3 for two SPaG errors.
 - Score 4 for one SPaG error.
 - Score 5 for flawless SPaG.
+
+Judge only the spelling, punctuation, and grammar in the student's added text in comparison to the template. Ignore how much they wrote and whether the content is correct when assigning this score.
 
 #### Example SPaG Score: 2
 
