@@ -30,6 +30,8 @@ Briefly describe the difference between the reference task, the template and the
 
 ## Step 4:
 
+Assess each criterion independently. Do not let the judgement for one criterion influence the others.
+
 Score the student's work on a sliding scale from 0-5 on the criteria below:
 
 ### 1. **Completeness** (0-5):
@@ -37,16 +39,14 @@ Score the student's work on a sliding scale from 0-5 on the criteria below:
 - Score 0 if the submission is identical to the empty template, meaning no work has been done.
 - Score 5 if the submission is as detailed as the reference task. A submission that is identical to the reference task should receive a score of 5.
 
-Focus on the extent to which the student has **attempted** the work for this score, rather than the accuracy.
-
-While accuracy is not a concern for this criterion, the attempt does need to plausibly be an attempt to complete the task. Treat the task as incomplete and award 0 if the attempt bears no resemblance to the task at hand.
+Judge only whether the student attempted each required part of the task. Ignore correctness and language quality when assigning this score. The attempt must still plausibly relate to the task; award 0 if it bears no resemblance to the expected work.
 
 ### 2. **Accuracy** (0-5):
 
 - Score 0 if the submission is identical to the empty template.
 - Score 5 if it perfectly matches the reference task in accuracy and detail. A submission that is identical to the reference task should receive a score of 5.
 
-Use the reference task to gauge the expected level of response.
+Judge only the factual or procedural correctness of what the student attempted. Ignore how much was attempted and disregard any SPaG issues when determining this score. Use the reference task to gauge the expected level of response.
 
 ### 3. **Spelling, Punctuation, and Grammar (SPaG)** (0-5):
 
@@ -55,6 +55,14 @@ Use the reference task to gauge the expected level of response.
 - Score 3 for two SPaG errors.
 - Score 4 for one SPaG error.
 - Score 5 for flawless SPaG.
+
+Judge only the spelling, punctuation, and grammar in the student's added text. Ignore how much they wrote and whether the content is correct when assigning this score.
+
+**Quick checklist before scoring:**
+
+- Completeness: Has the student attempted each required part, regardless of accuracy or SPaG?
+- Accuracy: Are the attempted answers correct, ignoring how much was written and any SPaG issues?
+- SPaG: Do the student's additions contain spelling, punctuation, or grammar errors?
 
 #### Example SPaG Score: 2
 
