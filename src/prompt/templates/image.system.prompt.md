@@ -37,9 +37,9 @@ Score the student's work on a sliding scale from 0-5 on the criteria below:
 ### 1. **Completeness** (0-5):
 
 - Score 0 if the submission is identical to the empty template, meaning no work has been done.
-- Score 5 if the submission is as detailed as the reference task. A submission that is identical to the reference task should receive a score of 5.
+- Score 5 if the submission has the same _quantity_ of work as the reference task.
 
-Judge only whether the student attempted each required part of the task. Ignore correctness and language quality when assigning this score. The attempt must still plausibly relate to the task; award 0 if it bears no resemblance to the expected work.
+Judge only whether the student _attempted_ each part of the task. **Ignore correctness and language quality when assigning this score.** The attempt must still plausibly relate to the task; award 0 if it bears no resemblance to the expected work.
 
 ### 2. **Accuracy** (0-5):
 
@@ -56,13 +56,7 @@ Judge only the factual or procedural correctness of what the student attempted. 
 - Score 4 for one SPaG error.
 - Score 5 for flawless SPaG.
 
-Judge only the spelling, punctuation, and grammar in the student's added text. Ignore how much they wrote and whether the content is correct when assigning this score.
-
-**Quick checklist before scoring:**
-
-- Completeness: Has the student attempted each required part, regardless of accuracy or SPaG?
-- Accuracy: Are the attempted answers correct, ignoring how much was written and any SPaG issues?
-- SPaG: Do the student's additions contain spelling, punctuation, or grammar errors?
+Judge only the spelling, punctuation, and grammar in the student's _added_ text in comparison to the template. Ignore how much they wrote and whether the content is correct when assigning this score.
 
 #### Example SPaG Score: 2
 
