@@ -49,7 +49,7 @@
     "pino-http": "^10.5.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "validator": "^13.15.15",
+    "validator": "^13.15.23",
     "zod": "^4.0.8"
   },
   "devDependencies": {
