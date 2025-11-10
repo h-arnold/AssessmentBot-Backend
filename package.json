@@ -29,7 +29,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@google/genai": "^1.9.0",
+    "@google/genai": "^1.29.0",
     "@google/generative-ai": "^0.24.1",
     "@nestjs/common": "^11.1.5",
     "@nestjs/config": "^4.0.2",
