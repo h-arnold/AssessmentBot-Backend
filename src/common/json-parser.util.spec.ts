@@ -5,6 +5,7 @@ import { JsonParserUtil } from './json-parser.util';
 // Use a real Logger and spy on its methods
 let logger: Logger;
 let logSpy: jest.SpyInstance;
+let debugSpy: jest.SpyInstance;
 let errorSpy: jest.SpyInstance;
 
 describe('JsonParserUtil', () => {
@@ -13,6 +14,7 @@ describe('JsonParserUtil', () => {
   beforeEach(() => {
     logger = new Logger('JsonParserUtil');
     logSpy = jest.spyOn(logger, 'log').mockImplementation(() => {});
+    debugSpy = jest.spyOn(logger, 'debug').mockImplementation(() => {});
     errorSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
     util = new JsonParserUtil(logger);
     jest.clearAllMocks();
@@ -61,5 +63,18 @@ describe('JsonParserUtil', () => {
       'Here is the JSON:\n```json\n{"user": {"id": 1, "name": "John Doe"}}\n```\nThanks!';
     const expected = { user: { id: 1, name: 'John Doe' } };
     expect(util.parse(embeddedJson)).toEqual(expected);
+  });
+
+  it('should log repaired JSON at debug level to prevent PII leakage in production', () => {
+    const malformedJson = '{"name": "test", "age": 30,}'; // Malformed JSON with trailing comma
+    util.parse(malformedJson);
+
+    // Verify that repaired JSON is logged at debug level, not info level
+    expect(debugSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Repaired JSON for debug:'),
+    );
+    expect(logSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining('Repaired JSON'),
+    );
   });
 });
