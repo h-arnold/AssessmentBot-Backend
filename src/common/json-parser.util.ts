@@ -71,7 +71,8 @@ export class JsonParserUtil {
       this.logger.debug(`Repaired JSON for debug: ${repairedJsonString}`);
       return parsed;
     } catch (error) {
-      this.logger.error(`JSON parsing failed for input: ${jsonString}`, error);
+      this.logger.debug(`JSON parsing failed for input: ${jsonString}`, error);
+      this.logger.error('JSON parsing failed due to malformed or irreparable input.', error);
       throw new BadRequestException(
         'Malformed or irreparable JSON string provided.',
       );
