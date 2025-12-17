@@ -10,10 +10,10 @@
     "ghcr.io/devcontainers/features/github-cli:1": {},
     // Ensure the `file` (libmagic) utility is available for tests and runtime tools that rely on it
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "22",
-      // We need java for the SonarQube VSCode Extension
-      "ghcr.io/devcontainers/features/java:1": {}
-    }
+      "version": "22"
+    },
+    // We need java for the SonarQube VSCode Extension
+    "ghcr.io/devcontainers/features/java:1": {}
   },
   // Install Gemini CLI globally when the container is created.
   "postCreateCommand": "npm install -g @google/gemini-cli",
