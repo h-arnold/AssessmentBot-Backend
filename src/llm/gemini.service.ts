@@ -8,7 +8,7 @@ import {
   LlmPayload,
   StringPromptPayload,
 } from './llm.service.interface';
-import { LlmResponse, LlmResponseSchema } from './types';
+import { LlmResponse, LlmResponseSchema, GeminiModelParams } from './types';
 import { JsonParserUtil } from '../common/json-parser.util';
 import { ConfigService } from '../config/config.service';
 
@@ -122,7 +122,7 @@ export class GeminiService extends LLMService {
    * @param payload The LlmPayload to be sent.
    * @returns The configured ModelParams object.
    */
-  private buildModelParams(payload: LlmPayload): ModelParams {
+  private buildModelParams(payload: LlmPayload): GeminiModelParams {
     // Select model based on payload type
     const modelName = this.isImagePromptPayload(payload)
       ? 'gemini-2.5-flash' // Full model for multimodal tasks
@@ -137,13 +137,13 @@ export class GeminiService extends LLMService {
     // disables any additional thinking budget (per docs: https://ai.google.dev/gemini-api/docs/thinking)
     // We cast to ModelParams (via unknown) to avoid type errors if the SDK typings
     // do not yet include the `thinking` or `systemInstruction` fields.
-    const params = {
+    const params: GeminiModelParams = {
       model: modelName,
       systemInstruction,
       generationConfig: { temperature },
       thinking: { budget: 0 },
     };
-    return params as unknown as ModelParams;
+    return params;
   }
 
   /**

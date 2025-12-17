@@ -1,3 +1,4 @@
+import type { ModelParams } from '@google/generative-ai';
 import { z } from 'zod';
 
 /**
@@ -39,6 +40,11 @@ export const LlmResponseSchema = z.object({
   accuracy: AssessmentCriterionSchema,
   spag: AssessmentCriterionSchema,
 });
+
+export type GeminiModelParams = ModelParams & {
+  thinking?: { budget: number };
+  systemInstruction?: string;
+};
 
 /**
  * Type representing a complete LLM assessment response.
