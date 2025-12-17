@@ -73,7 +73,7 @@ Implements Google Gemini-specific functionality:
 **Features:**
 
 - **Automatic Model Selection:** Chooses optimal model based on payload type
-  - `gemini-2.0-flash-lite` for text-only requests
+  - `gemini-2.5-flash-lite` for text-only requests
   - `gemini-2.5-flash` for multimodal (image) requests
 - **Multimodal Support:** Handles text and image inputs seamlessly
 - **JSON Response Parsing:** Robust JSON extraction with repair capabilities
@@ -91,6 +91,8 @@ private buildModelParams(payload: LlmPayload): ModelParams {
     model: modelName,
     systemInstruction: payload.system,
     generationConfig: { temperature: payload.temperature ?? 0 },
+    // Disable additional thinking budget as per Gemini guidance
+    thinking: { budget: 0 },
   };
 }
 ```
