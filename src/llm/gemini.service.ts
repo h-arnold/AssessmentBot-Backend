@@ -133,11 +133,17 @@ export class GeminiService extends LLMService {
     const temperature =
       typeof payload.temperature === 'number' ? payload.temperature : 0;
 
-    return {
+    // The Gemini API supports a "thinking" budget parameter. Setting it to 0
+    // disables any additional thinking budget (per docs: https://ai.google.dev/gemini-api/docs/thinking)
+    // We cast to ModelParams (via unknown) to avoid type errors if the SDK typings
+    // do not yet include the `thinking` or `systemInstruction` fields.
+    const params = {
       model: modelName,
       systemInstruction,
       generationConfig: { temperature },
+      thinking: { budget: 0 },
     };
+    return params as unknown as ModelParams;
   }
 
   /**

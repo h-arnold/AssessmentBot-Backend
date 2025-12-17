@@ -11,6 +11,7 @@ import {
   StringPromptPayload,
 } from './llm.service.interface';
 import { ResourceExhaustedError } from './resource-exhausted.error';
+import { LlmResponse } from './types';
 import { JsonParserUtil } from '../common/json-parser.util';
 import { ConfigService } from '../config/config.service';
 
@@ -108,6 +109,7 @@ describe('GeminiService', () => {
         model: 'gemini-2.5-flash-lite',
         systemInstruction: 'system prompt',
         generationConfig: { temperature: 0 },
+        thinking: { budget: 0 },
       });
       expect(mockGenerateContent).toHaveBeenCalledWith(['test prompt']);
       expectValidResponse(result, 1);
@@ -123,6 +125,7 @@ describe('GeminiService', () => {
         model: 'gemini-2.5-flash',
         systemInstruction: 'system prompt',
         generationConfig: { temperature: 0 },
+        thinking: { budget: 0 },
       });
       expect(mockGenerateContent).toHaveBeenCalledWith([
         'Test message',
