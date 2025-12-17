@@ -68,10 +68,11 @@ export class JsonParserUtil {
         throw new Error('Parsed JSON is not a structured object or array.');
       }
 
-      this.logger.log(`Repaired JSON for debug: ${repairedJsonString}`);
+      this.logger.debug(`Repaired JSON for debug: ${repairedJsonString}`);
       return parsed;
     } catch (error) {
-      this.logger.error(`JSON parsing failed for input: ${jsonString}`, error);
+      this.logger.debug(`JSON parsing failed for input: ${jsonString}`, error);
+      this.logger.error('JSON parsing failed due to malformed or irreparable input.', error);
       throw new BadRequestException(
         'Malformed or irreparable JSON string provided.',
       );
