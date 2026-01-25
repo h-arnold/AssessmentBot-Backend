@@ -49,6 +49,13 @@ const ARG_ALIASES: Record<string, keyof DelegateOptions> = {
   '--max-items': 'maxItems',
 };
 
+const BOOLEAN_OPTIONS = new Set<keyof DelegateOptions>([
+  'network',
+  'verbose',
+  'structured',
+]);
+const REASONING_LEVELS = new Set(['minimal', 'low', 'medium', 'high', 'xhigh']);
+
 function parseBoolean(value: string): boolean | undefined {
   if (value === 'true') {
     return true;
@@ -57,6 +64,10 @@ function parseBoolean(value: string): boolean | undefined {
     return false;
   }
   return undefined;
+}
+
+function isOption(value: string | undefined): boolean {
+  return Boolean(value && value.startsWith('--') && value in ARG_ALIASES);
 }
 
 function parseArgs(argv: string[]): DelegateOptions {
@@ -68,23 +79,28 @@ function parseArgs(argv: string[]): DelegateOptions {
       continue;
     }
     const value = argv[index + 1];
-    if (!value) {
+    if (BOOLEAN_OPTIONS.has(key)) {
+      if (value && !isOption(value)) {
+        const parsed = parseBoolean(value);
+        if (parsed !== undefined) {
+          options[key] = parsed;
+          index += 1;
+          continue;
+        }
+      }
+      options[key] = true;
       continue;
     }
-    if (key === 'network' || key === 'verbose' || key === 'structured') {
-      const parsed = parseBoolean(value);
-      if (parsed !== undefined) {
+    if (!value || isOption(value)) {
+      continue;
+    }
+    if (key === 'maxItems') {
+      const parsed = Number.parseInt(value, 10);
+      if (!Number.isNaN(parsed)) {
         options[key] = parsed;
       }
     } else {
-      if (key === 'maxItems') {
-        const parsed = Number.parseInt(value, 10);
-        if (!Number.isNaN(parsed)) {
-          options[key] = parsed;
-        }
-      } else {
-        options[key] = value;
-      }
+      options[key] = value;
     }
     index += 1;
   }
@@ -96,7 +112,10 @@ function resolvePromptTemplate(role: string): string {
   const templatePath = path.join(__dirname, 'agent-prompts', fileName);
   try {
     return readFileSync(templatePath, 'utf-8').trim();
-  } catch {
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.error(`Error reading prompt template for role "${role}":`, error);
+    }
     return '';
   }
 }
@@ -133,10 +152,24 @@ async function run(): Promise<void> {
 
   let outputSchema: unknown | undefined;
   if (options.schemaFile) {
-    const schemaPath = path.resolve(options.schemaFile);
-    outputSchema = JSON.parse(readFileSync(schemaPath, 'utf-8'));
+    try {
+      const schemaPath = path.resolve(options.schemaFile);
+      outputSchema = JSON.parse(readFileSync(schemaPath, 'utf-8'));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Failed to read or parse schema file at ${options.schemaFile}: ${message}`,
+      );
+    }
   } else if (options.structured) {
     outputSchema = defaultSchema;
+  }
+  if (options.reasoning && !REASONING_LEVELS.has(options.reasoning)) {
+    throw new Error(
+      `Invalid --reasoning value "${options.reasoning}". Expected one of: ${[
+        ...REASONING_LEVELS,
+      ].join(', ')}.`,
+    );
   }
 
   const codex = new Codex();

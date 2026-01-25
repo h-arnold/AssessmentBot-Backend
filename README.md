@@ -68,7 +68,7 @@ npm run dev:delegate -- --role implementation --task "Implement the new endpoint
 
 Common flags:
 
-- `--role` (implementation, testing, review)
+- `--role` (implementation, testing, review, documentation)
 - `--task` (required)
 - `--instructions` (optional)
 - `--sandbox`, `--approval`, `--network`, `--web-search` (permissions)
