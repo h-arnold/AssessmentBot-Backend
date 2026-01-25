@@ -3,6 +3,7 @@
 This document provides guidance for interacting with the Assessment Bot backend codebase.
 
 **IMPORTANT: This project uses British English. Ensure all code, comments, documentation, and commit messages use British English spellings (e.g., 'authorise', 'colour', 'centre').**
+**IMPORTANT: Do not disable or override any quality gate (including linter rules) without explicit authorisation.**
 
 ## Core Principles
 
@@ -85,6 +86,7 @@ By following this pattern, the application remains decoupled from the specific l
 
 Use the `scripts/codex-delegate.ts` CLI to delegate focused work to sub-agents.
 Prefer short, well-scoped tasks and provide clear acceptance criteria.
+Default sub-agent timeout is 10 minutes unless a task explicitly needs more or less time.
 Refer to `docs/` for detailed guidance on code style, testing, environment configuration, and prompt templates:
 
 - Code style: `docs/development/code-style.md`

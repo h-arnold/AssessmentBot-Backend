@@ -16,7 +16,7 @@
     "start:debug": "nest start --debug --watch",
     "debug": "node --inspect-brk ./node_modules/.bin/nest start",
     "start:prod": "NODE_ENV=production node dist/src/main.js",
-    "dev:delegate": "ts-node --esm scripts/codex-delegate.ts",
+    "dev:delegate": "NODE_OPTIONS=--experimental-specifier-resolution=node ts-node --esm scripts/codex-delegate.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:british": "./scripts/check-british-english.sh",
@@ -24,7 +24,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "npm run build && jest --config ./jest-e2e.config.cjs --runInBand",
+    "test:e2e": "npm run test:e2e:mocked",
+    "test:e2e:mocked": "npm run build && jest --config ./jest-e2e.mocked.config.cjs --runInBand",
+    "test:e2e:live": "npm run build && jest --config ./jest-e2e.live.config.cjs --runInBand",
     "test:prod": "npm run build && jest --config ./jest-prod.config.cjs --runInBand",
     "verify:assessor": "ts-node scripts/verify-assessor.ts",
     "prepare": "husky"
@@ -32,6 +34,7 @@
   "dependencies": {
     "@google/genai": "^1.9.0",
     "@google/generative-ai": "^0.24.1",
+    "@modelcontextprotocol/sdk": "^1.25.3",
     "@nestjs/common": "^11.1.5",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.5",

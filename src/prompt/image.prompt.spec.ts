@@ -119,4 +119,47 @@ describe('ImagePrompt', () => {
       'base64data',
     );
   });
+
+  it('should build images from data URIs when no files are provided', async () => {
+    const inputs = {
+      referenceTask: 'data:image/png;base64,REFDATA',
+      studentTask: 'data:image/png;base64,STUDENTDATA',
+      emptyTask: 'data:image/png;base64,EMPTYDATA',
+    };
+
+    const prompt = new ImagePrompt(inputs, logger);
+    const message = (await prompt.buildMessage()) as ImagePromptPayload;
+
+    expect(message.images).toEqual([
+      { data: 'REFDATA', mimeType: 'image/png' },
+      { data: 'EMPTYDATA', mimeType: 'image/png' },
+      { data: 'STUDENTDATA', mimeType: 'image/png' },
+    ]);
+  });
+
+  it('should throw when a data URI is malformed', async () => {
+    const inputs = {
+      referenceTask: 'data:image/png;base64,REFDATA',
+      studentTask: 'not-a-data-uri',
+      emptyTask: 'data:image/png;base64,EMPTYDATA',
+    };
+
+    const prompt = new ImagePrompt(inputs, logger);
+
+    await expect(prompt.buildMessage()).rejects.toThrow('Invalid Data URI');
+  });
+
+  it('should reject unauthorised absolute paths', async () => {
+    process.env.ALLOWED_IMAGE_MIME_TYPES = 'image/png';
+    const inputs = {
+      referenceTask: 'Reference text',
+      studentTask: 'Student text',
+      emptyTask: 'Empty text',
+    };
+    const prompt = new ImagePrompt(inputs, logger, []);
+
+    await expect(
+      prompt.readImageFile('/etc/passwd', 'image/png'),
+    ).rejects.toThrow('Unauthorised file path');
+  });
 });

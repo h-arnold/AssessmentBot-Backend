@@ -1,6 +1,6 @@
 # Codex Delegation
 
-Use the Codex delegation runner to dispatch focused sub-agent tasks while keeping the main context small. It wraps `@openai/codex-sdk` and streams concise output by default.
+Use the Codex delegation runner to dispatch focused sub-agent tasks while keeping the main context small. It wraps `@openai/codex-sdk` and streams concise output by default. When logging is enabled (via `--verbose` or `--log-file`), it also prints periodic progress snapshots from the log file.
 
 ## Quick Start
 
@@ -25,7 +25,7 @@ Roles are defined by prompt templates in `scripts/agent-prompts/*.md`. Use `--ro
 - Defaults to `sandbox=danger-full-access`, `approval=never`, `network=true`, and `web-search=live`.
 - Prints a short summary of commands, file changes, tool calls, and web searches.
 - Use `--max-items` to cap the number of items shown per section.
-- Use `--verbose` to stream all events and write the raw log to `codex-delegate.log` (or `--log-file`).
+- Use `--verbose` to stream all events and write the raw log to `codex-delegate.log` (or `--log-file`). While logging is active, the runner prints progress updates every minute, showing the last five log lines.
 - Use `--structured` for a built-in JSON schema, or `--schema-file` for a custom schema.
 
 ## Suggested Workflow

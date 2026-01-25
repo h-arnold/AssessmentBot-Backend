@@ -48,7 +48,7 @@ import { ConfigService } from './config/config.service';
  * - JSON payload limit is retrieved from the `ConfigService`
  * - Global exception handling is configured via AppModule, not here directly
  */
-async function bootstrap(): Promise<void> {
+export async function bootstrap(): Promise<void> {
   const isE2ETesting = process.env.E2E_TESTING === 'true';
   const app = await NestFactory.create(AppModule, {
     bufferLogs: !isE2ETesting, // Disable bufferLogs during E2E tests
@@ -70,4 +70,7 @@ async function bootstrap(): Promise<void> {
   // can reach the server. Some environments require an explicit host.
   await app.listen(port, '0.0.0.0');
 }
-bootstrap();
+
+if (process.env.NODE_ENV !== 'test') {
+  void bootstrap();
+}

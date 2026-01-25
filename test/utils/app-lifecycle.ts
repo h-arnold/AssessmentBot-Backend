@@ -66,6 +66,7 @@ export async function startApp(
     AUTHENTICATED_THROTTLER_LIMIT: '12',
     LLM_BACKOFF_BASE_MS: '2000', // Increased backoff for rate limiting (2 seconds instead of 1)
     LLM_MAX_RETRIES: '5', // Increased retries for rate limiting (5 instead of 3)
+    LOG_LEVEL: 'debug',
   };
 
   // Merge environment variables: process.env < defaults < .test.env < overrides
@@ -75,6 +76,22 @@ export async function startApp(
     ...testEnvConfig,
     ...envOverrides,
   };
+
+  if (
+    process.env.E2E_MOCK_LLM === 'true' ||
+    process.env.E2E_MOCK_LLM === 'false'
+  ) {
+    testEnv.E2E_MOCK_LLM = process.env.E2E_MOCK_LLM;
+  }
+
+  if (testEnv.E2E_MOCK_LLM === 'true') {
+    const shimPath = path.join(__dirname, 'llm-http-shim.cjs');
+    const existingNodeOptions = testEnv.NODE_OPTIONS ?? '';
+    const shimOption = `--require "${shimPath}"`;
+    testEnv.NODE_OPTIONS = existingNodeOptions
+      ? `${existingNodeOptions} ${shimOption}`
+      : shimOption;
+  }
 
   const appProcess = spawn('node', [mainJsPath], {
     cwd: path.join(__dirname, '..', '..'),

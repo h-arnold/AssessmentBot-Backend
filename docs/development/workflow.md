@@ -48,7 +48,7 @@ npm install
 3. For testing, also copy the test environment:
    ```bash
    cp .test.env.example .test.env
-   # Add your GEMINI_API_KEY to .test.env as well
+   # Add your GEMINI_API_KEY to .test.env only if you plan to run live E2E tests
    ```
 
 ### 3. Verify Setup
@@ -115,6 +115,9 @@ The development server will:
 
    # Run E2E tests
    npm run test:e2e
+
+   # Run live E2E tests (real Gemini API calls)
+   npm run test:e2e:live
 
    # Run with coverage
    npm run test:cov
@@ -287,7 +290,7 @@ All code must pass:
 
 - **TypeScript compilation** (`npm run build`)
 - **Unit tests** (`npm test`)
-- **E2E tests** (`npm run test:e2e`)
+- **E2E tests** (`npm run test:e2e`, mocked by default)
 - **Linting** (`npm run lint`)
 - **British English compliance** (`npm run lint:british`)
 
