@@ -1,3 +1,4 @@
+import { OutputEvent } from './codex-delegate-events.ts';
 import {
   DEFAULT_MAX_ITEM_CHARS,
   formatTurnEvent,
@@ -36,37 +37,6 @@ type OutputResult = {
   finalResponse?: string;
   runError?: Error;
 };
-
-type ItemCompletedEvent = {
-  type: 'item.completed';
-  item:
-    | { type: 'agent_message'; text: string }
-    | { type: 'command_execution'; command: string }
-    | { type: 'file_change'; changes?: Array<{ kind: string; path: string }> }
-    | { type: 'mcp_tool_call'; server: string; tool: string }
-    | { type: 'web_search'; query: string };
-};
-
-type TurnCompletedEvent = {
-  type: 'turn.completed';
-  usage?: { input_tokens?: number; output_tokens?: number };
-};
-
-type TurnFailedEvent = {
-  type: 'turn.failed';
-  error?: { message?: string };
-};
-
-type TurnStartedEvent = { type: 'turn.started' };
-
-type TurnErrorEvent = { type: 'error'; message?: string };
-
-type OutputEvent =
-  | ItemCompletedEvent
-  | TurnCompletedEvent
-  | TurnFailedEvent
-  | TurnStartedEvent
-  | TurnErrorEvent;
 
 function shouldEmit(count: number, maxItems: number): boolean {
   return count < maxItems;
@@ -121,94 +91,101 @@ export function createDelegateOutputEmitter(
   };
 
   const handleEvent = (event: OutputEvent): OutputResult => {
-    if (event.type === 'turn.started' || event.type === 'turn.completed') {
-      const summary = formatTurnEvent(event);
-      if (summary && shouldEmit(state.counts.turnEvents, maxItems)) {
-        writeListItem(state, 'turnEvents', 'Turn events', summary, write);
-        state.counts.turnEvents += 1;
-      }
-      return {};
-    }
-
-    if (event.type === 'turn.failed') {
-      const summary = formatTurnEvent(event);
-      if (summary && shouldEmit(state.counts.turnEvents, maxItems)) {
-        writeListItem(state, 'turnEvents', 'Turn events', summary, write);
-        state.counts.turnEvents += 1;
-      }
-      return { runError: new Error(event.error?.message ?? 'Unknown error') };
-    }
-
-    if (event.type === 'error') {
-      const summary = formatTurnEvent(event);
-      if (summary && shouldEmit(state.counts.turnEvents, maxItems)) {
-        writeListItem(state, 'turnEvents', 'Turn events', summary, write);
-        state.counts.turnEvents += 1;
-      }
-      return { runError: new Error(event.message ?? 'Unknown error') };
-    }
-
-    if (event.type === 'item.completed') {
-      const item = event.item;
-      if (item.type === 'agent_message') {
-        return { finalResponse: item.text };
-      }
-      if (!options.verbose && item.type === 'command_execution') {
-        if (shouldEmit(state.counts.commands, maxItems)) {
-          writeListItem(
-            state,
-            'commands',
-            'Commands',
-            truncateOutputItem(item.command, DEFAULT_MAX_ITEM_CHARS),
-            write,
-          );
-          state.counts.commands += 1;
+    switch (event.type) {
+      case 'turn.started':
+      case 'turn.completed': {
+        const summary = formatTurnEvent(event);
+        if (summary && shouldEmit(state.counts.turnEvents, maxItems)) {
+          writeListItem(state, 'turnEvents', 'Turn events', summary, write);
+          state.counts.turnEvents += 1;
         }
+        return {};
       }
-      if (!options.verbose && item.type === 'file_change') {
-        const changes = Array.isArray(item.changes) ? item.changes : [];
-        for (const change of changes) {
-          if (!shouldEmit(state.counts.fileChanges, maxItems)) {
+      case 'turn.failed': {
+        const summary = formatTurnEvent(event);
+        if (summary && shouldEmit(state.counts.turnEvents, maxItems)) {
+          writeListItem(state, 'turnEvents', 'Turn events', summary, write);
+          state.counts.turnEvents += 1;
+        }
+        return { runError: new Error(event.error?.message ?? 'Unknown error') };
+      }
+      case 'error': {
+        const summary = formatTurnEvent(event);
+        if (summary && shouldEmit(state.counts.turnEvents, maxItems)) {
+          writeListItem(state, 'turnEvents', 'Turn events', summary, write);
+          state.counts.turnEvents += 1;
+        }
+        return { runError: new Error(event.message ?? 'Unknown error') };
+      }
+      case 'item.completed': {
+        const item = event.item;
+        if (item.type === 'agent_message') {
+          return { finalResponse: item.text };
+        }
+        if (options.verbose) {
+          return {};
+        }
+        switch (item.type) {
+          case 'command_execution':
+            if (shouldEmit(state.counts.commands, maxItems)) {
+              writeListItem(
+                state,
+                'commands',
+                'Commands',
+                truncateOutputItem(item.command, DEFAULT_MAX_ITEM_CHARS),
+                write,
+              );
+              state.counts.commands += 1;
+            }
+            break;
+          case 'file_change': {
+            const changes = item.changes ?? [];
+            for (const change of changes) {
+              if (!shouldEmit(state.counts.fileChanges, maxItems)) {
+                break;
+              }
+              const entry = truncateOutputItem(
+                `${change.kind}: ${change.path}`,
+                DEFAULT_MAX_ITEM_CHARS,
+              );
+              writeListItem(state, 'fileChanges', 'File changes', entry, write);
+              state.counts.fileChanges += 1;
+            }
             break;
           }
-          const entry = truncateOutputItem(
-            `${change.kind}: ${change.path}`,
-            DEFAULT_MAX_ITEM_CHARS,
-          );
-          writeListItem(state, 'fileChanges', 'File changes', entry, write);
-          state.counts.fileChanges += 1;
+          case 'mcp_tool_call':
+            if (shouldEmit(state.counts.toolCalls, maxItems)) {
+              writeListItem(
+                state,
+                'toolCalls',
+                'Tool calls',
+                truncateOutputItem(
+                  `${item.server}:${item.tool}`,
+                  DEFAULT_MAX_ITEM_CHARS,
+                ),
+                write,
+              );
+              state.counts.toolCalls += 1;
+            }
+            break;
+          case 'web_search':
+            if (shouldEmit(state.counts.webQueries, maxItems)) {
+              writeListItem(
+                state,
+                'webQueries',
+                'Web searches',
+                truncateOutputItem(item.query, DEFAULT_MAX_ITEM_CHARS),
+                write,
+              );
+              state.counts.webQueries += 1;
+            }
+            break;
         }
+        return {};
       }
-      if (!options.verbose && item.type === 'mcp_tool_call') {
-        if (shouldEmit(state.counts.toolCalls, maxItems)) {
-          writeListItem(
-            state,
-            'toolCalls',
-            'Tool calls',
-            truncateOutputItem(
-              `${item.server}:${item.tool}`,
-              DEFAULT_MAX_ITEM_CHARS,
-            ),
-            write,
-          );
-          state.counts.toolCalls += 1;
-        }
-      }
-      if (!options.verbose && item.type === 'web_search') {
-        if (shouldEmit(state.counts.webQueries, maxItems)) {
-          writeListItem(
-            state,
-            'webQueries',
-            'Web searches',
-            truncateOutputItem(item.query, DEFAULT_MAX_ITEM_CHARS),
-            write,
-          );
-          state.counts.webQueries += 1;
-        }
-      }
+      default:
+        return {};
     }
-
-    return {};
   };
 
   return { handleEvent, state };

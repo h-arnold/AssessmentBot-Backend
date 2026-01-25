@@ -1,4 +1,5 @@
-import { appendFileSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { appendFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -246,7 +247,7 @@ async function run(): Promise<void> {
 
   for await (const event of streamed.events) {
     if (options.verbose) {
-      appendFileSync(logPath, JSON.stringify(event) + '\n');
+      await appendFile(logPath, JSON.stringify(event) + '\n');
     }
     const result = emitter.handleEvent(event);
     if (result.finalResponse) {
@@ -258,6 +259,9 @@ async function run(): Promise<void> {
     }
   }
 
+  if (runError) {
+    throw runError;
+  }
   if (finalResponse) {
     if (outputSchema) {
       try {
@@ -269,9 +273,6 @@ async function run(): Promise<void> {
     } else {
       process.stdout.write(finalResponse + '\n');
     }
-  }
-  if (runError) {
-    throw runError;
   }
 }
 
