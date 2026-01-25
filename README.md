@@ -73,7 +73,11 @@ Common flags:
 - `--instructions` (optional)
 - `--sandbox`, `--approval`, `--network`, `--web-search` (permissions)
 - `--structured`, `--schema-file` (structured output)
-- `--verbose` (stream event output)
+- `--verbose`, `--log-file`, `--max-items` (streamed output controls)
+
+By default, the runner streams concise summaries (turn events, commands, file changes, tool calls, web searches).
+Use `--verbose` to log full event payloads to `codex-delegate.log` and suppress the summaries. See
+`docs/development/delegation.md` for details.
 
 ### 2. Using Node.js
 

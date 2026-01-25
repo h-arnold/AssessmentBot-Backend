@@ -17,6 +17,7 @@ Welcome to the comprehensive documentation for the AssessmentBot-Backend project
 - [Debugging Guide](development/debugging.md) - Debugging techniques and tools
 - [Code Style Guide](development/code-style.md) - Coding standards and conventions
 - [Git Workflow](development/git-workflow.md) - Branching strategy and commit conventions
+- [Codex Delegation](development/delegation.md) - Running sub-agents and streamed output controls
 
 ### 🏗️ Architecture & Design
 

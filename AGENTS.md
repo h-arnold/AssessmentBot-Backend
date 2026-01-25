@@ -59,6 +59,7 @@ Suggested workflow:
 2. Run `--role testing` to validate changes.
 3. Run `--role review` to assess risks and improvements.
 4. Run `--role documentation` for any non-trivial change to keep docs accurate.
+5. Continue the delegation workflow until tests pass and review feedback is clean; do not return early with failing checks.
 
 ## Common commands
 

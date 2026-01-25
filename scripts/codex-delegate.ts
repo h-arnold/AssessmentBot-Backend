@@ -1,8 +1,11 @@
-import { appendFileSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { appendFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { Codex } from '@openai/codex-sdk';
+
+import { createDelegateOutputEmitter } from './codex-delegate-output.ts';
 
 type DelegateOptions = {
   role: string;
@@ -30,6 +33,7 @@ const DEFAULT_OPTIONS: DelegateOptions = {
   approval: 'never',
   network: true,
   webSearch: 'live',
+  verbose: false,
 };
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -231,73 +235,33 @@ async function run(): Promise<void> {
 
   const prompt = buildPrompt(options);
   const streamed = await thread.runStreamed(prompt, { outputSchema });
-  const commands: string[] = [];
-  const fileChanges: string[] = [];
-  const toolCalls: string[] = [];
-  const webQueries: string[] = [];
   let finalResponse = '';
-  let usageSummary = '';
+  let runError: Error | undefined;
 
   const logPath =
     options.logFile ?? path.join(process.cwd(), 'codex-delegate.log');
 
+  const emitter = createDelegateOutputEmitter(options, (chunk) => {
+    process.stdout.write(chunk);
+  });
+
   for await (const event of streamed.events) {
     if (options.verbose) {
-      appendFileSync(logPath, JSON.stringify(event) + '\n');
+      await appendFile(logPath, JSON.stringify(event) + '\n');
     }
-    if (event.type === 'item.completed') {
-      const item = event.item;
-      if (item.type === 'agent_message') {
-        finalResponse = item.text;
-      }
-      if (item.type === 'command_execution') {
-        commands.push(item.command);
-      }
-      if (item.type === 'file_change') {
-        const files = item.changes.map(
-          (change: { kind: string; path: string }) =>
-            `${change.kind}: ${change.path}`,
-        );
-        fileChanges.push(...files);
-      }
-      if (item.type === 'mcp_tool_call') {
-        toolCalls.push(`${item.server}:${item.tool}`);
-      }
-      if (item.type === 'web_search') {
-        webQueries.push(item.query);
-      }
+    const result = emitter.handleEvent(event);
+    if (result.finalResponse) {
+      finalResponse = result.finalResponse;
     }
-    if (event.type === 'turn.completed') {
-      usageSummary = `Usage: input ${event.usage.input_tokens}, output ${event.usage.output_tokens}`;
-    }
-    if (event.type === 'turn.failed') {
-      throw new Error(event.error.message);
-    }
-    if (event.type === 'error') {
-      throw new Error(event.message);
+    if (result.runError) {
+      runError = result.runError;
+      break;
     }
   }
 
-  if (!options.verbose) {
-    const limit = options.maxItems ?? Number.POSITIVE_INFINITY;
-    if (commands.length > 0) {
-      const limited = commands.slice(0, limit);
-      process.stdout.write(`Commands:\n- ${limited.join('\n- ')}\n\n`);
-    }
-    if (fileChanges.length > 0) {
-      const limited = fileChanges.slice(0, limit);
-      process.stdout.write(`File changes:\n- ${limited.join('\n- ')}\n\n`);
-    }
-    if (toolCalls.length > 0) {
-      const limited = toolCalls.slice(0, limit);
-      process.stdout.write(`Tool calls:\n- ${limited.join('\n- ')}\n\n`);
-    }
-    if (webQueries.length > 0) {
-      const limited = webQueries.slice(0, limit);
-      process.stdout.write(`Web searches:\n- ${limited.join('\n- ')}\n\n`);
-    }
+  if (runError) {
+    throw runError;
   }
-
   if (finalResponse) {
     if (outputSchema) {
       try {
@@ -309,9 +273,6 @@ async function run(): Promise<void> {
     } else {
       process.stdout.write(finalResponse + '\n');
     }
-  }
-  if (usageSummary) {
-    process.stdout.write(usageSummary + '\n');
   }
 }
 
