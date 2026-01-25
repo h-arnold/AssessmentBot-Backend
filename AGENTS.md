@@ -120,23 +120,33 @@ For any non-trivial code change, follow this sequence:
 
 Define the task that needs to be required. Identify the files, components, methods etc. that are involved. Consider and outline the changes in logic that will need to take place and outline any constraints (e.g. "stick to existing patterns", "avoid new dependencies", "ensure backwards compatibility"), important context the agent needs to be aware of and acceptance criteria.
 
+### 2. Create failing tests
+
+Pass the detailed and defined task to the testing agent (`--role testing`) to create failing tests that capture the acceptance criteria. Once the tests are created, review them to ensure they accurately reflect the requirements and edge cases. If there are any discrepancies or missing scenarios, provide clarifications to the testing agent and have them update the tests accordingly.
+
 ### 2. Implementation
 
-Pass the detailed and defined task to the implementation agent (`--role implementation`). If it comes back with questions, provide clarifications as needed. Once the implementation is complete, review the changes to ensure they meet the acceptance criteria.
+Pass the detailed and defined task to the implementation agent (`--role implementation`), along with the failing tests created in the previous step. The implementation agent should focus on writing the minimum amount of code necessary to make the tests pass, adhering to the project's coding standards and principles outlined in this document. Once the implementation is complete, review the changes to ensure they meet the defined requirements and do not introduce any new issues. If everything looks good, proceed to the testing phase.
 
 ### 3. Testing
 
-Pass a summary of the implemented changes to the testing agent (`--role testing`) so that it can run tests and gaps in coverage.
+Pass the summary of the implemented changes to the testing agent (`--role testing`) so that it can run tests and gaps in coverage. Validate that all tests pass and that the code meets the acceptance criteria. If any tests fail or if there are coverage gaps, provide feedback to the implementation agent for necessary fixes. Repeat this process until all tests pass and coverage is satisfactory.
 
-1. Run `--role implementation` to deliver code changes.
-2. Run `--role testing` to validate changes.
-3. Run `--role review` to assess risks and improvements.
-4. Run `--role documentation` for any non-trivial change to keep docs accurate.
+### 4. Review
+
+Pass details of the changes to the review agent (`--role review`) for a thorough code review. The review agent should focus on identifying any security vulnerabilities, code quality issues, adherence to coding standards, and potential improvements. Review the feedback provided by the review agent and address any critical or high-priority issues. Once all concerns have been addressed, proceed to the documentation phase.
+
+### 5. Documentation
+
+Pass details of the changes to the documentation agent (`--role documentation`) to ensure that all relevant documentation is updated accordingly. This includes updating JSDoc comments, Swagger documentation, and any relevant guides or READMEs. Review the documentation updates to ensure they are clear, accurate, and helpful for future developers. Once the documentation is complete, finalise the changes and prepare for deployment or merging into the main codebase.
+
+Pass a summary of the implemented changes to the testing agent (`--role testing`) so that it can run tests and gaps in coverage.
 
 ## Common commands
 
 - Build: `npm run build`
 - Dev server: `npm run start:dev`
+- Run tests: `npm run test` and `npm run test:e2e`
 - Debug server: `npm run debug`
 
 ## Ignore patterns
