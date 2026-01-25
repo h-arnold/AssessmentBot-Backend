@@ -58,6 +58,25 @@ This method starts the application along with a Caddy reverse proxy and Fail2ban
 
 The API will be available at `http://localhost:80`. For more details, see the [Docker Deployment Guide](./docs/deployment/docker.md).
 
+## 🤖 Codex Delegation
+
+Use the delegation runner to dispatch focused sub-agent tasks while keeping outputs concise.
+See the [Codex delegation guide](./docs/development/codex-delegation.md) for defaults, flags, and workflow guidance.
+
+```bash
+npm run dev:delegate -- --role implementation --task "Implement the new endpoint" --instructions "Follow existing NestJS patterns."
+```
+
+Common flags:
+
+- `--role` (implementation, testing, review, documentation)
+- `--task` (required)
+- `--instructions` (optional)
+- `--model`, `--reasoning`, `--working-dir` (model and workspace selection)
+- `--sandbox`, `--approval`, `--network`, `--web-search` (permissions)
+- `--structured`, `--schema-file` (structured output)
+- `--verbose`, `--log-file`, `--max-items`, `--timeout-minutes` (event output and log controls)
+
 ### 2. Using Node.js
 
 1.  **Clone and install**:
@@ -76,9 +95,9 @@ The API will be available at `http://localhost:80`. For more details, see the [D
     ```
 
 3.  **Start the development server**:
-    `bash
+    ```bash
     npm run start:dev
-    `
+    ```
     The API will be available at `http://localhost:3000`.
 
 ## 🛠️ Tech Stack
