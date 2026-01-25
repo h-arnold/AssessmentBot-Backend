@@ -86,7 +86,10 @@ describe('AssessorService', () => {
       };
 
       const mockPrompt = {
-        buildMessage: jest.fn().mockResolvedValue('prompt message'),
+        buildMessage: jest.fn().mockResolvedValue({
+          system: 'System prompt',
+          user: 'prompt message',
+        }),
       };
       (promptFactory.create as jest.Mock).mockReturnValue(mockPrompt);
       (llmService.send as jest.Mock).mockResolvedValue({ score: 5 });
@@ -95,7 +98,10 @@ describe('AssessorService', () => {
 
       expect(promptFactory.create).toHaveBeenCalledWith(dto);
       expect(mockPrompt.buildMessage).toHaveBeenCalled();
-      expect(llmService.send).toHaveBeenCalledWith('prompt message');
+      expect(llmService.send).toHaveBeenCalledWith({
+        system: 'System prompt',
+        user: 'prompt message',
+      });
       expect(result).toEqual({ score: 5 });
     });
 
@@ -119,17 +125,17 @@ describe('AssessorService', () => {
 
       const mockMultimodalPayload = {
         system: 'You are an art critic.',
-        user: [
-          { type: 'text', text: 'Assess this artwork.' },
+        images: [
           {
-            type: 'image',
-            image: { mimeType: 'image/png', base64: 'base64-encoded-string-1' },
+            mimeType: 'image/png',
+            data: 'base64-encoded-string-1',
           },
           {
-            type: 'image',
-            image: { mimeType: 'image/png', base64: 'base64-encoded-string-2' },
+            mimeType: 'image/png',
+            data: 'base64-encoded-string-2',
           },
         ],
+        messages: [{ content: 'Assess this artwork.' }],
       };
 
       const mockPrompt = {
@@ -154,7 +160,10 @@ describe('AssessorService', () => {
       };
 
       const mockPrompt = {
-        buildMessage: jest.fn().mockResolvedValue('prompt message'),
+        buildMessage: jest.fn().mockResolvedValue({
+          system: 'System prompt',
+          user: 'prompt message',
+        }),
       };
       (promptFactory.create as jest.Mock).mockReturnValue(mockPrompt);
       (llmService.send as jest.Mock).mockResolvedValue({ score: 5 });

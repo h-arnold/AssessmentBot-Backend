@@ -4,13 +4,25 @@ This document provides instructions for setting up and running the End-to-End (E
 
 ## Running E2E Tests
 
-To run the entire E2E test suite, use the following command:
+E2E tests are split into mocked (default) and live suites. Use the following commands:
 
 ```bash
+# Default mocked suite (no live Gemini calls)
 npm run test:e2e
+
+# Explicit mocked run
+npm run test:e2e:mocked
+
+# Live suite (real Gemini API calls)
+npm run test:e2e:live
 ```
 
-This command builds the application and executes all test specifications (`*.e2e-spec.ts`) in the `test/` directory.
+The mocked run builds the application and executes all `*.e2e-spec.ts` tests in the `test/` directory **excluding** `*-live.e2e-spec.ts`. The live run targets `assessor-live.e2e-spec.ts` only.
+
+### Mocked vs Live Configuration
+
+- **Mocked config**: `jest-e2e.mocked.config.cjs` sets `E2E_MOCK_LLM=true` via `test/jest.e2e.mocked.setup.ts` and ignores `*-live.e2e-spec.ts`.
+- **Live config**: `jest-e2e.live.config.cjs` sets `E2E_MOCK_LLM=false` via `test/jest.e2e.live.setup.ts` and runs `assessor-live.e2e-spec.ts`.
 
 ## Test Environment
 
@@ -23,7 +35,7 @@ The test setup uses a specific strategy for managing environment variables to en
 1.  **Hardcoded Test Configuration**: Most configuration variables (`PORT`, `API_KEYS`, `THROTTLER_TTL`, etc.) are hardcoded within the `startApp` function in `test/utils/app-lifecycle.ts`. This guarantees that all tests run with the exact same configuration, simplifying setup and preventing flaky tests.
 
 2.  **Live API Key (`GEMINI_API_KEY`)**: The `GEMINI_API_KEY` is a sensitive secret and is handled differently:
-    - **Default**: A dummy key (`dummy-key-for-testing`) is injected by default. This allows all tests that do not require a live API call to run without any special setup.
+    - **Default**: A dummy key (`dummy-key-for-testing`) is injected by default. This allows mocked E2E tests to run without any special setup.
     - **Live Tests**: To run the live test (`assessor-live.e2e-spec.ts`), which makes real calls to the Gemini API, you **must** provide a valid `GEMINI_API_KEY`. Create a file named `.test.env` in the project's root directory and add the following:
 
       ```
@@ -41,6 +53,16 @@ The test setup uses a specific strategy for managing environment variables to en
       - Live API tests include 2-second delays between each test case
 
     These settings are automatically applied when tests run and help ensure consistent test execution without rate limit errors.
+
+### HTTP Shim Behaviour (Mocked E2E)
+
+When `E2E_MOCK_LLM=true`, the test runner enables an HTTP shim to avoid live Gemini calls:
+
+- `startApp` injects `--require "test/utils/llm-http-shim.cjs"` via `NODE_OPTIONS`.
+- The shim monkey-patches `@google/generative-ai` by overriding `GoogleGenerativeAI.prototype.getGenerativeModel`.
+- `generateContent` returns a deterministic JSON payload with fixed scores (all `3`) and short reasoning text.
+
+This keeps the full HTTP request/response flow intact while making LLM responses stable and offline. Use the live suite when you need to validate real Gemini behaviour or quotas.
 
 ### Overriding Environment Variables
 
@@ -119,7 +141,8 @@ If you encounter 503 errors or "Resource Exhausted" messages when running E2E te
 4.  **Run Tests Individually**: If the full suite fails due to rate limits, run individual test files:
 
     ```bash
-    npm run test:e2e -- test/auth.e2e-spec.ts
+    npm run test:e2e:mocked -- test/auth.e2e-spec.ts
+    npm run test:e2e:live -- test/assessor-live.e2e-spec.ts
     ```
 
 5.  **Monitor API Usage**: Check your Gemini API quota and usage in the Google Cloud Console to ensure you haven't exceeded limits.

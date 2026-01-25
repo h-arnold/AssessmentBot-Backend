@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { CreateAssessorDto } from './dto/create-assessor.dto';
 import { LLMService } from '../../llm/llm.service.interface';
@@ -14,6 +14,7 @@ import { PromptFactory } from '../../prompt/prompt.factory';
  */
 @Injectable()
 export class AssessorService {
+  private readonly logger = new Logger(AssessorService.name);
   /**
    * Constructs an instance of AssessorService.
    *
@@ -34,8 +35,31 @@ export class AssessorService {
    * @returns A promise that resolves to an `LlmResponse` containing the result of the assessment.
    */
   async createAssessment(dto: CreateAssessorDto): Promise<LlmResponse> {
-    const prompt = await this.promptFactory.create(dto);
-    const message = await prompt.buildMessage();
-    return this.llmService.send(message);
+    this.logger.log(`Creating assessment for task type: ${dto.taskType}.`);
+    try {
+      const prompt = await this.promptFactory.create(dto);
+      this.logger.debug(
+        `Prompt created for task type: ${dto.taskType}. Building payload.`,
+      );
+
+      const message = await prompt.buildMessage();
+      const payloadSummary =
+        'images' in message
+          ? `image payload with ${message.images.length} images`
+          : `text payload with ${message.user.length} characters`;
+      this.logger.debug(
+        `LLM payload built for task type: ${dto.taskType} (${payloadSummary}).`,
+      );
+
+      const response = await this.llmService.send(message);
+      this.logger.log(`Assessment completed for task type: ${dto.taskType}.`);
+      return response;
+    } catch (error) {
+      this.logger.error(
+        `Assessment failed for task type: ${dto.taskType}.`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
   }
 }

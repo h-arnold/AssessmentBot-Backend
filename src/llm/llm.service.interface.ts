@@ -61,13 +61,27 @@ export abstract class LLMService {
   async send(payload: LlmPayload): Promise<LlmResponse> {
     const maxRetries = this.configService.get('LLM_MAX_RETRIES');
     const baseBackoffMs = this.configService.get('LLM_BACKOFF_BASE_MS');
+    const payloadSummary = this.describePayload(payload);
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        return await this._sendInternal(payload);
+        this.logger.log(
+          `Dispatching LLM request (${payloadSummary}). Attempt ${attempt + 1} of ${maxRetries + 1}.`,
+        );
+        const startTime = Date.now();
+        const response = await this._sendInternal(payload);
+        const elapsedMs = Date.now() - startTime;
+        this.logger.log(
+          `LLM response received in ${elapsedMs}ms (${payloadSummary}).`,
+        );
+        return response;
       } catch (error) {
         // Check for resource exhausted errors first - these should bubble up immediately
         if (this.isResourceExhaustedError(error)) {
+          this.logger.error(
+            `LLM resource exhausted for request (${payloadSummary}).`,
+            error instanceof Error ? error.stack : undefined,
+          );
           throw new ResourceExhaustedError(
             'API quota exhausted. Please try again later or upgrade your plan.',
             error,
@@ -80,6 +94,10 @@ export abstract class LLMService {
         if (!isRateLimitError || isLastAttempt) {
           // If it's not a rate limit error, or we've exhausted retries,
           // wrap the error if it's not already a known error type
+          this.logger.error(
+            `LLM request failed after ${attempt + 1} attempt(s) (${payloadSummary}).`,
+            error instanceof Error ? error.stack : undefined,
+          );
           if (isRateLimitError || error instanceof ZodError) {
             throw error; // Throw original error for rate limits or Zod errors
           }
@@ -218,5 +236,14 @@ export abstract class LLMService {
    */
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private describePayload(payload: LlmPayload): string {
+    if ('images' in payload) {
+      const imageCount = payload.images.length;
+      return `image prompt with ${imageCount} image${imageCount === 1 ? '' : 's'}`;
+    }
+    const userLength = payload.user.length;
+    return `text prompt with ${userLength} character${userLength === 1 ? '' : 's'}`;
   }
 }

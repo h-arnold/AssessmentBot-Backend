@@ -20,12 +20,7 @@ import {
  */
 @Injectable()
 export class PromptFactory {
-  /**
-   * Constructs the PromptFactory.
-   *
-   * @param logger - Logger instance for recording prompt creation activities
-   */
-  constructor(private readonly logger: Logger) {}
+  private readonly logger = new Logger(PromptFactory.name);
 
   /**
    * Creates an appropriate prompt instance based on the provided assessment data.
@@ -41,6 +36,7 @@ export class PromptFactory {
    * @throws Error if the task type is unsupported
    */
   public async create(dto: CreateAssessorDto): Promise<Prompt> {
+    this.logger.log(`Creating prompt for task type: ${dto.taskType}.`);
     const inputs = {
       referenceTask: dto.reference,
       studentTask: dto.studentResponse,
@@ -51,10 +47,23 @@ export class PromptFactory {
     const { systemPromptFile, userTemplateFile } = this.getPromptFiles(
       dto.taskType,
     );
+    this.logger.debug(
+      `Selected prompt templates for task type ${dto.taskType}: ` +
+        `system=${systemPromptFile ?? 'none'}, user=${userTemplateFile ?? 'none'}.`,
+    );
     const systemPrompt = await this.loadSystemPrompt(systemPromptFile);
 
     // Instantiate the appropriate Prompt subclass
-    return this.instantiatePrompt(dto, inputs, userTemplateFile, systemPrompt);
+    const prompt = this.instantiatePrompt(
+      dto,
+      inputs,
+      userTemplateFile,
+      systemPrompt,
+    );
+    this.logger.debug(
+      `Instantiated prompt ${prompt.constructor.name} for task type: ${dto.taskType}.`,
+    );
+    return prompt;
   }
 
   /**
@@ -107,7 +116,19 @@ export class PromptFactory {
     systemPromptFile?: string,
   ): Promise<string | undefined> {
     if (systemPromptFile) {
-      return await readMarkdown(systemPromptFile);
+      try {
+        const prompt = await readMarkdown(systemPromptFile);
+        this.logger.debug(
+          `Loaded system prompt template: ${systemPromptFile}.`,
+        );
+        return prompt;
+      } catch (error) {
+        this.logger.error(
+          `Failed to load system prompt template: ${systemPromptFile}.`,
+          error instanceof Error ? error.stack : undefined,
+        );
+        throw error;
+      }
     }
     return undefined;
   }

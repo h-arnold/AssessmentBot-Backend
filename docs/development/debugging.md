@@ -236,10 +236,13 @@ npm test -- --verbose
 
 ```bash
 # Run E2E tests with detailed output
-npm run test:e2e -- --verbose
+npm run test:e2e:mocked -- --verbose
 
-# Run specific E2E test
-npx jest --config jest-e2e.config.cjs test/specific.e2e-spec.ts
+# Run specific mocked E2E test
+npx jest --config jest-e2e.mocked.config.cjs test/specific.e2e-spec.ts
+
+# Run live E2E test (real Gemini API calls)
+npm run test:e2e:live -- --verbose
 ```
 
 ### Test Data Debugging

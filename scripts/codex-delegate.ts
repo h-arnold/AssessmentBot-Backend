@@ -1,4 +1,5 @@
 import { createWriteStream, readFileSync, readdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 
 import {
@@ -7,6 +8,11 @@ import {
   type StreamedItem,
 } from '@openai/codex-sdk';
 
+const require = createRequire(import.meta.url);
+// eslint-disable-next-line import/no-commonjs
+const { getCurrentDirname } = require('../src/common/file-utils') as {
+  getCurrentDirname: () => string;
+};
 type DelegateOptions = {
   role: string;
   task: string;
@@ -38,9 +44,7 @@ const DEFAULT_OPTIONS: DelegateOptions = {
   timeoutMinutes: 10,
 };
 
-// Use CommonJS __dirname so this script compiles and runs with the project's
-// current TypeScript `module: "CommonJS"` setting.
-const CURRENT_DIR = __dirname;
+const CURRENT_DIR = getCurrentDirname();
 
 const ARG_ALIASES: Record<string, keyof DelegateOptions> = {
   '--role': 'role',

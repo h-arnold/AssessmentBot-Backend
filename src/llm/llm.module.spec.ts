@@ -1,5 +1,4 @@
 import { Logger } from '@nestjs/common';
-import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { LoggerModule } from 'nestjs-pino';
 
@@ -17,6 +16,8 @@ const defaults = {
   MAX_IMAGE_UPLOAD_SIZE_MB: '5',
   ALLOWED_IMAGE_MIME_TYPES: 'image/png,image/jpeg',
   LOG_LEVEL: 'debug',
+  LLM_BACKOFF_BASE_MS: '1000',
+  LLM_MAX_RETRIES: '3',
 };
 
 const mockConfigService = {

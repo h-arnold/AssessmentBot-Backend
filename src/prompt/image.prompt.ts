@@ -69,10 +69,18 @@ export class ImagePrompt extends Prompt {
 
     let images: { data: string; mimeType: string }[];
     if (this.images.length > 0) {
+      this.logger.debug(
+        `Building image payload from ${this.images.length} file-based images.`,
+      );
       images = await this.buildImagesFromFiles();
     } else {
+      this.logger.debug(
+        'Building image payload from data URI inputs in the request.',
+      );
       images = this.buildImagesFromDataUris();
     }
+
+    this.logger.log(`Built image payload with ${images.length} images.`);
 
     return {
       system: this.systemPrompt ?? '',
@@ -93,6 +101,9 @@ export class ImagePrompt extends Prompt {
     { data: string; mimeType: string }[]
   > {
     const imagePromises = this.images.map(async (image) => {
+      this.logger.debug(
+        `Reading image file for prompt: ${image.path} (${image.mimeType}).`,
+      );
       const data = await this.readImageFile(image.path, image.mimeType);
       return { data, mimeType: image.mimeType };
     });
@@ -114,9 +125,15 @@ export class ImagePrompt extends Prompt {
     const parseDataUri = (uri: string): { data: string; mimeType: string } => {
       const match = /^data:(.+);base64,(.*)$/.exec(uri);
       if (!match) {
+        this.logger.error(
+          `Invalid data URI encountered while building image prompt: ${uri.slice(0, 30)}...`,
+        );
         throw new Error(`Invalid Data URI: ${uri.slice(0, 30)}...`);
       }
       const [, mimeType, data] = match;
+      this.logger.debug(
+        `Parsed data URI for ${mimeType} with ${data.length} base64 characters.`,
+      );
       return { mimeType, data };
     };
     const images: { data: string; mimeType: string }[] = [];
@@ -150,6 +167,7 @@ export class ImagePrompt extends Prompt {
   async readImageFile(imagePath: string, mimeType?: string): Promise<string> {
     // Security: Only allow reading from the Prompts directory, and block path traversal
     if (imagePath.includes('..')) {
+      this.logger.warn(`Blocked image path traversal attempt: ${imagePath}.`);
       throw new Error('Invalid image filename');
     }
     // Get allowed MIME types from environment
@@ -159,6 +177,9 @@ export class ImagePrompt extends Prompt {
       .split(',')
       .map((type) => type.trim().toLowerCase());
     if (!mimeType || !allowedMimeTypes.includes(mimeType.toLowerCase())) {
+      this.logger.warn(
+        `Blocked image with disallowed MIME type: ${mimeType ?? 'unknown'}.`,
+      );
       throw new Error('Disallowed image MIME type');
     }
     const baseDir = path.join(
@@ -167,10 +188,15 @@ export class ImagePrompt extends Prompt {
     );
     const relativePath = path.join(baseDir, imagePath);
     if (!relativePath.startsWith(baseDir)) {
+      this.logger.warn(`Blocked unauthorised image path: ${imagePath}.`);
       throw new Error('Unauthorised file path');
     }
     // Security: Path is validated above, safe to read
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    return await fs.readFile(relativePath, { encoding: 'base64' });
+    const data = await fs.readFile(relativePath, { encoding: 'base64' });
+    this.logger.debug(
+      `Read image file ${imagePath} with ${data.length} base64 characters.`,
+    );
+    return data;
   }
 }

@@ -122,19 +122,19 @@ on:
 
 #### Stage 3: End-to-End Testing (`e2e-test`)
 
-**Purpose**: Validates complete API functionality in a realistic environment, including integration with the LLM.
+**Purpose**: Validates complete API functionality in a realistic environment. The default E2E run is mocked; the live suite can be run separately when Gemini integration needs verification.
 
 **Steps**:
 
 1.  **Setup**: Prepares the environment and installs dependencies.
-2.  **Execute Tests**: Runs the E2E test suite using `npm run test:e2e`.
+2.  **Execute Tests**: Runs the mocked E2E test suite using `npm run test:e2e`.
 3.  **Publish Report**: Uploads test results in JUnit format.
 
 ### Secrets Management
 
 The CI pipeline requires the following secrets to be configured in the repository at **Settings → Secrets and variables → Actions**:
 
-- **`GEMINI_API_KEY`**: A valid API key for the Gemini LLM, required for E2E and some integration tests.
+- **`GEMINI_API_KEY`**: A valid API key for the Gemini LLM, required only for live E2E tests (`npm run test:e2e:live`) and any integration tests that hit the live API.
 - **`SONAR_TOKEN`**: A token for authenticating with SonarCloud for code analysis.
 
 ### Test Reporting
@@ -183,21 +183,24 @@ npm run lint
 # Run unit tests with coverage
 npm run test:cov
 
-# Run E2E tests
+# Run mocked E2E tests
 npm run test:e2e
+
+# Run live E2E tests (real Gemini API calls)
+npm run test:e2e:live
 ```
 
 ### Pipeline Stages
 
 1.  **Code Quality (`lint`)**: Ensures code quality and consistency by running `npm run lint` and linting Dockerfiles with Hadolint.
-2.  **Unit Testing (`unit-test`)**: Validates individual component functionality by running `npm test`. It requires a `GEMINI_API_KEY` secret.
-3.  **End-to-End Testing (`e2e-test`)**: Validates complete API functionality by running `npm run test:e2e`. It also requires a `GEMINI_API_KEY` secret.
+2.  **Unit Testing (`unit-test`)**: Validates individual component functionality by running `npm test`. It requires a `GEMINI_API_KEY` secret only when tests hit the live Gemini API.
+3.  **End-to-End Testing (`e2e-test`)**: Validates complete API functionality by running `npm run test:e2e` (mocked). The live E2E suite uses `npm run test:e2e:live` and requires `GEMINI_API_KEY`.
 
 ### Secrets Management
 
 The CI pipeline requires the following GitHub repository secrets:
 
-- **`GEMINI_API_KEY`**: A valid API key for LLM integration testing.
+- **`GEMINI_API_KEY`**: A valid API key for live LLM integration testing.
 - **`SONAR_TOKEN`**: Required for SonarQube/SonarCloud static analysis. This token should be generated from your SonarCloud account.
 
 To set up secrets, navigate to **Settings → Secrets and variables → Actions** in your repository.
