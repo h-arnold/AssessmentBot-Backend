@@ -1,5 +1,6 @@
 import { appendFileSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { Codex } from '@openai/codex-sdk';
 
@@ -31,6 +32,8 @@ const DEFAULT_OPTIONS: DelegateOptions = {
   webSearch: 'live',
 };
 
+const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
+
 const ARG_ALIASES: Record<string, keyof DelegateOptions> = {
   '--role': 'role',
   '--task': 'task',
@@ -49,11 +52,8 @@ const ARG_ALIASES: Record<string, keyof DelegateOptions> = {
   '--max-items': 'maxItems',
 };
 
-const BOOLEAN_OPTIONS = new Set<keyof DelegateOptions>([
-  'network',
-  'verbose',
-  'structured',
-]);
+const BOOLEAN_KEYS = ['network', 'verbose', 'structured'] as const;
+type BooleanOptionKey = (typeof BOOLEAN_KEYS)[number];
 const REASONING_LEVELS = new Set(['minimal', 'low', 'medium', 'high', 'xhigh']);
 
 function parseBoolean(value: string): boolean | undefined {
@@ -70,6 +70,10 @@ function isOption(value: string | undefined): boolean {
   return Boolean(value && value.startsWith('--') && value in ARG_ALIASES);
 }
 
+function isBooleanOption(key: keyof DelegateOptions): key is BooleanOptionKey {
+  return BOOLEAN_KEYS.includes(key as BooleanOptionKey);
+}
+
 function parseArgs(argv: string[]): DelegateOptions {
   const options: DelegateOptions = { ...DEFAULT_OPTIONS };
   for (let index = 0; index < argv.length; index += 1) {
@@ -79,7 +83,7 @@ function parseArgs(argv: string[]): DelegateOptions {
       continue;
     }
     const value = argv[index + 1];
-    if (BOOLEAN_OPTIONS.has(key)) {
+    if (isBooleanOption(key)) {
       if (value && !isOption(value)) {
         const parsed = parseBoolean(value);
         if (parsed !== undefined) {
@@ -94,13 +98,49 @@ function parseArgs(argv: string[]): DelegateOptions {
     if (!value || isOption(value)) {
       continue;
     }
-    if (key === 'maxItems') {
-      const parsed = Number.parseInt(value, 10);
-      if (!Number.isNaN(parsed)) {
-        options[key] = parsed;
+    switch (key) {
+      case 'role':
+        options.role = value;
+        break;
+      case 'task':
+        options.task = value;
+        break;
+      case 'instructions':
+        options.instructions = value;
+        break;
+      case 'model':
+        options.model = value;
+        break;
+      case 'reasoning':
+        options.reasoning = value;
+        break;
+      case 'workingDir':
+        options.workingDir = value;
+        break;
+      case 'sandbox':
+        options.sandbox = value as DelegateOptions['sandbox'];
+        break;
+      case 'approval':
+        options.approval = value as DelegateOptions['approval'];
+        break;
+      case 'webSearch':
+        options.webSearch = value as DelegateOptions['webSearch'];
+        break;
+      case 'schemaFile':
+        options.schemaFile = value;
+        break;
+      case 'logFile':
+        options.logFile = value;
+        break;
+      case 'maxItems': {
+        const parsed = Number.parseInt(value, 10);
+        if (!Number.isNaN(parsed)) {
+          options.maxItems = parsed;
+        }
+        break;
       }
-    } else {
-      options[key] = value;
+      default:
+        break;
     }
     index += 1;
   }
@@ -109,7 +149,7 @@ function parseArgs(argv: string[]): DelegateOptions {
 
 function resolvePromptTemplate(role: string): string {
   const fileName = `${role}.md`;
-  const templatePath = path.join(__dirname, 'agent-prompts', fileName);
+  const templatePath = path.join(CURRENT_DIR, 'agent-prompts', fileName);
   try {
     return readFileSync(templatePath, 'utf-8').trim();
   } catch (error) {
@@ -215,7 +255,8 @@ async function run(): Promise<void> {
       }
       if (item.type === 'file_change') {
         const files = item.changes.map(
-          (change) => `${change.kind}: ${change.path}`,
+          (change: { kind: string; path: string }) =>
+            `${change.kind}: ${change.path}`,
         );
         fileChanges.push(...files);
       }
