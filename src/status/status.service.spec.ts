@@ -1,5 +1,18 @@
 import * as packageJson from '../../package.json';
 
+const osMock = {
+  platform: jest.fn(),
+  arch: jest.fn(),
+  release: jest.fn(),
+  uptime: jest.fn(),
+  hostname: jest.fn(),
+  totalmem: jest.fn(),
+  freemem: jest.fn(),
+  cpus: jest.fn(),
+};
+
+jest.mock('os', () => osMock);
+
 describe('StatusService', () => {
   const originalEnv = process.env;
 
@@ -11,17 +24,6 @@ describe('StatusService', () => {
   });
 
   it('returns the expected greeting', async () => {
-    await jest.unstable_mockModule('os', () => ({
-      platform: jest.fn(),
-      arch: jest.fn(),
-      release: jest.fn(),
-      uptime: jest.fn(),
-      hostname: jest.fn(),
-      totalmem: jest.fn(),
-      freemem: jest.fn(),
-      cpus: jest.fn(),
-    }));
-
     const { StatusService } = await import('./status.service');
     const service = new StatusService();
 
@@ -29,18 +31,14 @@ describe('StatusService', () => {
   });
 
   it('returns system metrics and version details', async () => {
-    const osMock = {
-      platform: jest.fn(() => 'linux'),
-      arch: jest.fn(() => 'x64'),
-      release: jest.fn(() => '1.0.0'),
-      uptime: jest.fn(() => 1234),
-      hostname: jest.fn(() => 'test-host'),
-      totalmem: jest.fn(() => 1024),
-      freemem: jest.fn(() => 512),
-      cpus: jest.fn(() => [{}, {}]),
-    };
-
-    await jest.unstable_mockModule('os', () => osMock);
+    osMock.platform.mockReturnValue('linux');
+    osMock.arch.mockReturnValue('x64');
+    osMock.release.mockReturnValue('1.0.0');
+    osMock.uptime.mockReturnValue(1234);
+    osMock.hostname.mockReturnValue('test-host');
+    osMock.totalmem.mockReturnValue(1024);
+    osMock.freemem.mockReturnValue(512);
+    osMock.cpus.mockReturnValue([{}, {}]);
 
     const fixedDate = new Date('2024-01-01T00:00:00.000Z');
     jest.useFakeTimers().setSystemTime(fixedDate);

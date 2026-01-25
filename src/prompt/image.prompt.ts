@@ -170,6 +170,12 @@ export class ImagePrompt extends Prompt {
       this.logger.warn(`Blocked image path traversal attempt: ${imagePath}.`);
       throw new Error('Invalid image filename');
     }
+    if (path.isAbsolute(imagePath)) {
+      this.logger.warn(
+        `Blocked unauthorised absolute image path: ${imagePath}.`,
+      );
+      throw new Error('Unauthorised file path');
+    }
     // Get allowed MIME types from environment
     const allowedMimeTypes = (
       process.env.ALLOWED_IMAGE_MIME_TYPES || 'image/png'

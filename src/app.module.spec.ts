@@ -2,6 +2,12 @@ import { IncomingMessage, ServerResponse } from 'http';
 
 import { ConfigService } from './config/config.service';
 
+const forRootAsync = jest.fn();
+
+jest.mock('nestjs-pino', () => ({
+  LoggerModule: { forRootAsync },
+}));
+
 describe('AppModule logging configuration', () => {
   const originalEnv = process.env;
 
@@ -11,17 +17,10 @@ describe('AppModule logging configuration', () => {
     jest.clearAllMocks();
   });
 
-  const loadModule = async (): Promise<{
-    module: { AppModule: unknown };
-    forRootAsync: jest.Mock;
-  }> => {
-    const forRootAsync = jest.fn();
-    await jest.unstable_mockModule('nestjs-pino', () => ({
-      LoggerModule: { forRootAsync },
-    }));
-
-    const module = await import('./app.module');
-    return { module, forRootAsync };
+  const loadModule = async (): Promise<{ AppModule: unknown }> => {
+    jest.resetModules();
+    forRootAsync.mockClear();
+    return import('./app.module');
   };
 
   const buildConfigService = (
@@ -40,7 +39,7 @@ describe('AppModule logging configuration', () => {
   it('uses the file transport when LOG_FILE is set', async () => {
     process.env = { ...originalEnv, LOG_FILE: '/tmp/app.log' };
 
-    const { module, forRootAsync } = await loadModule();
+    const module = await loadModule();
     expect(module.AppModule).toBeDefined();
     expect(forRootAsync).toHaveBeenCalledTimes(1);
 
@@ -77,7 +76,7 @@ describe('AppModule logging configuration', () => {
   it('uses JSON logging without transport in production', async () => {
     process.env = { ...originalEnv };
 
-    const { forRootAsync } = await loadModule();
+    await loadModule();
     const options = forRootAsync.mock.calls[0][0];
     const configService = buildConfigService({ NODE_ENV: 'production' });
     const result = options.useFactory(
@@ -91,7 +90,7 @@ describe('AppModule logging configuration', () => {
   it('uses pino-pretty transport in development', async () => {
     process.env = { ...originalEnv };
 
-    const { forRootAsync } = await loadModule();
+    await loadModule();
     const options = forRootAsync.mock.calls[0][0];
     const configService = buildConfigService({ NODE_ENV: 'development' });
     const result = options.useFactory(

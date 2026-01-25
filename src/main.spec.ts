@@ -1,3 +1,31 @@
+const nestFactoryCreate = jest.fn();
+const dotenvConfig = jest.fn();
+const jsonMiddleware = jest.fn();
+const json = jest.fn(() => jsonMiddleware);
+
+class Logger {}
+class LoggerErrorInterceptor {}
+class AppModule {}
+class ConfigService {}
+
+jest.mock('@nestjs/core', () => ({
+  NestFactory: { create: nestFactoryCreate },
+}));
+jest.mock('dotenv', () => ({
+  config: dotenvConfig,
+}));
+jest.mock('express', () => ({ json }));
+jest.mock('nestjs-pino', () => ({
+  Logger,
+  LoggerErrorInterceptor,
+}));
+jest.mock('./app.module', () => ({
+  AppModule,
+}));
+jest.mock('./config/config.service', () => ({
+  ConfigService,
+}));
+
 describe('main bootstrap', () => {
   const originalEnv = process.env;
 
@@ -21,16 +49,12 @@ describe('main bootstrap', () => {
       getGlobalPayloadLimit: jest.Mock;
       get: jest.Mock;
     };
-    dotenvConfig: jest.Mock;
     expressInstance: {
       set: jest.Mock;
     };
-    json: jest.Mock;
-    jsonMiddleware: jest.Mock;
     loggerInstance: {
       log: jest.Mock;
     };
-    nestFactoryCreate: jest.Mock;
   };
 
   const loadMain = async ({
@@ -46,9 +70,6 @@ describe('main bootstrap', () => {
       E2E_TESTING: e2eTesting,
     };
 
-    const dotenvConfig = jest.fn();
-    const jsonMiddleware = jest.fn();
-    const json = jest.fn(() => jsonMiddleware);
     const loggerInstance = { log: jest.fn() };
     const expressInstance = { set: jest.fn() };
     const configService = {
@@ -79,55 +100,22 @@ describe('main bootstrap', () => {
       listen: jest.fn().mockResolvedValue(undefined),
     };
 
-    const nestFactoryCreate = jest.fn().mockResolvedValue(app);
+    nestFactoryCreate.mockResolvedValue(app);
 
-    await jest.unstable_mockModule('@nestjs/core', () => ({
-      NestFactory: { create: nestFactoryCreate },
-    }));
-    await jest.unstable_mockModule('dotenv', () => ({
-      config: dotenvConfig,
-    }));
-    await jest.unstable_mockModule('express', () => ({ json }));
-    await jest.unstable_mockModule('nestjs-pino', () => ({
-      Logger,
-      LoggerErrorInterceptor,
-    }));
-    await jest.unstable_mockModule('./app.module', () => ({
-      AppModule: class AppModule {},
-    }));
-    await jest.unstable_mockModule('./config/config.service', () => ({
-      ConfigService,
-    }));
-
-    await import('./main');
+    const { bootstrap } = await import('./main');
+    await bootstrap();
 
     return {
       app,
       configService,
-      dotenvConfig,
       expressInstance,
-      json,
-      jsonMiddleware,
       loggerInstance,
-      nestFactoryCreate,
     };
   };
 
-  class Logger {}
-  class LoggerErrorInterceptor {}
-  class ConfigService {}
-
   it('bootstraps in test mode with E2E settings', async () => {
-    const {
-      app,
-      configService,
-      dotenvConfig,
-      expressInstance,
-      json,
-      jsonMiddleware,
-      loggerInstance,
-      nestFactoryCreate,
-    } = await loadMain({ nodeEnv: 'test', e2eTesting: 'true' });
+    const { app, configService, expressInstance, loggerInstance } =
+      await loadMain({ nodeEnv: 'test', e2eTesting: 'true' });
 
     expect(dotenvConfig).toHaveBeenCalledWith({ path: '.test.env' });
     expect(nestFactoryCreate).toHaveBeenCalledWith(expect.any(Function), {
@@ -148,7 +136,7 @@ describe('main bootstrap', () => {
   });
 
   it('bootstraps with default environment settings', async () => {
-    const { app, dotenvConfig, nestFactoryCreate } = await loadMain({
+    const { app } = await loadMain({
       nodeEnv: 'production',
       e2eTesting: 'false',
     });
