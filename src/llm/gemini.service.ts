@@ -261,9 +261,9 @@ export class GeminiService extends LLMService {
     return (
       err.status ??
       err.statusCode ??
-      err.code ??
       err.response?.status ??
-      err.response?.statusCode
+      err.response?.statusCode ??
+      (typeof err.code === 'number' ? err.code : undefined)
     );
   }
 }
