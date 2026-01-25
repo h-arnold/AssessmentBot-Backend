@@ -1,7 +1,11 @@
 import { createWriteStream, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
-import { Codex, type StreamedEvent } from '@openai/codex-sdk';
+import {
+  Codex,
+  type StreamedEvent,
+  type StreamedItem,
+} from '@openai/codex-sdk';
 
 type DelegateOptions = {
   role: string;
@@ -93,6 +97,69 @@ function isBooleanOption(key: keyof DelegateOptions): key is BooleanOptionKey {
   return BOOLEAN_KEYS.includes(key as BooleanOptionKey);
 }
 
+function printHelp(): void {
+  console.info(
+    [
+      'Usage: node scripts/codex-delegate.js [options]',
+      '',
+      'Options:',
+      '  --role <role>             Role to use (default: implementation)',
+      '  --task <task>             Short task description (required)',
+      '  --instructions <text>     Additional instructions',
+      '  --model <model>           Codex model to use',
+      '  --reasoning <level>       Reasoning effort (minimal|low|medium|high|xhigh)',
+      '  --working-dir <path>      Working directory for the agent',
+      '  --sandbox <mode>          Sandbox mode (read-only|workspace-write|danger-full-access)',
+      '  --approval <policy>       Approval policy (never|on-request|on-failure|untrusted)',
+      '  --network <true|false>    Enable network access (default: true)',
+      '  --web-search <mode>       Web search mode (disabled|cached|live)',
+      '  --verbose <true|false>    Enable verbose logging',
+      '  --structured <true|false> Emit structured JSON output',
+      '  --schema-file <path>      Path to JSON schema file for structured output',
+      '  --log-file <path>         Path to write a verbose event log',
+      '  --max-items <n>           Limit number of items printed in summaries',
+      '  --timeout-minutes <n>     Timeout in minutes (default: 10)',
+      '  --list-roles              Print available prompt roles and exit',
+      '  --help, -h                Show this help message',
+    ].join('\n'),
+  );
+}
+
+function handleImmediateFlag(arg: string): boolean {
+  if (arg === '--list-roles') {
+    const roles = listPromptRoles();
+    if (roles.length === 0) {
+      console.info('No roles available.');
+    } else {
+      console.info(`Available roles:\n${roles.join('\n')}`);
+    }
+    process.exit(0);
+  }
+
+  if (arg === '--help' || arg === '-h') {
+    printHelp();
+    process.exit(0);
+  }
+
+  return false;
+}
+
+function applyBooleanOption(
+  options: DelegateOptions,
+  key: BooleanOptionKey,
+  value: string | undefined,
+): number {
+  if (value && !isOption(value)) {
+    const parsed = parseBoolean(value);
+    if (parsed !== undefined) {
+      options[key] = parsed;
+      return 2;
+    }
+  }
+  options[key] = true;
+  return 1;
+}
+
 function parseArgs(argv: string[]): DelegateOptions {
   const options: DelegateOptions = { ...DEFAULT_OPTIONS };
 
@@ -150,83 +217,38 @@ function parseArgs(argv: string[]): DelegateOptions {
     };
   }
 
-  for (let i = 0; i < argv.length; i++) {
+  for (let i = 0; i < argv.length; ) {
     const arg = argv[i];
     const key = ARG_ALIASES[arg];
     if (!key) {
+      i++;
       continue;
     }
 
     const value = argv[i + 1];
-    if (isBooleanOption(key)) {
-      if (value && !isOption(value)) {
-        const parsed = parseBoolean(value);
-        if (parsed !== undefined) {
-          options[key] = parsed;
-          i++;
-          continue;
-        }
-      }
-      options[key] = true;
+    if (handleImmediateFlag(arg)) {
+      i++;
       continue;
-    }
-    // special flags that take no value and cause immediate action
-    // (preserve existing behaviour for legacy flags)
-    if (arg === '--list-roles' || arg === '--help' || arg === '-h') {
-      // push the flag back so the existing immediate-action handlers below can run
-      // (keeps the parsing loop simple and avoids duplicating help/list logic)
-      if (!options.task && arg === '--list-roles') {
-        // nothing to assign here, will be handled below
-      }
-      continue;
-    }
-    if (arg === '--list-roles') {
-      const roles = listPromptRoles();
-      if (roles.length === 0) {
-        console.info('No roles available.');
-      } else {
-        console.info(`Available roles:\n${roles.join('\n')}`);
-      }
-      process.exit(0);
     }
 
-    if (arg === '--help' || arg === '-h') {
-      console.info(
-        [
-          'Usage: node scripts/codex-delegate.js [options]',
-          '',
-          'Options:',
-          '  --role <role>             Role to use (default: implementation)',
-          '  --task <task>             Short task description (required)',
-          '  --instructions <text>     Additional instructions',
-          '  --model <model>           Codex model to use',
-          '  --reasoning <level>       Reasoning effort (minimal|low|medium|high|xhigh)',
-          '  --working-dir <path>      Working directory for the agent',
-          '  --sandbox <mode>          Sandbox mode (read-only|workspace-write|danger-full-access)',
-          '  --approval <policy>       Approval policy (never|on-request|on-failure|untrusted)',
-          '  --network <true|false>    Enable network access (default: true)',
-          '  --web-search <mode>       Web search mode (disabled|cached|live)',
-          '  --verbose <true|false>    Enable verbose logging',
-          '  --structured <true|false> Emit structured JSON output',
-          '  --schema-file <path>      Path to JSON schema file for structured output',
-          '  --log-file <path>         Path to write a verbose event log',
-          '  --max-items <n>           Limit number of items printed in summaries',
-          '  --timeout-minutes <n>     Timeout in minutes (default: 10)',
-          '  --list-roles              Print available prompt roles and exit',
-          '  --help, -h                Show this help message',
-        ].join('\n'),
-      );
-      process.exit(0);
+    if (isBooleanOption(key)) {
+      i += applyBooleanOption(options, key, value);
+      continue;
     }
+
     if (!value || isOption(value)) {
+      i++;
       continue;
     }
 
     const handler = ASSIGN_HANDLERS[key as string];
     if (handler) {
       handler(value);
-      i++;
+      i += 2;
+      continue;
     }
+
+    i++;
   }
 
   return options;
@@ -271,42 +293,7 @@ function buildPrompt(options: DelegateOptions): string {
   return sections.join('\n\n');
 }
 
-async function run(): Promise<void> {
-  const options = parseArgs(process.argv.slice(2));
-  if (!options.task) {
-    throw new Error('Missing required --task value.');
-  }
-
-  const defaultSchema = {
-    type: 'object',
-    properties: {
-      summary: { type: 'string' },
-      status: { type: 'string' },
-      risks: { type: 'array', items: { type: 'string' } },
-      actions: { type: 'array', items: { type: 'string' } },
-      nextSteps: { type: 'array', items: { type: 'string' } },
-    },
-    required: ['summary', 'status'],
-    additionalProperties: true,
-  } as const;
-
-  let outputSchema: Record<string, unknown> | undefined;
-  if (options.schemaFile) {
-    try {
-      const schemaPath = path.resolve(options.schemaFile);
-      outputSchema = JSON.parse(readFileSync(schemaPath, 'utf-8')) as Record<
-        string,
-        unknown
-      >;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      throw new Error(
-        `Failed to read or parse schema file at ${options.schemaFile}: ${message}`,
-      );
-    }
-  } else if (options.structured) {
-    outputSchema = defaultSchema as Record<string, unknown>;
-  }
+function validateOptions(options: DelegateOptions): void {
   if (
     options.reasoning &&
     !REASONING_LEVELS.includes(options.reasoning as ReasoningLevel)
@@ -338,6 +325,224 @@ async function run(): Promise<void> {
       ].join(', ')}.`,
     );
   }
+}
+
+function resolveOutputSchema(
+  options: DelegateOptions,
+  defaultSchema: Record<string, unknown>,
+): Record<string, unknown> | undefined {
+  if (options.schemaFile) {
+    try {
+      const schemaPath = path.resolve(options.schemaFile);
+      return JSON.parse(readFileSync(schemaPath, 'utf-8')) as Record<
+        string,
+        unknown
+      >;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Failed to read or parse schema file at ${options.schemaFile}: ${message}`,
+      );
+    }
+  }
+
+  if (options.structured) {
+    return defaultSchema;
+  }
+
+  return undefined;
+}
+
+type StreamResults = {
+  commands: string[];
+  fileChanges: string[];
+  toolCalls: string[];
+  webQueries: string[];
+  finalResponse: string;
+  usageSummary: string;
+};
+
+function handleItemCompleted(item: StreamedItem, results: StreamResults): void {
+  switch (item.type) {
+    case 'agent_message':
+      results.finalResponse = item.text;
+      break;
+    case 'command_execution':
+      results.commands.push(item.command);
+      break;
+    case 'file_change': {
+      const files = item.changes.map(
+        (change: { kind: string; path: string }) =>
+          `${change.kind}: ${change.path}`,
+      );
+      results.fileChanges.push(...files);
+      break;
+    }
+    case 'mcp_tool_call':
+      results.toolCalls.push(`${item.server}:${item.tool}`);
+      break;
+    case 'web_search':
+      results.webQueries.push(item.query);
+      break;
+    default:
+      break;
+  }
+}
+
+function handleTurnCompleted(
+  event: StreamedEvent,
+  results: StreamResults,
+): void {
+  if (event.usage) {
+    results.usageSummary = `Usage: input ${event.usage.input_tokens}, output ${event.usage.output_tokens}`;
+  }
+}
+
+function toStreamResults(): StreamResults {
+  return {
+    commands: [],
+    fileChanges: [],
+    toolCalls: [],
+    webQueries: [],
+    finalResponse: '',
+    usageSummary: '',
+  };
+}
+
+async function processStream(
+  events: AsyncIterable<StreamedEvent>,
+  options: DelegateOptions,
+  logStream: ReturnType<typeof createWriteStream> | undefined,
+  timeoutMs: number,
+): Promise<StreamResults> {
+  const iterator = events[Symbol.asyncIterator]();
+  const results = toStreamResults();
+  let timeoutId: NodeJS.Timeout | undefined;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(
+        new Error(
+          `Codex delegation timed out after ${options.timeoutMinutes ?? 10} minutes.`,
+        ),
+      );
+    }, timeoutMs);
+  });
+
+  try {
+    while (true) {
+      const nextPromise = iterator.next() as Promise<
+        IteratorResult<StreamedEvent>
+      >;
+      const result = await Promise.race([nextPromise, timeoutPromise]);
+
+      if (result.done) {
+        break;
+      }
+
+      const event = result.value;
+
+      if (options.verbose) {
+        logStream?.write(JSON.stringify(event) + '\n');
+        process.stdout.write(JSON.stringify(event) + '\n');
+      }
+
+      switch (event.type) {
+        case 'item.completed':
+          if (event.item) {
+            handleItemCompleted(event.item, results);
+          }
+          break;
+        case 'turn.completed':
+          handleTurnCompleted(event, results);
+          break;
+        case 'turn.failed':
+          throw new Error(event.error?.message ?? 'Unknown error');
+        case 'error':
+          throw new Error(event.message ?? 'Unknown error');
+        default:
+          break;
+      }
+    }
+  } finally {
+    await iterator.return?.(undefined);
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  return results;
+}
+
+function printSummaries(
+  results: StreamResults,
+  options: DelegateOptions,
+): void {
+  if (options.verbose) {
+    return;
+  }
+  const limit = options.maxItems ?? Number.POSITIVE_INFINITY;
+  if (results.commands.length > 0) {
+    const limited = results.commands.slice(0, limit);
+    process.stdout.write(`Commands:\n- ${limited.join('\n- ')}\n\n`);
+  }
+  if (results.fileChanges.length > 0) {
+    const limited = results.fileChanges.slice(0, limit);
+    process.stdout.write(`File changes:\n- ${limited.join('\n- ')}\n\n`);
+  }
+  if (results.toolCalls.length > 0) {
+    const limited = results.toolCalls.slice(0, limit);
+    process.stdout.write(`Tool calls:\n- ${limited.join('\n- ')}\n\n`);
+  }
+  if (results.webQueries.length > 0) {
+    const limited = results.webQueries.slice(0, limit);
+    process.stdout.write(`Web searches:\n- ${limited.join('\n- ')}\n\n`);
+  }
+}
+
+function printFinalResponse(
+  results: StreamResults,
+  outputSchema: Record<string, unknown> | undefined,
+): void {
+  if (!results.finalResponse) {
+    return;
+  }
+  if (outputSchema) {
+    try {
+      const parsed = JSON.parse(results.finalResponse);
+      process.stdout.write(JSON.stringify(parsed, null, 2) + '\n');
+      return;
+    } catch {
+      // fall through to print raw text
+    }
+  }
+  process.stdout.write(results.finalResponse + '\n');
+}
+
+async function run(): Promise<void> {
+  const options = parseArgs(process.argv.slice(2));
+  if (!options.task) {
+    throw new Error('Missing required --task value.');
+  }
+
+  const defaultSchema = {
+    type: 'object',
+    properties: {
+      summary: { type: 'string' },
+      status: { type: 'string' },
+      risks: { type: 'array', items: { type: 'string' } },
+      actions: { type: 'array', items: { type: 'string' } },
+      nextSteps: { type: 'array', items: { type: 'string' } },
+    },
+    required: ['summary', 'status'],
+    additionalProperties: true,
+  } as const;
+
+  const outputSchema = resolveOutputSchema(
+    options,
+    defaultSchema as Record<string, unknown>,
+  );
+  validateOptions(options);
 
   const availableRoles = listPromptRoles();
   if (availableRoles.length > 0 && !availableRoles.includes(options.role)) {
@@ -371,12 +576,6 @@ async function run(): Promise<void> {
 
   const prompt = buildPrompt(options);
   const streamed = await thread.runStreamed(prompt, { outputSchema });
-  const commands: string[] = [];
-  const fileChanges: string[] = [];
-  const toolCalls: string[] = [];
-  const webQueries: string[] = [];
-  let finalResponse = '';
-  let usageSummary = '';
   const timeoutMs = (options.timeoutMinutes ?? 10) * 60 * 1000;
 
   const logPath =
@@ -385,144 +584,25 @@ async function run(): Promise<void> {
     ? createWriteStream(logPath, { flags: 'a' })
     : undefined;
 
-  const iterator = streamed.events[
-    Symbol.asyncIterator
-  ]() as AsyncIterator<StreamedEvent>;
-  let timeoutId: NodeJS.Timeout | undefined;
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      reject(
-        new Error(
-          `Codex delegation timed out after ${options.timeoutMinutes ?? 10} minutes.`,
-        ),
-      );
-    }, timeoutMs);
-  });
+  const results = await processStream(
+    streamed.events,
+    options,
+    logStream,
+    timeoutMs,
+  );
 
-  try {
-    while (true) {
-      const nextPromise = iterator.next();
-      const result = (await Promise.race([nextPromise, timeoutPromise])) as
-        | IteratorResult<StreamedEvent>
-        | never;
+  logStream?.end();
 
-      if (result.done) {
-        break;
-      }
-
-      const event = result.value;
-
-      if (options.verbose) {
-        logStream?.write(JSON.stringify(event) + '\n');
-        process.stdout.write(JSON.stringify(event) + '\n');
-      }
-
-      switch (event.type) {
-        case 'item.completed': {
-          const item = event.item;
-          if (!item) {
-            break;
-          }
-          switch (item.type) {
-            case 'agent_message':
-              finalResponse = item.text;
-              break;
-            case 'command_execution':
-              commands.push(item.command);
-              break;
-            case 'file_change': {
-              const files = item.changes.map(
-                (change) => `${change.kind}: ${change.path}`,
-              );
-              fileChanges.push(...files);
-              break;
-            }
-            case 'mcp_tool_call':
-              toolCalls.push(`${item.server}:${item.tool}`);
-              break;
-            case 'web_search':
-              webQueries.push(item.query);
-              break;
-            default:
-              break;
-          }
-          break;
-        }
-        case 'turn.completed':
-          if (event.usage) {
-            const usage = event.usage as {
-              input_tokens: number;
-              output_tokens: number;
-            };
-            usageSummary = `Usage: input ${usage.input_tokens}, output ${usage.output_tokens}`;
-          }
-          break;
-        case 'turn.failed':
-          throw new Error(
-            (event.error as { message?: string } | undefined)?.message ??
-              'Unknown error',
-          );
-        case 'error':
-          throw new Error(
-            (event.message as string | undefined) ?? 'Unknown error',
-          );
-        default:
-          break;
-      }
-    }
-  } catch (error) {
-    await iterator.return?.();
-    throw error;
-  } finally {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    logStream?.end();
-  }
-
-  if (!options.verbose) {
-    const limit = options.maxItems ?? Number.POSITIVE_INFINITY;
-    if (commands.length > 0) {
-      const limited = commands.slice(0, limit);
-      process.stdout.write(`Commands:\n- ${limited.join('\n- ')}\n\n`);
-    }
-    if (fileChanges.length > 0) {
-      const limited = fileChanges.slice(0, limit);
-      process.stdout.write(`File changes:\n- ${limited.join('\n- ')}\n\n`);
-    }
-    if (toolCalls.length > 0) {
-      const limited = toolCalls.slice(0, limit);
-      process.stdout.write(`Tool calls:\n- ${limited.join('\n- ')}\n\n`);
-    }
-    if (webQueries.length > 0) {
-      const limited = webQueries.slice(0, limit);
-      process.stdout.write(`Web searches:\n- ${limited.join('\n- ')}\n\n`);
-    }
-  }
-
-  if (finalResponse) {
-    if (outputSchema) {
-      try {
-        const parsed = JSON.parse(finalResponse);
-        process.stdout.write(JSON.stringify(parsed, null, 2) + '\n');
-      } catch {
-        process.stdout.write(finalResponse + '\n');
-      }
-    } else {
-      process.stdout.write(finalResponse + '\n');
-    }
-  }
-  if (usageSummary) {
-    process.stdout.write(usageSummary + '\n');
+  printSummaries(results, options);
+  printFinalResponse(results, outputSchema);
+  if (results.usageSummary) {
+    process.stdout.write(results.usageSummary + '\n');
   }
 }
 
-(async (): Promise<void> => {
-  try {
-    await run();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    process.stderr.write(message + '\n');
-    process.exitCode = 1;
-  }
-})();
+// sonarlint-disable-next-line typescript:S7785 -- top-level await not available in CommonJS entrypoint
+run().catch((error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  process.stderr.write(message + '\n');
+  process.exitCode = 1;
+});
