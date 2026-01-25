@@ -1,6 +1,5 @@
 import { appendFileSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { Codex } from '@openai/codex-sdk';
 
@@ -35,7 +34,9 @@ const DEFAULT_OPTIONS: DelegateOptions = {
   timeoutMinutes: 10,
 };
 
-const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
+// Use CommonJS __dirname so this script compiles and runs with the project's
+// current TypeScript `module: "CommonJS"` setting.
+const CURRENT_DIR = __dirname;
 
 const ARG_ALIASES: Record<string, keyof DelegateOptions> = {
   '--role': 'role',
@@ -58,19 +59,21 @@ const ARG_ALIASES: Record<string, keyof DelegateOptions> = {
 
 const BOOLEAN_KEYS = ['network', 'verbose', 'structured'] as const;
 type BooleanOptionKey = (typeof BOOLEAN_KEYS)[number];
-const REASONING_LEVELS = new Set(['minimal', 'low', 'medium', 'high', 'xhigh']);
-const SANDBOX_MODES = new Set([
+// cSpell:ignore xhigh
+const REASONING_LEVELS = ['minimal', 'low', 'medium', 'high', 'xhigh'] as const;
+type ReasoningLevel = (typeof REASONING_LEVELS)[number];
+const SANDBOX_MODES = [
   'read-only',
   'workspace-write',
   'danger-full-access',
-]);
-const APPROVAL_POLICIES = new Set([
+] as const;
+const APPROVAL_POLICIES = [
   'never',
   'on-request',
   'on-failure',
   'untrusted',
-]);
-const WEB_SEARCH_MODES = new Set(['disabled', 'cached', 'live']);
+] as const;
+const WEB_SEARCH_MODES = ['disabled', 'cached', 'live'] as const;
 
 function parseBoolean(value: string): boolean | undefined {
   if (value === 'true') {
@@ -92,81 +95,140 @@ function isBooleanOption(key: keyof DelegateOptions): key is BooleanOptionKey {
 
 function parseArgs(argv: string[]): DelegateOptions {
   const options: DelegateOptions = { ...DEFAULT_OPTIONS };
-  for (let index = 0; index < argv.length; index += 1) {
-    const arg = argv[index];
+
+  const ASSIGN_HANDLERS = createAssignHandlers(options);
+
+  function createAssignHandlers(
+    opts: DelegateOptions,
+  ): Record<string, (v: string) => void> {
+    return {
+      role: (v: string): void => {
+        opts.role = v;
+      },
+      task: (v: string): void => {
+        opts.task = v;
+      },
+      instructions: (v: string): void => {
+        opts.instructions = v;
+      },
+      model: (v: string): void => {
+        opts.model = v;
+      },
+      reasoning: (v: string): void => {
+        opts.reasoning = v;
+      },
+      workingDir: (v: string): void => {
+        opts.workingDir = v;
+      },
+      sandbox: (v: string): void => {
+        opts.sandbox = v as DelegateOptions['sandbox'];
+      },
+      approval: (v: string): void => {
+        opts.approval = v as DelegateOptions['approval'];
+      },
+      webSearch: (v: string): void => {
+        opts.webSearch = v as DelegateOptions['webSearch'];
+      },
+      schemaFile: (v: string): void => {
+        opts.schemaFile = v;
+      },
+      logFile: (v: string): void => {
+        opts.logFile = v;
+      },
+      maxItems: (v: string): void => {
+        const parsed = Number.parseInt(v, 10);
+        if (!Number.isNaN(parsed)) {
+          opts.maxItems = parsed;
+        }
+      },
+      timeoutMinutes: (v: string): void => {
+        const parsed = Number.parseFloat(v);
+        if (!Number.isNaN(parsed) && parsed > 0) {
+          opts.timeoutMinutes = parsed;
+        }
+      },
+    };
+  }
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
     const key = ARG_ALIASES[arg];
     if (!key) {
       continue;
     }
-    const value = argv[index + 1];
+
+    const value = argv[i + 1];
     if (isBooleanOption(key)) {
       if (value && !isOption(value)) {
         const parsed = parseBoolean(value);
         if (parsed !== undefined) {
           options[key] = parsed;
-          index += 1;
+          i++;
           continue;
         }
       }
       options[key] = true;
       continue;
     }
+    // special flags that take no value and cause immediate action
+    // (preserve existing behaviour for legacy flags)
+    if (arg === '--list-roles' || arg === '--help' || arg === '-h') {
+      // push the flag back so the existing immediate-action handlers below can run
+      // (keeps the parsing loop simple and avoids duplicating help/list logic)
+      if (!options.task && arg === '--list-roles') {
+        // nothing to assign here, will be handled below
+      }
+      continue;
+    }
+    if (arg === '--list-roles') {
+      const roles = listPromptRoles();
+      if (roles.length === 0) {
+        console.info('No roles available.');
+      } else {
+        console.info(`Available roles:\n${roles.join('\n')}`);
+      }
+      process.exit(0);
+    }
+
+    if (arg === '--help' || arg === '-h') {
+      console.info(
+        [
+          'Usage: node scripts/codex-delegate.js [options]',
+          '',
+          'Options:',
+          '  --role <role>             Role to use (default: implementation)',
+          '  --task <task>             Short task description (required)',
+          '  --instructions <text>     Additional instructions',
+          '  --model <model>           Codex model to use',
+          '  --reasoning <level>       Reasoning effort (minimal|low|medium|high|xhigh)',
+          '  --working-dir <path>      Working directory for the agent',
+          '  --sandbox <mode>          Sandbox mode (read-only|workspace-write|danger-full-access)',
+          '  --approval <policy>       Approval policy (never|on-request|on-failure|untrusted)',
+          '  --network <true|false>    Enable network access (default: true)',
+          '  --web-search <mode>       Web search mode (disabled|cached|live)',
+          '  --verbose <true|false>    Enable verbose logging',
+          '  --structured <true|false> Emit structured JSON output',
+          '  --schema-file <path>      Path to JSON schema file for structured output',
+          '  --log-file <path>         Path to write a verbose event log',
+          '  --max-items <n>           Limit number of items printed in summaries',
+          '  --timeout-minutes <n>     Timeout in minutes (default: 10)',
+          '  --list-roles              Print available prompt roles and exit',
+          '  --help, -h                Show this help message',
+        ].join('\n'),
+      );
+      process.exit(0);
+    }
     if (!value || isOption(value)) {
       continue;
     }
-    switch (key) {
-      case 'role':
-        options.role = value;
-        break;
-      case 'task':
-        options.task = value;
-        break;
-      case 'instructions':
-        options.instructions = value;
-        break;
-      case 'model':
-        options.model = value;
-        break;
-      case 'reasoning':
-        options.reasoning = value;
-        break;
-      case 'workingDir':
-        options.workingDir = value;
-        break;
-      case 'sandbox':
-        options.sandbox = value as DelegateOptions['sandbox'];
-        break;
-      case 'approval':
-        options.approval = value as DelegateOptions['approval'];
-        break;
-      case 'webSearch':
-        options.webSearch = value as DelegateOptions['webSearch'];
-        break;
-      case 'schemaFile':
-        options.schemaFile = value;
-        break;
-      case 'logFile':
-        options.logFile = value;
-        break;
-      case 'maxItems': {
-        const parsed = Number.parseInt(value, 10);
-        if (!Number.isNaN(parsed)) {
-          options.maxItems = parsed;
-        }
-        break;
-      }
-      case 'timeoutMinutes': {
-        const parsed = Number.parseFloat(value);
-        if (!Number.isNaN(parsed) && parsed > 0) {
-          options.timeoutMinutes = parsed;
-        }
-        break;
-      }
-      default:
-        break;
+
+    const handler = ASSIGN_HANDLERS[key as string];
+    if (handler) {
+      handler(value);
+      i++;
     }
-    index += 1;
   }
+
   return options;
 }
 
@@ -178,6 +240,7 @@ function resolvePromptTemplate(role: string): string {
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
       console.error(`Error reading prompt template for role "${role}":`, error);
+      throw error;
     }
     return '';
   }
@@ -189,10 +252,11 @@ function listPromptRoles(): string[] {
     return readdirSync(promptsPath)
       .filter((entry) => entry.endsWith('.md'))
       .map((entry) => entry.replace(/\.md$/, ''))
-      .sort();
+      .sort((a, b) => a.localeCompare(b));
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
       console.error('Error reading prompt roles:', error);
+      throw error;
     }
     return [];
   }
@@ -228,11 +292,14 @@ async function run(): Promise<void> {
     additionalProperties: true,
   } as const;
 
-  let outputSchema: unknown | undefined;
+  let outputSchema: Record<string, unknown> | undefined;
   if (options.schemaFile) {
     try {
       const schemaPath = path.resolve(options.schemaFile);
-      outputSchema = JSON.parse(readFileSync(schemaPath, 'utf-8'));
+      outputSchema = JSON.parse(readFileSync(schemaPath, 'utf-8')) as Record<
+        string,
+        unknown
+      >;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(
@@ -240,30 +307,33 @@ async function run(): Promise<void> {
       );
     }
   } else if (options.structured) {
-    outputSchema = defaultSchema;
+    outputSchema = defaultSchema as Record<string, unknown>;
   }
-  if (options.reasoning && !REASONING_LEVELS.has(options.reasoning)) {
+  if (
+    options.reasoning &&
+    !REASONING_LEVELS.includes(options.reasoning as ReasoningLevel)
+  ) {
     throw new Error(
       `Invalid --reasoning value "${options.reasoning}". Expected one of: ${[
         ...REASONING_LEVELS,
       ].join(', ')}.`,
     );
   }
-  if (options.sandbox && !SANDBOX_MODES.has(options.sandbox)) {
+  if (options.sandbox && !SANDBOX_MODES.includes(options.sandbox)) {
     throw new Error(
       `Invalid --sandbox value "${options.sandbox}". Expected one of: ${[
         ...SANDBOX_MODES,
       ].join(', ')}.`,
     );
   }
-  if (options.approval && !APPROVAL_POLICIES.has(options.approval)) {
+  if (options.approval && !APPROVAL_POLICIES.includes(options.approval)) {
     throw new Error(
       `Invalid --approval value "${options.approval}". Expected one of: ${[
         ...APPROVAL_POLICIES,
       ].join(', ')}.`,
     );
   }
-  if (options.webSearch && !WEB_SEARCH_MODES.has(options.webSearch)) {
+  if (options.webSearch && !WEB_SEARCH_MODES.includes(options.webSearch)) {
     throw new Error(
       `Invalid --web-search value "${options.webSearch}". Expected one of: ${[
         ...WEB_SEARCH_MODES,
@@ -281,15 +351,19 @@ async function run(): Promise<void> {
   }
 
   const codex = new Codex();
+  // Ensure the reasoning option is narrowed to the allowed literal union before
+  // passing it into the Codex API.
+  let reasoningArg: ReasoningLevel | undefined;
+  if (
+    options.reasoning &&
+    REASONING_LEVELS.includes(options.reasoning as ReasoningLevel)
+  ) {
+    reasoningArg = options.reasoning as ReasoningLevel;
+  }
+
   const thread = codex.startThread({
     model: options.model,
-    modelReasoningEffort: options.reasoning as
-      | 'minimal'
-      | 'low'
-      | 'medium'
-      | 'high'
-      | 'xhigh'
-      | undefined,
+    modelReasoningEffort: reasoningArg,
     workingDirectory: options.workingDir,
     sandboxMode: options.sandbox,
     approvalPolicy: options.approval,
@@ -317,40 +391,52 @@ async function run(): Promise<void> {
         `Codex delegation timed out after ${options.timeoutMinutes ?? 10} minutes.`,
       );
     }
+
     if (options.verbose) {
       appendFileSync(logPath, JSON.stringify(event) + '\n');
       process.stdout.write(JSON.stringify(event) + '\n');
     }
-    if (event.type === 'item.completed') {
-      const item = event.item;
-      if (item.type === 'agent_message') {
-        finalResponse = item.text;
+
+    switch (event.type) {
+      case 'item.completed': {
+        const item = event.item;
+        switch (item.type) {
+          case 'agent_message':
+            finalResponse = item.text;
+            break;
+          case 'command_execution':
+            commands.push(item.command);
+            break;
+          case 'file_change': {
+            const files = item.changes.map(
+              (change: { kind: string; path: string }) =>
+                `${change.kind}: ${change.path}`,
+            );
+            fileChanges.push(...files);
+            break;
+          }
+          case 'mcp_tool_call':
+            toolCalls.push(`${item.server}:${item.tool}`);
+            break;
+          case 'web_search':
+            webQueries.push(item.query);
+            break;
+          default:
+            break;
+        }
+        break;
       }
-      if (item.type === 'command_execution') {
-        commands.push(item.command);
-      }
-      if (item.type === 'file_change') {
-        const files = item.changes.map(
-          (change: { kind: string; path: string }) =>
-            `${change.kind}: ${change.path}`,
-        );
-        fileChanges.push(...files);
-      }
-      if (item.type === 'mcp_tool_call') {
-        toolCalls.push(`${item.server}:${item.tool}`);
-      }
-      if (item.type === 'web_search') {
-        webQueries.push(item.query);
-      }
-    }
-    if (event.type === 'turn.completed') {
-      usageSummary = `Usage: input ${event.usage.input_tokens}, output ${event.usage.output_tokens}`;
-    }
-    if (event.type === 'turn.failed') {
-      throw new Error(event.error.message);
-    }
-    if (event.type === 'error') {
-      throw new Error(event.message);
+      case 'turn.completed':
+        if (event.usage) {
+          usageSummary = `Usage: input ${event.usage.input_tokens}, output ${event.usage.output_tokens}`;
+        }
+        break;
+      case 'turn.failed':
+        throw new Error(event.error?.message ?? 'Unknown error');
+      case 'error':
+        throw new Error(event.message ?? 'Unknown error');
+      default:
+        break;
     }
   }
 
@@ -391,8 +477,12 @@ async function run(): Promise<void> {
   }
 }
 
-run().catch((error) => {
-  const message = error instanceof Error ? error.message : String(error);
-  process.stderr.write(message + '\n');
-  process.exitCode = 1;
-});
+(async (): Promise<void> => {
+  try {
+    await run();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    process.stderr.write(message + '\n');
+    process.exitCode = 1;
+  }
+})();
