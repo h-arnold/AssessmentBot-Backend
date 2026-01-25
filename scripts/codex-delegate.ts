@@ -1,7 +1,7 @@
-import { appendFileSync, readFileSync, readdirSync } from 'node:fs';
+import { createWriteStream, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
-import { Codex } from '@openai/codex-sdk';
+import { Codex, type StreamedEvent } from '@openai/codex-sdk';
 
 type DelegateOptions = {
   role: string;
@@ -238,11 +238,10 @@ function resolvePromptTemplate(role: string): string {
   try {
     return readFileSync(templatePath, 'utf-8').trim();
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      console.error(`Error reading prompt template for role "${role}":`, error);
-      throw error;
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return '';
     }
-    return '';
+    throw error;
   }
 }
 
@@ -254,11 +253,10 @@ function listPromptRoles(): string[] {
       .map((entry) => entry.replace(/\.md$/, ''))
       .sort((a, b) => a.localeCompare(b));
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      console.error('Error reading prompt roles:', error);
-      throw error;
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return [];
     }
-    return [];
+    throw error;
   }
 }
 
@@ -380,64 +378,106 @@ async function run(): Promise<void> {
   let finalResponse = '';
   let usageSummary = '';
   const timeoutMs = (options.timeoutMinutes ?? 10) * 60 * 1000;
-  const startTime = Date.now();
 
   const logPath =
     options.logFile ?? path.join(process.cwd(), 'codex-delegate.log');
+  const logStream = options.verbose
+    ? createWriteStream(logPath, { flags: 'a' })
+    : undefined;
 
-  for await (const event of streamed.events) {
-    if (Date.now() - startTime > timeoutMs) {
-      throw new Error(
-        `Codex delegation timed out after ${options.timeoutMinutes ?? 10} minutes.`,
+  const iterator = streamed.events[
+    Symbol.asyncIterator
+  ]() as AsyncIterator<StreamedEvent>;
+  let timeoutId: NodeJS.Timeout | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(
+        new Error(
+          `Codex delegation timed out after ${options.timeoutMinutes ?? 10} minutes.`,
+        ),
       );
-    }
+    }, timeoutMs);
+  });
 
-    if (options.verbose) {
-      appendFileSync(logPath, JSON.stringify(event) + '\n');
-      process.stdout.write(JSON.stringify(event) + '\n');
-    }
+  try {
+    while (true) {
+      const nextPromise = iterator.next();
+      const result = (await Promise.race([nextPromise, timeoutPromise])) as
+        | IteratorResult<StreamedEvent>
+        | never;
 
-    switch (event.type) {
-      case 'item.completed': {
-        const item = event.item;
-        switch (item.type) {
-          case 'agent_message':
-            finalResponse = item.text;
-            break;
-          case 'command_execution':
-            commands.push(item.command);
-            break;
-          case 'file_change': {
-            const files = item.changes.map(
-              (change: { kind: string; path: string }) =>
-                `${change.kind}: ${change.path}`,
-            );
-            fileChanges.push(...files);
-            break;
-          }
-          case 'mcp_tool_call':
-            toolCalls.push(`${item.server}:${item.tool}`);
-            break;
-          case 'web_search':
-            webQueries.push(item.query);
-            break;
-          default:
-            break;
-        }
+      if (result.done) {
         break;
       }
-      case 'turn.completed':
-        if (event.usage) {
-          usageSummary = `Usage: input ${event.usage.input_tokens}, output ${event.usage.output_tokens}`;
+
+      const event = result.value;
+
+      if (options.verbose) {
+        logStream?.write(JSON.stringify(event) + '\n');
+        process.stdout.write(JSON.stringify(event) + '\n');
+      }
+
+      switch (event.type) {
+        case 'item.completed': {
+          const item = event.item;
+          if (!item) {
+            break;
+          }
+          switch (item.type) {
+            case 'agent_message':
+              finalResponse = item.text;
+              break;
+            case 'command_execution':
+              commands.push(item.command);
+              break;
+            case 'file_change': {
+              const files = item.changes.map(
+                (change) => `${change.kind}: ${change.path}`,
+              );
+              fileChanges.push(...files);
+              break;
+            }
+            case 'mcp_tool_call':
+              toolCalls.push(`${item.server}:${item.tool}`);
+              break;
+            case 'web_search':
+              webQueries.push(item.query);
+              break;
+            default:
+              break;
+          }
+          break;
         }
-        break;
-      case 'turn.failed':
-        throw new Error(event.error?.message ?? 'Unknown error');
-      case 'error':
-        throw new Error(event.message ?? 'Unknown error');
-      default:
-        break;
+        case 'turn.completed':
+          if (event.usage) {
+            const usage = event.usage as {
+              input_tokens: number;
+              output_tokens: number;
+            };
+            usageSummary = `Usage: input ${usage.input_tokens}, output ${usage.output_tokens}`;
+          }
+          break;
+        case 'turn.failed':
+          throw new Error(
+            (event.error as { message?: string } | undefined)?.message ??
+              'Unknown error',
+          );
+        case 'error':
+          throw new Error(
+            (event.message as string | undefined) ?? 'Unknown error',
+          );
+        default:
+          break;
+      }
     }
+  } catch (error) {
+    await iterator.return?.();
+    throw error;
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    logStream?.end();
   }
 
   if (!options.verbose) {
