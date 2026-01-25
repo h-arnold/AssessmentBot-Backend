@@ -90,7 +90,8 @@
   },
   "overrides": {
     "micromatch": ">=4.0.8",
-    "test-exclude": "7.0.1"
+    "test-exclude": "7.0.1",
+    "lodash": "4.17.23"
   },
   "homepage": "https://github.com/h-arnold/AssessmentBot-Backend#readme",
   "lint-staged": {

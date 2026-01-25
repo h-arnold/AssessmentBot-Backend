@@ -58,6 +58,7 @@ export class GeminiService extends LLMService {
     );
     this.logPayload(payload, contents);
 
+    let jsonParseFailed = false;
     try {
       const model = this.client.getGenerativeModel(modelParams);
       const result = await model.generateContent(contents);
@@ -65,7 +66,13 @@ export class GeminiService extends LLMService {
 
       this.geminiLogger.debug(`Raw response from Gemini: \n\n${responseText}`);
 
-      const parsedJson = this.jsonParserUtil.parse(responseText);
+      let parsedJson;
+      try {
+        parsedJson = this.jsonParserUtil.parse(responseText);
+      } catch (parseError) {
+        jsonParseFailed = true;
+        throw parseError;
+      }
       this.geminiLogger.debug(
         `Parsed JSON response: ${JSON.stringify(parsedJson, null, 2)}`,
       );
@@ -77,9 +84,17 @@ export class GeminiService extends LLMService {
 
       return LlmResponseSchema.parse(dataToValidate);
     } catch (error) {
-      this.geminiLogger.debug(
+      const statusCode = this.extractStatusCode(error);
+      const payloadType = this.isImagePromptPayload(payload) ? 'image' : 'text';
+      this.geminiLogger.error(
+        {
+          model: modelParams.model,
+          payloadType,
+          statusCode,
+          jsonParseFailed,
+        },
         'Error communicating with or validating response from Gemini API',
-        error,
+        error instanceof Error ? error.stack : undefined,
       );
       if (error instanceof ZodError) {
         this.logger.error('Zod validation failed', error.issues);
@@ -231,5 +246,24 @@ export class GeminiService extends LLMService {
         `Unknown payload type being sent with ${contents.length} content items`,
       );
     }
+  }
+
+  private extractStatusCode(error: unknown): number | undefined {
+    if (!error || typeof error !== 'object') {
+      return undefined;
+    }
+    const err = error as {
+      status?: number;
+      statusCode?: number;
+      code?: number;
+      response?: { status?: number; statusCode?: number };
+    };
+    return (
+      err.status ??
+      err.statusCode ??
+      err.code ??
+      err.response?.status ??
+      err.response?.statusCode
+    );
   }
 }
