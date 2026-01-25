@@ -523,8 +523,10 @@ async function processStream(
 
       const event = result.value;
 
+      if (logStream) {
+        logStream.write(JSON.stringify(event) + '\n');
+      }
       if (options.verbose) {
-        logStream?.write(JSON.stringify(event) + '\n');
         process.stdout.write(JSON.stringify(event) + '\n');
       }
 
@@ -600,6 +602,23 @@ function printFinalResponse(
   process.stdout.write(results.finalResponse + '\n');
 }
 
+function tailLogFile(logPath: string, lineCount: number): string[] {
+  try {
+    const content = readFileSync(logPath, 'utf-8');
+    const trimmed = content.trim();
+    if (!trimmed) {
+      return [];
+    }
+    const lines = trimmed.split('\n');
+    return lines.slice(-lineCount);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return [];
+    }
+    throw error;
+  }
+}
+
 async function run(): Promise<void> {
   const options = parseArgs(process.argv.slice(2));
   if (!options.task) {
@@ -658,23 +677,42 @@ async function run(): Promise<void> {
 
   const logPath =
     options.logFile ?? path.join(process.cwd(), 'codex-delegate.log');
-  const logStream = options.verbose
+  const shouldLog = options.verbose || Boolean(options.logFile);
+  const logStream = shouldLog
     ? createWriteStream(logPath, { flags: 'a' })
     : undefined;
+  const progressIntervalMs = 60_000;
+  let progressInterval: NodeJS.Timeout | undefined;
+  if (logStream) {
+    progressInterval = setInterval(() => {
+      const tail = tailLogFile(logPath, 5);
+      if (tail.length === 0) {
+        return;
+      }
+      process.stdout.write(
+        ['\nSub-agent progress (last 5 log lines):', ...tail].join('\n') + '\n',
+      );
+    }, progressIntervalMs);
+  }
 
-  const results = await processStream(
-    streamed.events,
-    options,
-    logStream,
-    timeoutMs,
-  );
+  try {
+    const results = await processStream(
+      streamed.events,
+      options,
+      logStream,
+      timeoutMs,
+    );
 
-  logStream?.end();
-
-  printSummaries(results, options);
-  printFinalResponse(results, outputSchema);
-  if (results.usageSummary) {
-    process.stdout.write(results.usageSummary + '\n');
+    printSummaries(results, options);
+    printFinalResponse(results, outputSchema);
+    if (results.usageSummary) {
+      process.stdout.write(results.usageSummary + '\n');
+    }
+  } finally {
+    logStream?.end();
+    if (progressInterval) {
+      clearInterval(progressInterval);
+    }
   }
 }
 
