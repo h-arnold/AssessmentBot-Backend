@@ -331,13 +331,20 @@ function resolveOutputSchema(
   options: DelegateOptions,
   defaultSchema: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
+  const readJsonObject = (schemaPath: string): Record<string, unknown> => {
+    const parsed = JSON.parse(readFileSync(schemaPath, 'utf-8'));
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed as Record<string, unknown>;
+    }
+    throw new Error(
+      `Schema file at ${schemaPath} must contain a JSON object at the root.`,
+    );
+  };
+
   if (options.schemaFile) {
     try {
       const schemaPath = path.resolve(options.schemaFile);
-      return JSON.parse(readFileSync(schemaPath, 'utf-8')) as Record<
-        string,
-        unknown
-      >;
+      return readJsonObject(schemaPath);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(
@@ -362,27 +369,99 @@ type StreamResults = {
   usageSummary: string;
 };
 
+function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+function isAgentMessage(
+  item: StreamedItem,
+): item is StreamedItem & { text: string } {
+  return (
+    item.type === 'agent_message' && isString((item as { text?: unknown }).text)
+  );
+}
+
+function isCommandExecution(
+  item: StreamedItem,
+): item is StreamedItem & { command: string } {
+  return (
+    item.type === 'command_execution' &&
+    isString((item as { command?: unknown }).command)
+  );
+}
+
+type FileChange = { kind: string; path: string };
+function isFileChangeArray(changes: unknown): changes is FileChange[] {
+  return (
+    Array.isArray(changes) &&
+    changes.every(
+      (change) =>
+        change &&
+        typeof change === 'object' &&
+        isString((change as { kind?: unknown }).kind) &&
+        isString((change as { path?: unknown }).path),
+    )
+  );
+}
+
+function isFileChangeItem(
+  item: StreamedItem,
+): item is StreamedItem & { changes: FileChange[] } {
+  return (
+    item.type === 'file_change' &&
+    isFileChangeArray((item as { changes?: unknown }).changes)
+  );
+}
+
+function isMcpToolCall(
+  item: StreamedItem,
+): item is StreamedItem & { server: string; tool: string } {
+  const candidate = item as { server?: unknown; tool?: unknown };
+  return (
+    item.type === 'mcp_tool_call' &&
+    isString(candidate.server) &&
+    isString(candidate.tool)
+  );
+}
+
+function isWebSearch(
+  item: StreamedItem,
+): item is StreamedItem & { query: string } {
+  return (
+    item.type === 'web_search' && isString((item as { query?: unknown }).query)
+  );
+}
+
 function handleItemCompleted(item: StreamedItem, results: StreamResults): void {
   switch (item.type) {
     case 'agent_message':
-      results.finalResponse = item.text;
+      if (isAgentMessage(item)) {
+        results.finalResponse = item.text;
+      }
       break;
     case 'command_execution':
-      results.commands.push(item.command);
+      if (isCommandExecution(item)) {
+        results.commands.push(item.command);
+      }
       break;
     case 'file_change': {
-      const files = item.changes.map(
-        (change: { kind: string; path: string }) =>
-          `${change.kind}: ${change.path}`,
-      );
-      results.fileChanges.push(...files);
+      if (isFileChangeItem(item)) {
+        const files = item.changes.map(
+          (change) => `${change.kind}: ${change.path}`,
+        );
+        results.fileChanges.push(...files);
+      }
       break;
     }
     case 'mcp_tool_call':
-      results.toolCalls.push(`${item.server}:${item.tool}`);
+      if (isMcpToolCall(item)) {
+        results.toolCalls.push(`${item.server}:${item.tool}`);
+      }
       break;
     case 'web_search':
-      results.webQueries.push(item.query);
+      if (isWebSearch(item)) {
+        results.webQueries.push(item.query);
+      }
       break;
     default:
       break;
@@ -431,9 +510,7 @@ async function processStream(
 
   try {
     while (true) {
-      const nextPromise = iterator.next() as Promise<
-        IteratorResult<StreamedEvent>
-      >;
+      const nextPromise = iterator.next();
       const result = await Promise.race([nextPromise, timeoutPromise]);
 
       if (result.done) {
@@ -525,7 +602,7 @@ async function run(): Promise<void> {
     throw new Error('Missing required --task value.');
   }
 
-  const defaultSchema = {
+  const defaultSchema: Record<string, unknown> = {
     type: 'object',
     properties: {
       summary: { type: 'string' },
@@ -538,10 +615,7 @@ async function run(): Promise<void> {
     additionalProperties: true,
   } as const;
 
-  const outputSchema = resolveOutputSchema(
-    options,
-    defaultSchema as Record<string, unknown>,
-  );
+  const outputSchema = resolveOutputSchema(options, defaultSchema);
   validateOptions(options);
 
   const availableRoles = listPromptRoles();
@@ -600,9 +674,15 @@ async function run(): Promise<void> {
   }
 }
 
-// sonarlint-disable-next-line typescript:S7785 -- top-level await not available in CommonJS entrypoint
-run().catch((error: unknown) => {
-  const message = error instanceof Error ? error.message : String(error);
-  process.stderr.write(message + '\n');
-  process.exitCode = 1;
-});
+async function main(): Promise<void> {
+  try {
+    await run();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    process.stderr.write(message + '\n');
+    process.exitCode = 1;
+  }
+}
+
+// top-level await is unavailable with CommonJS; call the async entrypoint explicitly
+void main();
