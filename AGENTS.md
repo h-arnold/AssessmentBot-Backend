@@ -3,6 +3,7 @@
 This document provides guidance for interacting with the Assessment Bot backend codebase.
 
 **IMPORTANT: This project uses British English. Ensure all code, comments, documentation, and commit messages use British English spellings (e.g., 'authorise', 'colour', 'centre').**
+**IMPORTANT: Do not disable or override any quality gate (including linter rules) without explicit authorisation.**
 
 ## Core Principles
 

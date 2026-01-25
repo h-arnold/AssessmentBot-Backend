@@ -65,21 +65,16 @@ describe('main bootstrap', () => {
       getInstance: (): { set: jest.Mock } => expressInstance,
     };
 
+    const tokenLookup = new Map<unknown, unknown>([
+      [Logger, loggerInstance],
+      [ConfigService, configService],
+    ]);
+
     const app = {
       useLogger: jest.fn(),
       useGlobalInterceptors: jest.fn(),
       getHttpAdapter: jest.fn(() => httpAdapter),
-      get: jest.fn((token: unknown) => {
-        // eslint-disable-next-line security/detect-possible-timing-attacks
-        if (token === Logger) {
-          return loggerInstance;
-        }
-        // eslint-disable-next-line security/detect-possible-timing-attacks
-        if (token === ConfigService) {
-          return configService;
-        }
-        return undefined;
-      }),
+      get: jest.fn((token: unknown) => tokenLookup.get(token)),
       use: jest.fn(),
       listen: jest.fn().mockResolvedValue(undefined),
     };
