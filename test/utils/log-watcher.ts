@@ -94,18 +94,54 @@ export async function waitForLog(
   logFilePath: string,
   predicate: (log: LogObject) => boolean,
   timeoutMs = 30000,
+  signal?: AbortSignal,
 ): Promise<void> {
   const startTime = Date.now();
 
   return new Promise((resolve, reject) => {
+    let timer: NodeJS.Timeout | null = null;
+
+    const clearTimer = (): void => {
+      if (timer != null) {
+        clearTimeout(timer);
+        timer = null;
+      }
+    };
+
+    const onAbort = (): void => {
+      clearTimer();
+      reject(new Error('waitForLog aborted'));
+    };
+
+    if (signal?.aborted) {
+      return reject(new Error('waitForLog aborted'));
+    }
+
+    if (signal) {
+      signal.addEventListener('abort', onAbort);
+    }
+
+    const cleanup = (): void => {
+      clearTimer();
+      if (signal) {
+        try {
+          signal.removeEventListener('abort', onAbort);
+        } catch (_) {
+          // ignore if already removed
+        }
+      }
+    };
+
     const checkLog = (): void => {
       const logs = getLogObjects(logFilePath);
       if (logs.some(predicate)) {
+        cleanup();
         resolve();
         return;
       }
 
       if (Date.now() - startTime > timeoutMs) {
+        cleanup();
         if (fs.existsSync(logFilePath)) {
           const logContent = fs.readFileSync(logFilePath, 'utf-8');
           console.error(
@@ -119,7 +155,7 @@ export async function waitForLog(
         return;
       }
 
-      setTimeout(checkLog, 100); // Poll every 100ms
+      timer = setTimeout(checkLog, 100); // Poll every 100ms
     };
 
     checkLog();

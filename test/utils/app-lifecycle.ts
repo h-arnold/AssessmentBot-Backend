@@ -133,7 +133,7 @@ Recent log tail:\n${logTail}`),
 
     // Log stdout as well to capture any helpful messages
     appProcess.stdout.on('data', (data) => {
-      console.log(`stdout: ${data}`);
+      console.debug(`stdout: ${data}`);
     });
 
     appProcess.once('exit', (code, signal) => {
@@ -157,6 +157,9 @@ Recent log tail:\n${logTail}`),
     });
   });
 
+  // Use an AbortController so we can cancel the waiting poll if the process exits early
+  const ac = new AbortController();
+
   try {
     // Race the log readiness check against early process exit so we fail fast with a helpful error
     await Promise.race([
@@ -165,6 +168,8 @@ Recent log tail:\n${logTail}`),
         (log) =>
           typeof log.msg === 'string' &&
           log.msg.includes('Nest application successfully started'),
+        30000,
+        ac.signal,
       ),
       earlyExitPromise,
     ]);
@@ -175,6 +180,13 @@ Recent log tail:\n${logTail}`),
     appProcess.removeAllListeners('exit');
     appProcess.stdout.removeAllListeners('data');
   } catch (error) {
+    // Abort the log poll if it's still running so timers are cleared promptly
+    try {
+      ac.abort();
+    } catch (_) {
+      // ignore
+    }
+
     console.error('Error during app startup:', error);
     // Ensure the process is killed if startup fails
     if (appProcess.pid) {

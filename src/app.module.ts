@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from 'http';
+import { IncomingMessage, ServerResponse } from 'node:http';
 
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
