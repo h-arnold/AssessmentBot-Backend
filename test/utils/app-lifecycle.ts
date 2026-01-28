@@ -44,7 +44,14 @@ export async function startApp(
     fs.closeSync(fs.openSync(logFilePath, 'a'));
   }
 
-  const mainJsPath = path.join(__dirname, '..', '..', 'dist', 'src', 'main.js');
+  const appEntryPath = path.join(
+    __dirname,
+    '..',
+    '..',
+    'dist',
+    'src',
+    'testing-main.js',
+  );
 
   // Load .test.env file
   const testEnvPath = path.join(__dirname, '..', '..', '.test.env');
@@ -57,7 +64,6 @@ export async function startApp(
   const defaultTestValues = {
     NODE_ENV: 'test',
     PORT: '3001',
-    E2E_TESTING: 'true',
     LOG_FILE: logFilePath,
     GEMINI_API_KEY: 'dummy-key-for-testing', // Default dummy key
     API_KEYS: 'test-api-key,test-api-key-2',
@@ -93,14 +99,14 @@ export async function startApp(
       : shimOption;
   }
 
-  // Ensure the built main.js exists before attempting to spawn the process
-  if (!fs.existsSync(mainJsPath)) {
+  // Ensure the built test entrypoint exists before attempting to spawn the process
+  if (!fs.existsSync(appEntryPath)) {
     throw new Error(
-      `Built main file not found at ${mainJsPath}. Have you run a build?`,
+      `Built test entrypoint not found at ${appEntryPath}. Have you run a build?`,
     );
   }
 
-  const appProcess = spawn('node', [mainJsPath], {
+  const appProcess = spawn('node', [appEntryPath], {
     cwd: path.join(__dirname, '..', '..'),
     env: testEnv,
   });
