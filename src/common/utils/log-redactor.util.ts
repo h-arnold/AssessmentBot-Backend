@@ -1,5 +1,5 @@
 // src/common/utils/log-redactor.util.ts
-import { IncomingMessage } from 'http';
+import { IncomingMessage } from 'node:http';
 
 /**
  * Utility class for redacting sensitive information from log entries.
