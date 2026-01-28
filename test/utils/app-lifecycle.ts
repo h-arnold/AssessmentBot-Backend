@@ -105,15 +105,16 @@ export async function startApp(
     env: testEnv,
   });
 
-  appProcess.stderr.on('data', (data) => {
+  const stderrListener = (data: Buffer): void => {
     console.error(`stderr: ${data}`);
-  });
+  };
+  appProcess.stderr.on('data', stderrListener);
 
   const appUrl = 'http://localhost:3001';
 
   // Create a promise that rejects if the child process exits or fails to spawn
   const earlyExitPromise = new Promise<never>((_, reject) => {
-    appProcess.once('error', (err) => {
+    const errorListener = (err: Error): void => {
       console.error('App process failed to start:', err);
       // Include any existing log content to aid debugging
       let logTail = '';
@@ -126,17 +127,19 @@ export async function startApp(
         logTail = `Failed to read log file: ${e instanceof Error ? e.message : String(e)}`;
       }
       reject(
-        new Error(`App process failed to start: ${err?.message ?? String(err)}\n
-Recent log tail:\n${logTail}`),
+        new Error(
+          `App process failed to start: ${err?.message ?? String(err)}\n\nRecent log tail:\n${logTail}`,
+        ),
       );
-    });
+    };
 
     // Log stdout as well to capture any helpful messages
-    appProcess.stdout.on('data', (data) => {
+    const stdoutListener = (data: Buffer): void => {
       console.debug(`stdout: ${data}`);
-    });
+    };
+    appProcess.stdout.on('data', stdoutListener);
 
-    appProcess.once('exit', (code, signal) => {
+    const exitListener = (code: number | null, signal: string | null): void => {
       console.error(
         `App process exited early with code=${code} signal=${signal}`,
       );
@@ -151,10 +154,14 @@ Recent log tail:\n${logTail}`),
         logTail = `Failed to read log file: ${e instanceof Error ? e.message : String(e)}`;
       }
       reject(
-        new Error(`App process exited early with code=${code} signal=${signal}\n
-Recent log tail:\n${logTail}`),
+        new Error(
+          `App process exited early with code=${code} signal=${signal}\n\nRecent log tail:\n${logTail}`,
+        ),
       );
-    });
+    };
+
+    appProcess.once('error', errorListener);
+    appProcess.once('exit', exitListener);
   });
 
   // Use an AbortController so we can cancel the waiting poll if the process exits early
@@ -174,11 +181,16 @@ Recent log tail:\n${logTail}`),
       earlyExitPromise,
     ]);
 
-    // Startup succeeded: remove the early-exit handlers to avoid treating normal shutdown
-    // (e.g. SIGTERM during test teardown) as an unexpected failure.
-    appProcess.removeAllListeners('error');
-    appProcess.removeAllListeners('exit');
-    appProcess.stdout.removeAllListeners('data');
+    // Startup succeeded: remove the early-exit handlers and stdout/stderr listeners
+    // (e.g. SIGTERM during test teardown) so they don't keep handles open.
+    try {
+      appProcess.removeAllListeners('error');
+      appProcess.removeAllListeners('exit');
+      appProcess.stdout.removeAllListeners('data');
+      appProcess.stderr.removeAllListeners('data');
+    } catch (_) {
+      // best-effort cleanup
+    }
   } catch (error) {
     // Abort the log poll if it's still running so timers are cleared promptly
     try {
@@ -220,7 +232,25 @@ Recent log tail:\n${logTail}`),
  */
 export function stopApp(appProcess: ChildProcessWithoutNullStreams): void {
   if (appProcess && !appProcess.killed) {
-    appProcess.kill('SIGTERM');
+    try {
+      appProcess.kill('SIGTERM');
+    } catch (_) {
+      // ignore
+    }
+
+    // If the process doesn't exit within a short timeout, force kill it to prevent
+    // CI hangs due to orphaned processes.
+    const killTimer = setTimeout(() => {
+      try {
+        if (!appProcess.killed) {
+          appProcess.kill('SIGKILL');
+        }
+      } catch (_) {
+        // ignore
+      }
+    }, 5000);
+
+    appProcess.once('exit', () => clearTimeout(killTimer));
   }
 }
 

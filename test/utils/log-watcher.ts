@@ -74,12 +74,12 @@ export function getLogObjects(logFilePath: string): LogObject[] {
       try {
         return JSON.parse(line) as LogObject;
       } catch (err) {
+        // A log line may be written incrementally; skip malformed lines but log them for visibility
         console.error(`Failed to parse JSON log line ${idx}: ${line}`);
-        throw new Error(
-          `Failed to parse JSON log line ${idx}: ${err instanceof Error ? err.message : String(err)}`,
-        );
+        return null;
       }
-    });
+    })
+    .filter((o): o is LogObject => o !== null);
 }
 
 /**
@@ -133,7 +133,20 @@ export async function waitForLog(
     };
 
     const checkLog = (): void => {
-      const logs = getLogObjects(logFilePath);
+      let logs: LogObject[];
+      try {
+        logs = getLogObjects(logFilePath);
+      } catch (err) {
+        // Defensive: ensure we clean up timers/listeners and surface a descriptive error
+        cleanup();
+        const errMsg = err instanceof Error ? err.message : String(err);
+        console.error(
+          `waitForLog encountered an error while reading logs: ${errMsg}`,
+        );
+        reject(new Error(`waitForLog failed while parsing logs: ${errMsg}`));
+        return;
+      }
+
       if (logs.some(predicate)) {
         cleanup();
         resolve();

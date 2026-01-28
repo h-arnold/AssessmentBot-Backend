@@ -1,7 +1,7 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
-import { waitForLog } from './utils/log-watcher';
+import { waitForLog, LogObject } from './utils/log-watcher';
 
 jest.setTimeout(5000);
 
@@ -13,6 +13,21 @@ describe('log-watcher', () => {
     if (!fs.existsSync(logsDir)) {
       fs.mkdirSync(logsDir, { recursive: true });
     }
+    // Ensure the file exists empty
+    fs.writeFileSync(logFilePath, '', 'utf-8');
+  });
+
+  afterAll(() => {
+    try {
+      if (fs.existsSync(logFilePath)) fs.unlinkSync(logFilePath);
+    } catch (_) {
+      // ignore
+    }
+    try {
+      if (fs.existsSync(logsDir)) fs.rmdirSync(logsDir);
+    } catch (_) {
+      // ignore
+    }
   });
 
   it('is abortable via AbortSignal', async () => {
@@ -23,5 +38,40 @@ describe('log-watcher', () => {
     ac.abort();
 
     await expect(p).rejects.toThrow(/waitForLog aborted/);
+  });
+
+  it('resolves when a matching log line appears', async () => {
+    const predicate = (log: LogObject | undefined): boolean =>
+      !!(log && log.msg === 'unit-ready');
+    const p = waitForLog(logFilePath, predicate, 3000);
+
+    // Append a valid JSON line after a short delay
+    setTimeout((): void => {
+      fs.appendFileSync(
+        logFilePath,
+        JSON.stringify({ msg: 'unit-ready' }) + '\n',
+        'utf-8',
+      );
+    }, 50);
+
+    await expect(p).resolves.toBeUndefined();
+  });
+
+  it('skips malformed lines and still resolves when valid line appears', async () => {
+    const predicate = (log: LogObject | undefined): boolean =>
+      !!(log && log.msg === 'after-malformed');
+    const p = waitForLog(logFilePath, predicate, 3000);
+
+    // Append a malformed line then a valid line
+    setTimeout((): void => {
+      fs.appendFileSync(logFilePath, "{not: 'json'}\n", 'utf-8');
+      fs.appendFileSync(
+        logFilePath,
+        JSON.stringify({ msg: 'after-malformed' }) + '\n',
+        'utf-8',
+      );
+    }, 50);
+
+    await expect(p).resolves.toBeUndefined();
   });
 });
