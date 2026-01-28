@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 
 /**
  * Represents a single log entry object parsed from the application's log file.
@@ -70,7 +70,16 @@ export function getLogObjects(logFilePath: string): LogObject[] {
   return logContent
     .split('\n')
     .filter((line) => line.trim() !== '')
-    .map((line) => JSON.parse(line) as LogObject);
+    .map((line, idx) => {
+      try {
+        return JSON.parse(line) as LogObject;
+      } catch (err) {
+        console.error(`Failed to parse JSON log line ${idx}: ${line}`);
+        throw new Error(
+          `Failed to parse JSON log line ${idx}: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    });
 }
 
 /**

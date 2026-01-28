@@ -1,22 +1,9 @@
 /**
- * Bootstraps the NestJS application.
+ * Application bootstrapper.
  *
- * **REVIEW REQUIRED** This comment needs verification of implementation details.
- *
- * This function initialises the application by creating a NestJS instance
- * with the `AppModule`. It configures the application with logging,
- * request parsing, and starts the server.
- *
- * Steps performed:
- * - Loads environment variables using `dotenv` (test vs production)
- * - Creates a NestJS application instance with logging configuration
- * - Sets up Express query parser to 'extended' mode
- * - Configures JSON body parser with size limits from ConfigService
- * - Starts the application server on the configured port
- *
- * @async
- * @function bootstrap
- * @returns {Promise<void>} A promise that resolves when the application is successfully started.
+ * Exported function `bootstrap()` can be used to start the NestJS app
+ * programmatically (e.g., in tests). The script will also start the
+ * application when executed directly with `node dist/src/main.js`.
  */
 import { NestFactory } from '@nestjs/core';
 import * as dotenv from 'dotenv';
@@ -30,24 +17,6 @@ dotenv.config({ path: envFile });
 import { AppModule } from './app.module';
 import { ConfigService } from './config/config.service';
 
-/**
- * Initialises and starts the NestJS application.
- *
- * **REVIEW REQUIRED** This appears to be a duplicate comment with inaccuracies.
- *
- * This function sets up the application by creating an instance of the AppModule,
- * configuring logging, request parsing, and starting the server on the configured port.
- *
- * @async
- * @function bootstrap
- * @returns {Promise<void>} A promise that resolves when the application is successfully started.
- *
- * @remarks
- * - Logging is configured based on E2E testing environment
- * - Express query parser is set to 'extended' mode for compatibility
- * - JSON payload limit is retrieved from the `ConfigService`
- * - Global exception handling is configured via AppModule, not here directly
- */
 export async function bootstrap(): Promise<void> {
   const isE2ETesting = process.env.E2E_TESTING === 'true';
   const app = await NestFactory.create(AppModule, {
@@ -71,6 +40,10 @@ export async function bootstrap(): Promise<void> {
   await app.listen(port, '0.0.0.0');
 }
 
-if (process.env.NODE_ENV !== 'test') {
+// Start the application only when the file is executed directly. This allows tests
+// to import `bootstrap` without automatically starting the server, while still
+// allowing `node dist/src/main.js` (the test spawn) to start the app even when
+// NODE_ENV is set to 'test'.
+if (typeof require !== 'undefined' && require.main === module) {
   void bootstrap();
 }

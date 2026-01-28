@@ -1,6 +1,6 @@
-import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
+import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 import * as dotenv from 'dotenv';
 
@@ -93,6 +93,13 @@ export async function startApp(
       : shimOption;
   }
 
+  // Ensure the built main.js exists before attempting to spawn the process
+  if (!fs.existsSync(mainJsPath)) {
+    throw new Error(
+      `Built main file not found at ${mainJsPath}. Have you run a build?`,
+    );
+  }
+
   const appProcess = spawn('node', [mainJsPath], {
     cwd: path.join(__dirname, '..', '..'),
     env: testEnv,
@@ -104,13 +111,69 @@ export async function startApp(
 
   const appUrl = 'http://localhost:3001';
 
+  // Create a promise that rejects if the child process exits or fails to spawn
+  const earlyExitPromise = new Promise<never>((_, reject) => {
+    appProcess.once('error', (err) => {
+      console.error('App process failed to start:', err);
+      // Include any existing log content to aid debugging
+      let logTail = '';
+      try {
+        if (fs.existsSync(logFilePath)) {
+          const lc = fs.readFileSync(logFilePath, 'utf-8');
+          logTail = lc.slice(-2000);
+        }
+      } catch (e) {
+        logTail = `Failed to read log file: ${e instanceof Error ? e.message : String(e)}`;
+      }
+      reject(
+        new Error(`App process failed to start: ${err?.message ?? String(err)}\n
+Recent log tail:\n${logTail}`),
+      );
+    });
+
+    // Log stdout as well to capture any helpful messages
+    appProcess.stdout.on('data', (data) => {
+      console.log(`stdout: ${data}`);
+    });
+
+    appProcess.once('exit', (code, signal) => {
+      console.error(
+        `App process exited early with code=${code} signal=${signal}`,
+      );
+      // Include any existing log content to aid debugging
+      let logTail = '';
+      try {
+        if (fs.existsSync(logFilePath)) {
+          const lc = fs.readFileSync(logFilePath, 'utf-8');
+          logTail = lc.slice(-2000);
+        }
+      } catch (e) {
+        logTail = `Failed to read log file: ${e instanceof Error ? e.message : String(e)}`;
+      }
+      reject(
+        new Error(`App process exited early with code=${code} signal=${signal}\n
+Recent log tail:\n${logTail}`),
+      );
+    });
+  });
+
   try {
-    await waitForLog(
-      logFilePath,
-      (log) =>
-        typeof log.msg === 'string' &&
-        log.msg.includes('Nest application successfully started'),
-    );
+    // Race the log readiness check against early process exit so we fail fast with a helpful error
+    await Promise.race([
+      waitForLog(
+        logFilePath,
+        (log) =>
+          typeof log.msg === 'string' &&
+          log.msg.includes('Nest application successfully started'),
+      ),
+      earlyExitPromise,
+    ]);
+
+    // Startup succeeded: remove the early-exit handlers to avoid treating normal shutdown
+    // (e.g. SIGTERM during test teardown) as an unexpected failure.
+    appProcess.removeAllListeners('error');
+    appProcess.removeAllListeners('exit');
+    appProcess.stdout.removeAllListeners('data');
   } catch (error) {
     console.error('Error during app startup:', error);
     // Ensure the process is killed if startup fails
@@ -128,11 +191,11 @@ export async function startApp(
     appUrl,
     apiKey,
     apiKey2,
-    throttlerTtl: parseInt(testEnv.THROTTLER_TTL!),
-    unauthenticatedThrottlerLimit: parseInt(
+    throttlerTtl: Number.parseInt(testEnv.THROTTLER_TTL!),
+    unauthenticatedThrottlerLimit: Number.parseInt(
       testEnv.UNAUTHENTICATED_THROTTLER_LIMIT!,
     ),
-    authenticatedThrottlerLimit: parseInt(
+    authenticatedThrottlerLimit: Number.parseInt(
       testEnv.AUTHENTICATED_THROTTLER_LIMIT!,
     ),
   };
