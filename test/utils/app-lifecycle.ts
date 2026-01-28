@@ -188,15 +188,17 @@ export async function startApp(
       appProcess.removeAllListeners('exit');
       appProcess.stdout.removeAllListeners('data');
       appProcess.stderr.removeAllListeners('data');
-    } catch (_) {
-      // best-effort cleanup
+    } catch (err) {
+      // Best-effort cleanup failed — log for diagnostics
+      console.debug('Failed to remove listeners during startup cleanup:', err);
     }
   } catch (error) {
     // Abort the log poll if it's still running so timers are cleared promptly
     try {
       ac.abort();
-    } catch (_) {
-      // ignore
+    } catch (err) {
+      // Log abort failure for visibility
+      console.debug('Abort controller abort failed:', err);
     }
 
     console.error('Error during app startup:', error);
@@ -234,8 +236,9 @@ export function stopApp(appProcess: ChildProcessWithoutNullStreams): void {
   if (appProcess && !appProcess.killed) {
     try {
       appProcess.kill('SIGTERM');
-    } catch (_) {
-      // ignore
+    } catch (err) {
+      // Log failure to send SIGTERM so flakes are easier to diagnose
+      console.debug('Failed to send SIGTERM to app process:', err);
     }
 
     // If the process doesn't exit within a short timeout, force kill it to prevent
@@ -245,8 +248,9 @@ export function stopApp(appProcess: ChildProcessWithoutNullStreams): void {
         if (!appProcess.killed) {
           appProcess.kill('SIGKILL');
         }
-      } catch (_) {
-        // ignore
+      } catch (err) {
+        // Log force-kill failures for diagnostics
+        console.debug('Failed to force-kill app process:', err);
       }
     }, 5000);
 

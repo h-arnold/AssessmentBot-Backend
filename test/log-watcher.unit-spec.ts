@@ -20,13 +20,15 @@ describe('log-watcher', () => {
   afterAll(() => {
     try {
       if (fs.existsSync(logFilePath)) fs.unlinkSync(logFilePath);
-    } catch (_) {
-      // ignore
+    } catch (err) {
+      // Log cleanup failures so CI flakes are easier to diagnose
+      console.debug('Failed to cleanup test logs:', err);
     }
     try {
       if (fs.existsSync(logsDir)) fs.rmdirSync(logsDir);
-    } catch (_) {
-      // ignore
+    } catch (err) {
+      // Log cleanup failures so CI flakes are easier to diagnose
+      console.debug('Failed to remove logs dir:', err);
     }
   });
 
@@ -41,8 +43,7 @@ describe('log-watcher', () => {
   });
 
   it('resolves when a matching log line appears', async () => {
-    const predicate = (log: LogObject | undefined): boolean =>
-      !!(log && log.msg === 'unit-ready');
+    const predicate = (log: LogObject): boolean => log.msg === 'unit-ready';
     const p = waitForLog(logFilePath, predicate, 3000);
 
     // Append a valid JSON line after a short delay
@@ -58,8 +59,8 @@ describe('log-watcher', () => {
   });
 
   it('skips malformed lines and still resolves when valid line appears', async () => {
-    const predicate = (log: LogObject | undefined): boolean =>
-      !!(log && log.msg === 'after-malformed');
+    const predicate = (log: LogObject): boolean =>
+      log.msg === 'after-malformed';
     const p = waitForLog(logFilePath, predicate, 3000);
 
     // Append a malformed line then a valid line

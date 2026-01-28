@@ -67,7 +67,7 @@ Tidy Code principles to enforce:
 - Keep public APIs lean; keep side effects contained; prefer pure functions where possible.
 - Keep imports ordered (built-ins, externals, internal absolute, relative) and avoid circular deps.
 - Testing code remains entirely separate to production code. **NO TESTING LOGIC IN PROD CODE**
-- Exceptions should always be handled - throw the error appropraitely
+- Exceptions should always be handled - throw the error appropriately.
 
 Reference docs while reviewing: `docs/development/code-style.md`, `docs/development/workflow.md`, `docs/testing/README.md`, `docs/configuration/environment.md`, `docs/prompts/README.md`, and `AGENTS.md`.
 

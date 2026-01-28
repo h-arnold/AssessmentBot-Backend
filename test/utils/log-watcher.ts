@@ -75,7 +75,10 @@ export function getLogObjects(logFilePath: string): LogObject[] {
         return JSON.parse(line) as LogObject;
       } catch (err) {
         // A log line may be written incrementally; skip malformed lines but log them for visibility
-        console.error(`Failed to parse JSON log line ${idx}: ${line}`);
+        console.error(
+          `Failed to parse JSON log line ${idx}: ${line}`,
+          err instanceof Error ? err.message : String(err),
+        );
         return null;
       }
     })
@@ -126,8 +129,9 @@ export async function waitForLog(
       if (signal) {
         try {
           signal.removeEventListener('abort', onAbort);
-        } catch (_) {
-          // ignore if already removed
+        } catch (err) {
+          // Log rather than silently ignore to aid debugging flakes
+          console.debug('Failed to remove abort listener:', err);
         }
       }
     };
@@ -147,7 +151,7 @@ export async function waitForLog(
         return;
       }
 
-      if (logs.some(predicate)) {
+      if (logs.some((l) => predicate(l))) {
         cleanup();
         resolve();
         return;

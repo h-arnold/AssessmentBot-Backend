@@ -45,5 +45,10 @@ export async function bootstrap(): Promise<void> {
 // allowing `node dist/src/main.js` (the test spawn) to start the app even when
 // NODE_ENV is set to 'test'.
 if (typeof require !== 'undefined' && require.main === module) {
-  void bootstrap();
+  // Start and handle failures explicitly rather than using `void` which hides
+  // rejections. We don't use top-level await here due to current TS config.
+  bootstrap().catch((err) => {
+    console.error('Failed to bootstrap application:', err);
+    process.exit(1);
+  });
 }
