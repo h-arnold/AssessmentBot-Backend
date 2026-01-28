@@ -1,14 +1,16 @@
-const dotenvConfig = jest.fn();
-const bootstrap = jest.fn();
-
-jest.mock('dotenv', () => ({
-  config: dotenvConfig,
-}));
-jest.mock('./bootstrap', () => ({
-  bootstrap,
-}));
-
 describe('testing entrypoint', () => {
+  let dotenvConfig: jest.Mock;
+  let bootstrap: jest.Mock;
+
+  beforeEach(() => {
+    jest.resetModules();
+    jest.clearAllMocks();
+    dotenvConfig = jest.fn();
+    bootstrap = jest.fn();
+    jest.doMock('dotenv', () => ({ config: dotenvConfig }));
+    jest.doMock('./bootstrap', () => ({ bootstrap }));
+  });
+
   afterEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
