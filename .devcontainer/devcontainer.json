@@ -3,20 +3,17 @@
   "name": "AssessmentBot-Backend DevContainer",
   // Use the typescript-node base image (Node.js + TypeScript tooling).
   // Keep the Ubuntu variant behavior from the original image where applicable.
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:22-bookworm",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:latest",
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    //"ghcr.io/devcontainers/features/docker-in-docker:2": {}, DISABLED DUE TO A MOBY COMPATABILITY.
+    // Not really using the docker-in-docker functionality atm so going to leave it disabled for now.
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
-    // Ensure the `file` (libmagic) utility is available for tests and runtime tools that rely on it
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "22"
-    },
     // We need java for the SonarQube VSCode Extension
     "ghcr.io/devcontainers/features/java:1": {}
   },
   // Install dependencies and build the project every time the container starts.
-  "postStartCommand": "npm install && npm run build",
+  "postStartCommand": "sudo apt install libmagic && npm install && npm run build",
   // Forward port 3000 for the NestJS application
   "forwardPorts": [3000],
   "portsAttributes": {
