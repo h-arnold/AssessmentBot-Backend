@@ -13,11 +13,11 @@ This plan is written to follow the repo’s TDD workflow and British English sta
 
 ### Progress Update (Current State)
 
-- [x] Added assessor cache configuration variables, validation rules, and documentation.
-- [x] Implemented HMAC-based cache key generation with canonicalisation and image content hashing.
-- [x] Implemented an in-memory cache interceptor for `POST /v1/assessor` with error-response guards.
-- [x] Implemented a size-aware LRU cache store and wired it through `CacheModule.registerAsync`.
-- [x] Updated assessor controller and module to enable caching.
+- [ ] Added assessor cache configuration variables, validation rules, and documentation.
+- [ ] Implemented HMAC-based cache key generation with canonicalisation and image content hashing.
+- [ ] Implemented an in-memory cache interceptor for `POST /v1/assessor` with error-response guards.
+- [ ] Implemented a size-aware LRU cache store and wired it through `CacheModule.registerAsync`.
+- [ ] Updated assessor controller and module to enable caching.
 - [ ] Add remaining unit/integration/E2E tests outlined below (only cache-key utility tests exist so far).
 - [ ] Run the full test suite (`npm test`, `npm run test:e2e`) after completing test coverage.
 
@@ -204,35 +204,35 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 
 #### Security-focused cache attack coverage
 
-6. **Cache key inference via payload perturbation**
+1. **Cache key inference via payload perturbation**
    - Send near-identical payloads with single-character differences and confirm cache misses occur (no unintended collisions).
-7. **Canonicalisation collision attempt**
+2. **Canonicalisation collision attempt**
    - Submit payloads with reordered JSON keys and confirm they map to the **same** cache entry (expected canonicalisation), then verify a different value changes the cache key.
-8. **Buffer vs string equivalence**
+3. **Buffer vs string equivalence**
    - Align canonicalisation tests with the runtime prompt path (data URI vs Buffer handling) and verify equivalence/miss behaviour accordingly.
-9. **Cross-request contamination attempt**
+4. **Cross-request contamination attempt**
    - Alternate between two distinct payloads rapidly to ensure responses never leak across cache entries.
-10. **Replay with modified headers**
+5. **Replay with modified headers**
 
 - Repeat identical payloads with different non-auth headers and confirm cache hits are based solely on DTO (no header-based cache poisoning).
 
-11. **Large payload cache poisoning attempt**
+1. **Large payload cache poisoning attempt**
 
 - Use maximum-size payloads that approach limits and ensure cached responses are still tied to the correct hash (no truncation or shared entries).
 
-12. **Cache eviction race**
+1. **Cache eviction race**
 
 - Force size-based eviction then immediately request a previously cached payload to ensure it is recomputed rather than served incorrectly.
 
-13. **Invalid TTL/size injection**
+1. **Invalid TTL/size injection**
 
 - Attempt to boot E2E with invalid TTL/size env values (0, negative, above limit) and confirm startup failure to prevent unsafe caching.
 
-14. **Template/version change invalidation**
+1. **Template/version change invalidation**
 
 - Modify prompt templates between requests and ensure cache keys change (or explicitly validate configured behaviour).
 
-15. **File-based image invalidation**
+1. **File-based image invalidation**
 
 - Change an image file on disk between requests and ensure cache misses occur (content hashing must invalidate cached entries).
 

@@ -82,6 +82,44 @@ describe('createAssessorCacheKey', () => {
     expect(keyA).not.toBe(keyB);
   });
 
+  it('treats leading whitespace differences as distinct payloads', () => {
+    const { createAssessorCacheKey } = loadCacheKeyUtil();
+    const dtoA: CreateAssessorDto = {
+      taskType: TaskType.TEXT,
+      reference: 'Reference',
+      template: 'Template',
+      studentResponse: 'Student response',
+    };
+    const dtoB: CreateAssessorDto = {
+      ...dtoA,
+      studentResponse: ' Student response',
+    };
+
+    const keyA = createAssessorCacheKey(dtoA, secret);
+    const keyB = createAssessorCacheKey(dtoB, secret);
+
+    expect(keyA).not.toBe(keyB);
+  });
+
+  it('treats multiple consecutive spaces as distinct from single spaces', () => {
+    const { createAssessorCacheKey } = loadCacheKeyUtil();
+    const dtoA: CreateAssessorDto = {
+      taskType: TaskType.TEXT,
+      reference: 'Reference',
+      template: 'Template',
+      studentResponse: 'Student  response',
+    };
+    const dtoB: CreateAssessorDto = {
+      ...dtoA,
+      studentResponse: 'Student response',
+    };
+
+    const keyA = createAssessorCacheKey(dtoA, secret);
+    const keyB = createAssessorCacheKey(dtoB, secret);
+
+    expect(keyA).not.toBe(keyB);
+  });
+
   it('does not include raw student data in the cache key', () => {
     const { createAssessorCacheKey } = loadCacheKeyUtil();
     const dto: CreateAssessorDto = {
@@ -161,7 +199,7 @@ describe('createAssessorCacheKey', () => {
     expect(keyA).not.toBe(keyB);
   });
 
-  it('ignores the system prompt file when deriving the cache key', () => {
+  it('excludes systemPromptFile field from cache key derivation', () => {
     const { createAssessorCacheKey } = loadCacheKeyUtil();
     const dtoA: CreateAssessorDto = {
       taskType: TaskType.IMAGE,
@@ -240,5 +278,31 @@ describe('createAssessorCacheKey', () => {
     };
 
     expect(() => createAssessorCacheKey(dto, secret)).toThrow();
+  });
+
+  it('treats identical Buffer and data URI string representations equally', () => {
+    const { createAssessorCacheKey } = loadCacheKeyUtil();
+    const imgContent = Buffer.from([0x89, 0x50, 0x4e, 0x47]); // PNG header
+    const base64Str = imgContent.toString('base64'); // iVBO
+    const dataUri = `data:image/png;base64,${base64Str}`;
+
+    const dtoWithBuffer: CreateAssessorDto = {
+      taskType: TaskType.IMAGE,
+      reference: imgContent,
+      template: imgContent,
+      studentResponse: imgContent,
+    };
+
+    const dtoWithDataUri: CreateAssessorDto = {
+      taskType: TaskType.IMAGE,
+      reference: dataUri,
+      template: dataUri,
+      studentResponse: dataUri,
+    };
+
+    const keyWithBuffer = createAssessorCacheKey(dtoWithBuffer, secret);
+    const keyWithDataUri = createAssessorCacheKey(dtoWithDataUri, secret);
+
+    expect(keyWithBuffer).toBe(keyWithDataUri);
   });
 });

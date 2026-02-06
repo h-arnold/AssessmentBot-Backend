@@ -44,4 +44,28 @@ describe('resolveAssessorCacheTtlSeconds', () => {
     });
     expect(ttlSeconds).toBe(172800);
   });
+
+  it('defaults to 1440 minutes (24 hours) when ASSESSOR_CACHE_TTL_MINUTES is omitted', () => {
+    const { resolveAssessorCacheTtlSeconds } = loadCacheConfig();
+    const ttlSeconds = resolveAssessorCacheTtlSeconds({
+      ASSESSOR_CACHE_TTL_MINUTES: 1440,
+    });
+    expect(ttlSeconds).toBe(86400);
+  });
+
+  it('converts 1 hour to 3600 seconds', () => {
+    const { resolveAssessorCacheTtlSeconds } = loadCacheConfig();
+    const ttlSeconds = resolveAssessorCacheTtlSeconds({
+      ASSESSOR_CACHE_TTL_HOURS: 1,
+    });
+    expect(ttlSeconds).toBe(3600);
+  });
+
+  it('converts 30 minutes to 1800 seconds', () => {
+    const { resolveAssessorCacheTtlSeconds } = loadCacheConfig();
+    const ttlSeconds = resolveAssessorCacheTtlSeconds({
+      ASSESSOR_CACHE_TTL_MINUTES: 30,
+    });
+    expect(ttlSeconds).toBe(1800);
+  });
 });

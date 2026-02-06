@@ -44,7 +44,11 @@
         "GitHub.vscode-pull-request-github",
         "GitHub.copilot-chat",
         "SonarSource.sonarlint-vscode",
-        "openai.chatgpt"
+        "openai.chatgpt",
+        "github.vscode-github-actions",
+        "yzhang.markdown-all-in-one",
+        "bierner.markdown-mermaid",
+        "DavidAnson.vscode-markdownlint"
       ]
     }
   }

@@ -99,4 +99,52 @@ describe('AssessorCacheInterceptor', () => {
     expect(key).not.toContain('Template');
     expect(key).not.toContain('Response');
   });
+
+  it('produces distinct cache keys for distinct request bodies', () => {
+    const { AssessorCacheInterceptor } = loadInterceptor();
+    const interceptor = new AssessorCacheInterceptor({
+      get: jest.fn().mockReturnValue('secret'),
+    });
+    const contextA = createHttpContext('POST', '/v1/assessor', 201, {
+      taskType: 'TEXT',
+      reference: 'Reference A',
+      template: 'Template',
+      studentResponse: 'Response',
+    });
+    const contextB = createHttpContext('POST', '/v1/assessor', 201, {
+      taskType: 'TEXT',
+      reference: 'Reference B',
+      template: 'Template',
+      studentResponse: 'Response',
+    });
+
+    const keyA = interceptor.trackBy(contextA);
+    const keyB = interceptor.trackBy(contextB);
+
+    expect(keyA).not.toBe(keyB);
+  });
+
+  describe.each([
+    [400, 'Bad Request'],
+    [401, 'Unauthorised'],
+    [403, 'Forbidden'],
+    [404, 'Not Found'],
+    [422, 'Unprocessable Entity'],
+    [500, 'Internal Server Error'],
+    [502, 'Bad Gateway'],
+    [503, 'Service Unavailable'],
+  ])('does not cache %d (%s) error responses', (statusCode, _statusName) => {
+    const { AssessorCacheInterceptor } = loadInterceptor();
+    const interceptor = new AssessorCacheInterceptor({
+      get: jest.fn().mockReturnValue('secret'),
+    });
+    const context = createHttpContext('POST', '/v1/assessor', statusCode);
+
+    const result = interceptor.isResponseCacheable(
+      context.switchToHttp().getResponse(),
+    );
+
+    expect(result).toBe(false);
+  });
 });
+

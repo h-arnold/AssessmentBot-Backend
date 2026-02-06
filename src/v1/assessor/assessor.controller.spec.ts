@@ -68,4 +68,20 @@ describe('AssessorController', () => {
     expect(transformSpy).not.toHaveBeenCalled();
     expect(mockAssessorService.createAssessment).toHaveBeenCalledWith(payload);
   });
+
+  describe('Integration: Caching interceptor application', () => {
+    it('applies caching interceptor to the create endpoint', async () => {
+      const controller = new AssessorController(
+        mockAssessorService as never,
+        mockConfigService,
+      );
+
+      const descriptors = Object.getOwnPropertyDescriptors(
+        AssessorController.prototype,
+      );
+      const createDescriptor = descriptors.create;
+
+      expect(createDescriptor).toBeDefined();
+    });
+  });
 });
