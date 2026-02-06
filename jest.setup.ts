@@ -12,3 +12,6 @@ process.env.LOG_LEVEL = 'debug';
 process.env.THROTTLER_TTL = '60';
 process.env.UNAUTHENTICATED_THROTTLER_LIMIT = '10';
 process.env.AUTHENTICATED_THROTTLER_LIMIT = '50';
+process.env.ASSESSOR_CACHE_HASH_SECRET = 'test-cache-secret';
+process.env.ASSESSOR_CACHE_TTL_MINUTES = '1440';
+process.env.ASSESSOR_CACHE_MAX_SIZE_MIB = '384';

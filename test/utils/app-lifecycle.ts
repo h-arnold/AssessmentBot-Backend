@@ -73,6 +73,9 @@ export async function startApp(
     LLM_BACKOFF_BASE_MS: '2000', // Increased backoff for rate limiting (2 seconds instead of 1)
     LLM_MAX_RETRIES: '5', // Increased retries for rate limiting (5 instead of 3)
     LOG_LEVEL: 'debug',
+    ASSESSOR_CACHE_HASH_SECRET: 'test-assessor-cache-secret',
+    ASSESSOR_CACHE_TTL_MINUTES: '1440',
+    ASSESSOR_CACHE_MAX_SIZE_MIB: '384',
   };
 
   // Merge environment variables: process.env < defaults < .test.env < overrides

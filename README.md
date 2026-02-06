@@ -60,11 +60,12 @@ The API will be available at `http://localhost:80`. For more details, see the [D
 
 ## 🤖 Codex Delegation
 
-Use the delegation runner to dispatch focused sub-agent tasks while keeping outputs concise, with periodic progress snapshots when logging is enabled.
-See the [Codex delegation guide](./docs/development/codex-delegation.md) for defaults, flags, and workflow guidance.
+Use `codex-delegate` to run focused sub-agent tasks while keeping the main context concise.
 
 ```bash
-npm run dev:delegate -- --role implementation --task "Implement the new endpoint" --instructions "Follow existing NestJS patterns."
+npx codex-delegate --role implementation \
+  --task "Implement the new endpoint" \
+  --instructions "Follow existing NestJS patterns."
 ```
 
 Common flags:
