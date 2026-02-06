@@ -15,8 +15,6 @@
     // We need java for the SonarQube VSCode Extension
     "ghcr.io/devcontainers/features/java:1": {}
   },
-  // Install Gemini CLI globally when the container is created.
-  "postCreateCommand": "npm install -g @google/gemini-cli",
   // Install dependencies and build the project every time the container starts.
   "postStartCommand": "npm install && npm run build",
   // Forward port 3000 for the NestJS application
@@ -48,7 +46,6 @@
         "mermaidchart.vscode-mermaid-chart",
         "GitHub.vscode-pull-request-github",
         "GitHub.copilot-chat",
-        "google.geminicodeassist",
         "SonarSource.sonarlint-vscode"
       ]
     }
