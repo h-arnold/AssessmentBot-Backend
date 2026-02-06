@@ -1,10 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { ApiKeyGuard } from 'src/auth/api-key.guard';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
@@ -17,7 +11,6 @@ import {
   type CreateAssessorDto,
   createAssessorDtoSchema,
 } from './dto/create-assessor.dto';
-import { AssessorCacheInterceptor } from '../../common/cache/assessor-cache.interceptor';
 import { LlmResponse } from '../../llm/types';
 
 /**
@@ -72,7 +65,6 @@ export class AssessorController {
    * @throws {UnauthorizedException} If API key authentication fails
    */
   @Post()
-  @UseInterceptors(AssessorCacheInterceptor)
   async create(
     @Body(new ZodValidationPipe(createAssessorDtoSchema))
     createAssessorDto: CreateAssessorDto,

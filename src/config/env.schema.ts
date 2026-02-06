@@ -33,74 +33,38 @@ import { z } from 'zod';
  * @property {number} AUTHENTICATED_THROTTLER_LIMIT - The maximum number of requests for authenticated routes within the TTL window.
  * @property {number} LLM_BACKOFF_BASE_MS - The base backoff time in milliseconds for LLM rate limit retries.
  * @property {number} LLM_MAX_RETRIES - The maximum number of retry attempts for LLM rate limit errors.
- * @property {number} ASSESSOR_CACHE_TTL_MINUTES - The assessor cache TTL in minutes (default 1440).
- * @property {number} [ASSESSOR_CACHE_TTL_HOURS] - Optional assessor cache TTL in hours (overrides minutes).
- * @property {string} ASSESSOR_CACHE_HASH_SECRET - Secret used to hash assessor cache keys.
- * @property {number} ASSESSOR_CACHE_MAX_SIZE_MIB - Maximum in-memory cache size in MiB.
  */
-export const configSchema = z
-  .object({
-    NODE_ENV: z
-      .enum(['development', 'production', 'test'])
-      .default('production'),
-    PORT: z.coerce.number().int().min(1).max(65535).default(3000),
-    APP_NAME: z.string().default('AssessmentBot-Backend'),
-    APP_VERSION: z.string().optional(),
-    API_KEYS: z
-      .string()
-      .optional()
-      .transform((val) =>
-        val === undefined ? undefined : val.split(',').map((s) => s.trim()),
-      )
-      .refine(
-        (arr) =>
-          arr === undefined || arr.every((s) => /^[a-zA-Z0-9_-]+$/.test(s)),
-        { message: 'Invalid API key format' },
-      ),
-    MAX_IMAGE_UPLOAD_SIZE_MB: z.coerce.number().int().min(0).default(1),
-    ALLOWED_IMAGE_MIME_TYPES: z
-      .string()
-      .default('image/png')
-      .transform((val) => val.split(',').map((s) => s.trim())),
-    GEMINI_API_KEY: z.string().min(1),
-    LOG_LEVEL: z
-      .enum(['info', 'error', 'warn', 'debug', 'verbose', 'fatal'])
-      .default('info'),
-    THROTTLER_TTL: z.coerce.number().int().min(0).default(10000),
-    UNAUTHENTICATED_THROTTLER_LIMIT: z.coerce.number().int().min(0).default(10),
-    AUTHENTICATED_THROTTLER_LIMIT: z.coerce.number().int().min(0).default(90), // A full 3 activities from a full class of submissions at once.
-    LLM_BACKOFF_BASE_MS: z.coerce.number().int().min(100).default(1000), // Minimum 100ms, default 1 second
-    LLM_MAX_RETRIES: z.coerce.number().int().min(0).default(3), // Default 3 retries
-    ASSESSOR_CACHE_TTL_MINUTES: z.coerce.number().int().optional(),
-    ASSESSOR_CACHE_TTL_HOURS: z.coerce.number().int().min(1).max(48).optional(),
-    ASSESSOR_CACHE_HASH_SECRET: z.string().min(1),
-    ASSESSOR_CACHE_MAX_SIZE_MIB: z.coerce.number().int().min(1).default(384),
-  })
-  .superRefine((data, ctx) => {
-    if (data.ASSESSOR_CACHE_TTL_HOURS === undefined) {
-      const ttlMinutes = data.ASSESSOR_CACHE_TTL_MINUTES ?? 1440;
-
-      if (ttlMinutes <= 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'ASSESSOR_CACHE_TTL_MINUTES must be at least 1.',
-          path: ['ASSESSOR_CACHE_TTL_MINUTES'],
-        });
-      }
-
-      if (ttlMinutes > 2880) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'ASSESSOR_CACHE_TTL_MINUTES must not exceed 2880.',
-          path: ['ASSESSOR_CACHE_TTL_MINUTES'],
-        });
-      }
-    }
-  })
-  .transform((data) => ({
-    ...data,
-    ASSESSOR_CACHE_TTL_MINUTES: data.ASSESSOR_CACHE_TTL_MINUTES ?? 1440,
-  }));
+export const configSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
+  PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+  APP_NAME: z.string().default('AssessmentBot-Backend'),
+  APP_VERSION: z.string().optional(),
+  API_KEYS: z
+    .string()
+    .optional()
+    .transform((val) =>
+      val === undefined ? undefined : val.split(',').map((s) => s.trim()),
+    )
+    .refine(
+      (arr) =>
+        arr === undefined || arr.every((s) => /^[a-zA-Z0-9_-]+$/.test(s)),
+      { message: 'Invalid API key format' },
+    ),
+  MAX_IMAGE_UPLOAD_SIZE_MB: z.coerce.number().int().min(0).default(1),
+  ALLOWED_IMAGE_MIME_TYPES: z
+    .string()
+    .default('image/png')
+    .transform((val) => val.split(',').map((s) => s.trim())),
+  GEMINI_API_KEY: z.string().min(1),
+  LOG_LEVEL: z
+    .enum(['info', 'error', 'warn', 'debug', 'verbose', 'fatal'])
+    .default('info'),
+  THROTTLER_TTL: z.coerce.number().int().min(0).default(10000),
+  UNAUTHENTICATED_THROTTLER_LIMIT: z.coerce.number().int().min(0).default(10),
+  AUTHENTICATED_THROTTLER_LIMIT: z.coerce.number().int().min(0).default(90), // A full 3 activities from a full class of submissions at once.
+  LLM_BACKOFF_BASE_MS: z.coerce.number().int().min(100).default(1000), // Minimum 100ms, default 1 second
+  LLM_MAX_RETRIES: z.coerce.number().int().min(0).default(3), // Default 3 retries
+});
 
 /**
  * Represents the inferred TypeScript type from the `configSchema`.
