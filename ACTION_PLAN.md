@@ -293,13 +293,200 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 
 ## 10. Implementation Sequence (TDD)
 
-1. **Define tests** (unit → integration → E2E) based on the cases listed above.
-2. **Implement config** additions and schema validation.
-3. **Create cache key utility** with canonicalisation + HMAC.
-4. **Create custom interceptor** for assessor caching.
-5. **Wire interceptor and cache module** into assessor module/controller.
-6. **Update documentation** and `.env.example`.
-7. **Run lint and tests** according to project scripts.
+### 10.1 Cache Key Utility (Unit Tests → Implementation)
+
+**Scope**: canonicalisation, HMAC hashing, prompt-template drift handling, and image content hashing for file-based images.
+
+**Acceptance criteria**
+
+- Identical DTOs yield identical cache keys.
+- Single-field changes (e.g., `studentResponse`) yield different cache keys.
+- Cache keys never include raw DTO strings.
+- Buffer values are normalised to base64 deterministically.
+- Key order does not affect the cache key.
+- Changing `ASSESSOR_CACHE_HASH_SECRET` changes the cache key.
+- Prompt template drift behaviour is explicit (either included in the key, or explicitly excluded and documented).
+- File-based image content changes invalidate the cache key.
+
+**TDD tests that must pass**
+
+- `src/common/cache/cache-key.util.spec.ts` (add prompt template drift and file-based image coverage if missing).
+
+**Constraints & considerations**
+
+- British English for test descriptions and comments.
+- No logging or storage of raw DTO data.
+- Decide whether prompt template versions/content are part of the key and document the decision.
+
+**Commit/push instruction**
+
+Commit and push changes for this section.
+
+### 10.2 Config Schema (Unit Tests → Implementation)
+
+**Scope**: env validation, defaults, precedence rules, and TTL conversion.
+
+**Acceptance criteria**
+
+- Defaults: `ASSESSOR_CACHE_TTL_MINUTES = 1440`, `ASSESSOR_CACHE_MAX_SIZE_MIB = 384` when unset.
+- Missing `ASSESSOR_CACHE_HASH_SECRET` fails validation.
+- Zero/negative TTL fails validation for both hours and minutes.
+- TTL above 48 hours fails validation.
+- `ASSESSOR_CACHE_TTL_MINUTES` > 2880 and `ASSESSOR_CACHE_TTL_HOURS` > 48 fail validation.
+- Non-positive `ASSESSOR_CACHE_MAX_SIZE_MIB` fails validation.
+- Hours take precedence over minutes when both are set.
+- If hours are invalid but minutes are valid (or vice versa), behaviour is explicit and covered by tests.
+- TTL is converted to seconds correctly (1 hour → 3600, 30 minutes → 1800, 48 hours → 172800).
+
+**TDD tests that must pass**
+
+- `src/config/env.schema.assessor-cache.spec.ts` (add hours zero/negative and precedence behaviour tests if missing).
+
+**Constraints & considerations**
+
+- Zod validation only; do not bypass or weaken quality gates.
+- Configuration must remain stateless and safe by default.
+
+**Commit/push instruction**
+
+Commit and push changes for this section.
+
+### 10.3 Assessor Cache Interceptor (Unit Tests → Implementation)
+
+**Scope**: cacheability, key prefixing, non-assessor routes, and error-response guard.
+
+**Acceptance criteria**
+
+- `POST /v1/assessor` is cacheable.
+- Non-assessor routes are not cached (`trackBy()` returns `undefined`).
+- Cache key includes an `assessor:` prefix.
+- Error responses (4xx/5xx) are not cached.
+- API key scoping behaviour is explicit (global cache vs per-key isolation) and tested.
+
+**TDD tests that must pass**
+
+- `src/common/cache/assessor-cache.interceptor.spec.ts` (add non-assessor route test, API key scoping if required).
+
+**Constraints & considerations**
+
+- Avoid `@CacheTTL()`; configuration is module-level.
+- Ensure no raw request data is logged or used in key material.
+
+**Commit/push instruction**
+
+Commit and push changes for this section.
+
+### 10.4 Cache Store (Unit Tests → Implementation)
+
+**Scope**: LRU size-based eviction, size calculation, and TTL interaction.
+
+**Acceptance criteria**
+
+- Cache evicts least-recently-used entries when size cap is exceeded.
+- Size calculation is deterministic and handles large payloads safely.
+- TTL expiry is respected alongside size-based eviction.
+
+**TDD tests that must pass**
+
+- `src/common/cache/assessor-cache.store.spec.ts` (new, if a custom store exists).
+
+**Constraints & considerations**
+
+- Byte sizing must be consistent and avoid underestimation.
+- No persistent storage.
+
+**Commit/push instruction**
+
+Commit and push changes for this section.
+
+### 10.5 Integration Tests (Controller Wiring)
+
+**Scope**: controller/module wiring and LLM call avoidance on cache hit.
+
+**Acceptance criteria**
+
+- Assessor controller uses the caching interceptor.
+- Identical assessor requests result in a single LLM call when cache is enabled.
+
+**TDD tests that must pass**
+
+- `src/v1/assessor/assessor.controller.spec.ts` (or appropriate integration spec).
+
+**Constraints & considerations**
+
+- Use `TestingModule` and existing test patterns.
+
+**Commit/push instruction**
+
+Commit and push changes for this section.
+
+### 10.6 E2E Tests (Mocked LLM)
+
+**Scope**: functional cache behaviour, TTL overrides, size eviction, and security-focused checks.
+
+**Acceptance criteria**
+
+- Cache hit on identical payloads.
+- Cache miss on differing payloads.
+- TTL overrides work; hours take precedence over minutes.
+- Invalid TTL/size values prevent app startup.
+- Cache does not store responses for 400/422 validation failures or auth errors.
+- API key scoping behaviour is explicit and verified (global vs isolated).
+- Size-based eviction behaves as expected for small `ASSESSOR_CACHE_MAX_SIZE_MIB`.
+
+**TDD tests that must pass**
+
+- `test/assessor-cache.e2e-spec.ts` (add missing TTL hours precedence, invalid values, 400/422 non-caching, API key scoping).
+
+**Constraints & considerations**
+
+- Use mocked LLM only; avoid live calls.
+- Keep payloads deterministic to avoid flaky cache-hit assertions.
+
+**Commit/push instruction**
+
+Commit and push changes for this section.
+
+### 10.7 Documentation and Environment Examples
+
+**Scope**: configuration docs and example env files.
+
+**Acceptance criteria**
+
+- New cache-related env vars are documented.
+- `.env.example` and test env defaults reflect current schema.
+- Any cache key scope decisions are documented.
+
+**TDD tests that must pass**
+
+- No new tests; lint and existing docs checks must pass.
+
+**Constraints & considerations**
+
+- Maintain British English.
+- Do not remove or weaken any quality gates.
+
+**Commit/push instruction**
+
+Commit and push changes for this section.
+
+### 10.8 Full Verification
+
+**Scope**: run full test suite and lint.
+
+**Acceptance criteria**
+
+- `npm test` passes.
+- `npm run test:e2e` passes.
+- `npm run lint` passes.
+
+**Constraints & considerations**
+
+- Resolve failures before moving on.
+
+**Commit/push instruction**
+
+Commit and push changes for this section.
 
 ---
 
