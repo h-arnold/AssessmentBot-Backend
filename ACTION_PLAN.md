@@ -100,6 +100,11 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 - **Rationale**: global caching is acceptable for identical assessment payloads because no user-identifying data is included in cache keys and responses are already derived from the payload.
 - **Guardrail**: if future requirements demand tenant isolation, include a hashed API key identifier (HMAC with the same secret) in the cache key prefix.
 
+### 5.4.1 Prompt Template Drift
+
+- **Decision**: cache keys do **not** incorporate prompt template versions or content.
+- **Rationale**: prompt template changes require a backend rebuild, which naturally invalidates the in-memory cache on restart.
+
 ### 5.5 Eviction and Memory Growth
 
 - The default in-memory store does **not** support byte-based limits. To achieve size-based eviction **and** TTL:
@@ -306,6 +311,7 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 - Key order does not affect the cache key.
 - Changing `ASSESSOR_CACHE_HASH_SECRET` changes the cache key.
 - Prompt template drift behaviour is explicit (either included in the key, or explicitly excluded and documented).
+- Prompt template changes do not alter cache keys; cache invalidation relies on service restart.
 - File-based image content changes invalidate the cache key.
 
 **TDD tests that must pass**
@@ -317,6 +323,7 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 - British English for test descriptions and comments.
 - No logging or storage of raw DTO data.
 - Decide whether prompt template versions/content are part of the key and document the decision.
+- Prompt template versions/content are excluded from the key by design.
 
 **Commit/push instruction**
 
@@ -362,6 +369,7 @@ Commit and push changes for this section.
 - Cache key includes an `assessor:` prefix.
 - Error responses (4xx/5xx) are not cached.
 - API key scoping behaviour is explicit (global cache vs per-key isolation) and tested.
+- API key scoping is global across valid API keys.
 
 **TDD tests that must pass**
 
@@ -431,7 +439,8 @@ Commit and push changes for this section.
 - TTL overrides work; hours take precedence over minutes.
 - Invalid TTL/size values prevent app startup.
 - Cache does not store responses for 400/422 validation failures or auth errors.
-- API key scoping behaviour is explicit and verified (global vs isolated).
+- Cache does not store responses for 400/422 validation failures or auth errors.
+- Cache is global across valid API keys and verified as such.
 - Size-based eviction behaves as expected for small `ASSESSOR_CACHE_MAX_SIZE_MIB`.
 
 **TDD tests that must pass**
