@@ -19,7 +19,7 @@ This plan is written to follow the repo’s TDD workflow and British English sta
 
 1. **Cache responses for assessor requests** using a key derived from the request DTO.
 2. **Cache key must not contain raw student data**. It must be a hash of the DTO.
-3. **Cache TTL defaults to 24 hours** (86,400,000 ms) but is configurable via environment variable.
+3. **Cache TTL defaults to 24 hours** (86,400 seconds) but is configurable via environment variable.
 4. **Hash must include a secret** (environment-configured) to mitigate preimage and enumeration attacks.
 5. **Caching must be in-memory** (no persistent storage).
 
@@ -36,7 +36,7 @@ This plan is written to follow the repo’s TDD workflow and British English sta
 
 1. **Stateless design**: in-memory cache is per-instance only and is cleared on restart. This is acceptable because statelessness forbids durable storage, but it does mean cache hits are not shared across replicas.
 2. **Data privacy**: only the hash of a canonicalised DTO is used as the key; no raw payload should be stored or logged.
-3. **Config validation**: any new environment variable must be added to `src/config/env.schema.ts` and documented in `docs/configuration/environment.md`, `.env.example`, and `.test.env.example` (or the test defaults in `test/utils/app-lifecycle.ts`).
+3. **Config validation**: any new environment variable must be added to `src/config/env.schema.ts` and documented in `docs/configuration/environment.md`, `.env.example`, and `.test.env.example` (the source of our test defaults).
 4. **No quality gate overrides**: lint, British English, and other quality gates must remain intact.
 5. **TTL unit**: expose TTL as a human-friendly value (minutes or hours) and convert to **seconds** internally. Enforce a strict **maximum TTL of 48 hours** and disallow zero/negative values.
 6. **Dependencies**: NestJS cache support is not currently in the repo and requires adding `@nestjs/cache-manager` and `cache-manager` before wiring `CacheModule` or `CacheInterceptor`.
@@ -70,13 +70,13 @@ This plan is written to follow the repo’s TDD workflow and British English sta
 Use NestJS caching with an **explicit interceptor** for assessor requests to allow caching of `POST /v1/assessor` (since automatic caching only handles GET by default). The interceptor will:
 
 - permit cache for the assessor endpoint,
-- hash the DTO using **HMAC-SHA256** (preferable to raw SHA256) with `ASSESSOR_CACHE_HASH_SECRET`,
+- hash the DTO using **HMAC-SHA256** (required for security) with `ASSESSOR_CACHE_HASH_SECRET`,
 - create a stable cache key using a **canonical JSON representation** of the DTO (sorted keys and normalised Buffer values).
 
 ### 5.2 Canonicalisation Details
 
 - Use a deterministic serialisation function that sorts object keys recursively.
-- Convert any `Buffer` values to base64 strings before hashing.
+- For binary/image content, convert `Buffer` values to base64 strings before hashing; when the DTO contains a data URI string (e.g., `data:image/png;base64,...`), extract and hash only the base64 portion after `base64,` so identical binary inputs (Buffer vs data URI) canonicalise identically.
 - Ensure no raw request data is logged.
 
 ### 5.3 TTL Application
@@ -99,6 +99,7 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
     - `maxSize` from `ASSESSOR_CACHE_MAX_SIZE_MIB` (converted to bytes),
     - a `sizeCalculation` function that returns an estimated byte size.
   - This preserves caching for IMAGE tasks and large payloads while ensuring eviction occurs when the cache exceeds 384 MiB by default and entries expire by TTL.
+  - **Size calculation strategy**: measure only the cached response value when calculating byte size—use `Buffer.byteLength(JSON.stringify(value), 'utf8')` for objects and `Buffer.byteLength` for strings/buffers so that metadata and persisted hashes count toward `maxSize` but raw image bytes (which are never cached) are excluded.
 
 ### 5.6 Risk Mitigations and Compatibility Checks
 
@@ -106,7 +107,7 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 - **TTL = 0 semantics**: explicitly reject `ttl = 0` in configuration validation to prevent unbounded retention (privacy requirement).
 - **Size calculation strategy**: define a consistent byte sizing approach (for example, serialised JSON byte length for objects and `Buffer.byteLength` for strings/buffers) to avoid under/over-eviction.
 - **Template/version drift**: decide whether to include prompt template content or version hash in the cache key to avoid stale responses after template edits.
-- **Image file content**: if `images` file paths are supported, **always** include file content hashes in the cache key. File-based requests are the most expensive and must remain cacheable, so content hashing is mandatory.
+- **Image file content**: for the `images` array in `CreateAssessorDto`, **always** include file content hashes in the cache key. File-based requests are the most expensive and must remain cacheable, so content hashing (not path or mtime) is mandatory.
 - **Response purity**: confirm cached responses are purely derived from the DTO (no API key or request-context variation) to justify global caching.
 - **Observability**: add lightweight metrics or logging (without sensitive data) to track cache hit rate and eviction counts.
 
@@ -133,7 +134,7 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 7. **Prompt template drift**
    - If template versions are included in the key, updating templates must invalidate the cache.
 8. **File-based images**
-   - File-based images must always be content-hashed and included in the cache key to keep high-cost requests cacheable.
+   - When file-based images are provided via the `images` field, verify the cache key includes those files' content hashes (not just paths or mtimes) so expensive requests remain cacheable yet invalidated when contents change.
 
 #### B. Config Schema
 
@@ -160,8 +161,8 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
    - Other routes are not cached by this interceptor.
 3. **Cache key prefixing**
    - Ensure key includes a namespaced prefix, e.g., `assessor:`.
-4. **API key scoping (if required)**
-   - Same DTO but different API keys must yield different cache keys.
+4. **API key scoping (optional/future)**
+   - When global caching is disabled or tenant isolation is later required, verify the same DTO with different API keys produces distinct cache keys (e.g., by hashing a keyed identifier).
 5. **Error responses are not cached**
    - Ensure 4xx/5xx responses are never cached (e.g., 400, 401, 500).
 
@@ -185,8 +186,8 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
    - Start app with small TTL via `envOverrides` to validate cache expiry (requires a controlled delay).
    - Verify TTL above 48 hours is rejected during config validation.
    - Add an override using `ASSESSOR_CACHE_TTL_HOURS` to confirm hours-based configuration works and takes precedence over minutes.
-4. **API key isolation (if required)**
-   - Same payload with different API keys should not share a cached response.
+4. **API key isolation (optional/future)**
+   - When a scoped cache is ever required (i.e., global caching disabled), confirm the same payload but different API keys do not share a cached response.
 5. **Size-based eviction**
    - Start app with a small `ASSESSOR_CACHE_MAX_SIZE_MIB` and confirm older entries are evicted when the cache exceeds the size cap.
 6. **Error response caching guard**
@@ -194,37 +195,39 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 
 #### Security-focused cache attack coverage
 
-6. **Cache key inference via payload perturbation**
+7. **Cache key inference via payload perturbation**
    - Send near-identical payloads with single-character differences and confirm cache misses occur (no unintended collisions).
-7. **Canonicalisation collision attempt**
+8. **Canonicalisation collision attempt**
    - Submit payloads with reordered JSON keys and confirm they map to the **same** cache entry (expected canonicalisation), then verify a different value changes the cache key.
-8. **Buffer vs string equivalence**
-   - Align canonicalisation tests with the runtime prompt path (data URI vs Buffer handling) and verify equivalence/miss behaviour accordingly.
-9. **Cross-request contamination attempt**
-   - Alternate between two distinct payloads rapidly to ensure responses never leak across cache entries.
-10. **Replay with modified headers**
+9. **Buffer vs string equivalence**
+   - Verify that identical underlying binary content produces the same cache key regardless of whether it arrives as a Node `Buffer` or a data URI string, and that differing base64 content (Buffer vs Buffer, data URI vs data URI, or Buffer vs data URI) yields different keys.
+10. **Cross-request contamination attempt**
 
-- Repeat identical payloads with different non-auth headers and confirm cache hits are based solely on DTO (no header-based cache poisoning).
+- Alternate between two distinct payloads rapidly to ensure responses never leak across cache entries.
 
-11. **Large payload cache poisoning attempt**
+11. **Replay with modified headers**
+
+- Repeat identical payloads with different non-auth headers and confirm cache hits are based solely on the DTO (no header-based cache poisoning).
+
+12. **Large payload cache poisoning attempt**
 
 - Use maximum-size payloads that approach limits and ensure cached responses are still tied to the correct hash (no truncation or shared entries).
 
-12. **Cache eviction race**
+13. **Cache eviction race**
 
 - Force size-based eviction then immediately request a previously cached payload to ensure it is recomputed rather than served incorrectly.
 
-13. **Invalid TTL/size injection**
+14. **Invalid TTL/size injection**
 
 - Attempt to boot E2E with invalid TTL/size env values (0, negative, above limit) and confirm startup failure to prevent unsafe caching.
 
-14. **Template/version change invalidation**
+15. **Template/version change invalidation**
 
-- Modify prompt templates between requests and ensure cache keys change (or explicitly validate configured behaviour).
+- Modify prompt templates between requests and ensure cache keys change so template edits invalidate existing cached entries.
 
-15. **File-based image invalidation**
+16. **File-based image invalidation**
 
-- Change an image file on disk between requests and ensure cache misses occur (content hashing must invalidate cached entries).
+- Change an image file on disk between requests and confirm the altered content hash in the cache key produces a cache miss.
 
 ### 6.4 E2E Live (Optional)
 
@@ -245,10 +248,10 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 
 ## 8. Edge Cases to Consider
 
-1. **Buffers vs strings** in IMAGE tasks must canonicalise consistently.
+1. **Buffers vs strings in IMAGE task fields** (`reference`, `template`, `studentResponse`) must canonicalise consistently (the DTO enforces uniform types), while the `images` array always carries string paths.
 2. **Whitespace differences** in text payloads are meaningful; hashing must not normalise or trim unless explicitly desired.
 3. **Large payloads**: hashing should be efficient and not log or store large strings.
-4. **TTL = 0** must be rejected to avoid indefinite retention; use a feature flag or skip the interceptor to disable caching.
+4. **TTL less than 1 minute** must be rejected to avoid indefinite retention; use a feature flag or skip the interceptor to disable caching.
 5. **Multiple instances**: cache is per-instance; plan does not attempt cross-node cache consistency.
 
 ---
@@ -276,7 +279,7 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 
 - `docs/configuration/environment.md`
 - `.env.example`
-- `.test.env.example` or `test/utils/app-lifecycle.ts` (test defaults)
+- `.test.env.example` (test defaults)
 - (Optional) `docs/architecture/data-flow.md` to reflect caching step
 
 ---
@@ -286,6 +289,7 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 1. **Define tests** (unit → integration → E2E) based on the cases listed above.
 2. **Implement config** additions and schema validation.
 3. **Create cache key utility** with canonicalisation + HMAC.
+   3a. **Hash file-based inputs**: ensure the `images` field content is hashed (not just the file path) before the key is derived.
 4. **Create custom interceptor** for assessor caching.
 5. **Wire interceptor and cache module** into assessor module/controller.
 6. **Update documentation** and `.env.example`.
@@ -299,4 +303,5 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 - Cache keys never expose raw student data.
 - Cache TTL defaults to 24 hours and is configurable.
 - Hashing uses a secret configured via environment variable.
+- File-based images (`images` field) are content-hashed and included in the cache key so content changes always invalidate cached responses.
 - All tests pass and quality gates remain enabled.
