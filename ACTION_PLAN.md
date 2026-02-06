@@ -60,21 +60,21 @@ I could not access the NestJS caching documentation via `curl` (403), so I have 
 
 ### Functional Behaviour
 
-1) **Cache scope**
+1. **Cache scope**
    - Cache responses only for `POST /v1/assessor`.
    - Cache entries are scoped solely by the hashed DTO content (no API key, no headers).
 
-2) **Cache key derivation**
+2. **Cache key derivation**
    - Generate cache keys from a stable serialisation of `CreateAssessorDto`.
    - Use HMAC-SHA256 with a secret (`CACHE_KEY_SECRET`) to avoid reversible hashes.
    - Normalise IMAGE task buffers to base64 before serialisation.
    - Prefix keys with `assessor:` to simplify log filtering.
 
-3) **TTL behaviour**
+3. **TTL behaviour**
    - Default TTL is 24 hours (86,400,000 milliseconds).
    - Route-level `@CacheTTL` should explicitly set 24 hours to make intent clear.
 
-4) **Logging**
+4. **Logging**
    - Log cache hits and misses with a structured payload:
      - `event`: `assessor.cache.hit` | `assessor.cache.miss`
      - `cacheKeyHash`: the generated hash (no raw DTO data)
@@ -104,26 +104,26 @@ No new error types are required. Cache failures should fall back to a cache miss
 
 ## Implementation Tasks (After Tests)
 
-1) **Introduce a cache key utility**
+1. **Introduce a cache key utility**
    - Create `src/common/utils/assessor-cache-key.util.ts`.
    - Use stable serialisation and HMAC-SHA256 with a `CACHE_KEY_SECRET` from `ConfigService`.
    - Normalise IMAGE task buffers to base64 before hashing.
 
-2) **Add a custom assessor cache interceptor**
+2. **Add a custom assessor cache interceptor**
    - Create `src/v1/assessor/assessor-cache.interceptor.ts` extending `CacheInterceptor`.
    - Override `isRequestCacheable` to allow `POST` for `/v1/assessor`.
    - Override `trackBy` to return `assessor:<digest>` from the cache key utility.
    - Emit cache hit/miss logs with the hashed cache key.
 
-3) **Wire caching into the assessor endpoint**
+3. **Wire caching into the assessor endpoint**
    - Apply `@UseInterceptors(AssessorCacheInterceptor)` to `AssessorController.create`.
    - Set `@CacheTTL(60 * 60 * 24 * 1000)` for 24-hour TTL (milliseconds).
 
-4) **Register in-memory cache**
+4. **Register in-memory cache**
    - Add `CacheModule.register` in `AppModule` (global) or `AssessorModule` (scoped).
    - Ensure the default TTL is 86,400,000 milliseconds if set globally.
 
-5) **Update configuration docs if needed**
+5. **Update configuration docs if needed**
    - Add `CACHE_KEY_SECRET` to the configuration guide and any environment templates.
 
 ## Notes on Alignment With Repository Standards

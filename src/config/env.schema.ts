@@ -33,7 +33,6 @@ import { z } from 'zod';
  * @property {number} AUTHENTICATED_THROTTLER_LIMIT - The maximum number of requests for authenticated routes within the TTL window.
  * @property {number} LLM_BACKOFF_BASE_MS - The base backoff time in milliseconds for LLM rate limit retries.
  * @property {number} LLM_MAX_RETRIES - The maximum number of retry attempts for LLM rate limit errors.
- * @property {string} [CACHE_KEY_SECRET] - The optional secret for assessor cache key hashing.
  */
 export const configSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
@@ -65,7 +64,6 @@ export const configSchema = z.object({
   AUTHENTICATED_THROTTLER_LIMIT: z.coerce.number().int().min(0).default(90), // A full 3 activities from a full class of submissions at once.
   LLM_BACKOFF_BASE_MS: z.coerce.number().int().min(100).default(1000), // Minimum 100ms, default 1 second
   LLM_MAX_RETRIES: z.coerce.number().int().min(0).default(3), // Default 3 retries
-  CACHE_KEY_SECRET: z.string().min(1).optional(),
 });
 
 /**
