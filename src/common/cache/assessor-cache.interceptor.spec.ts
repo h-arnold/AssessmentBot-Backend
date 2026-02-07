@@ -1,10 +1,15 @@
 import { ExecutionContext } from '@nestjs/common';
+import { firstValueFrom, of } from 'rxjs';
 
 type AssessorCacheInterceptorModule = {
   AssessorCacheInterceptor: new (...args: unknown[]) => {
     isRequestCacheable: (ctx: ExecutionContext) => boolean;
     trackBy: (ctx: ExecutionContext) => string | undefined;
     isResponseCacheable: (response: { statusCode?: number }) => boolean;
+    intercept: (
+      context: ExecutionContext,
+      next: { handle: () => ReturnType<typeof of> },
+    ) => Promise<ReturnType<typeof of>>;
   };
 };
 
@@ -183,5 +188,71 @@ describe('AssessorCacheInterceptor', () => {
     );
 
     expect(result).toBe(false);
+  });
+
+  it('returns cached responses on cache hits', async () => {
+    const { AssessorCacheInterceptor } = loadInterceptor();
+    const cacheStore = {
+      has: jest.fn().mockReturnValue(true),
+      get: jest.fn().mockReturnValue({ cached: true }),
+      getRemainingTtl: jest.fn().mockReturnValue(120000),
+      set: jest.fn(),
+    };
+    const interceptor = new AssessorCacheInterceptor(
+      {
+        get: jest.fn().mockReturnValue('secret'),
+      },
+      cacheStore,
+    );
+    const context = createHttpContext('POST', '/v1/assessor', 201, {
+      taskType: 'TEXT',
+      reference: 'Reference',
+      template: 'Template',
+      studentResponse: 'Response',
+    });
+    const next = { handle: jest.fn(() => of({ live: true })) };
+
+    const result = await firstValueFrom(
+      await interceptor.intercept(context, next),
+    );
+
+    expect(result).toEqual({ cached: true });
+    expect(next.handle).not.toHaveBeenCalled();
+    expect(cacheStore.set).not.toHaveBeenCalled();
+  });
+
+  it('stores responses on cache misses for cacheable responses', async () => {
+    const { AssessorCacheInterceptor } = loadInterceptor();
+    const cacheStore = {
+      has: jest.fn().mockReturnValue(false),
+      get: jest.fn(),
+      getRemainingTtl: jest.fn().mockReturnValue(60000),
+      set: jest.fn(),
+    };
+    const interceptor = new AssessorCacheInterceptor(
+      {
+        get: jest.fn().mockReturnValue('secret'),
+      },
+      cacheStore,
+    );
+    const context = createHttpContext('POST', '/v1/assessor', 201, {
+      taskType: 'TEXT',
+      reference: 'Reference',
+      template: 'Template',
+      studentResponse: 'Response',
+    });
+    const next = { handle: jest.fn(() => of({ live: true })) };
+
+    const result = await firstValueFrom(
+      await interceptor.intercept(context, next),
+    );
+
+    expect(result).toEqual({ live: true });
+    expect(next.handle).toHaveBeenCalledTimes(1);
+    expect(cacheStore.set).toHaveBeenCalledWith(
+      expect.stringMatching(/^assessor:/u),
+      { live: true },
+      expect.any(Number),
+    );
   });
 });

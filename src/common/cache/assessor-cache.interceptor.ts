@@ -97,6 +97,27 @@ export class AssessorCacheInterceptor implements NestInterceptor {
 
     const request = context.switchToHttp().getRequest();
     const requestSize = this.estimateRequestSize(request.body);
+    const cacheHit = this.cacheStore.has(key);
+
+    if (cacheHit) {
+      const cachedValue = this.cacheStore.get<unknown>(key);
+      const remainingTtlMs = this.cacheStore.getRemainingTtl(key);
+
+      if (cachedValue !== undefined) {
+        this.logger.debug(
+          `Assessor cache hit for key ${key}. Remaining TTL=${remainingTtlMs}ms.`,
+        );
+        return of(cachedValue);
+      }
+
+      this.logger.debug(
+        `Assessor cache reported hit for key ${key}, but no value was returned.`,
+      );
+    }
+
+    this.logger.debug(
+      `Assessor cache miss for key ${key}. Request size=${requestSize} bytes.`,
+    );
 
     return next.handle().pipe(
       tap((response) => {
@@ -104,7 +125,14 @@ export class AssessorCacheInterceptor implements NestInterceptor {
           const httpResponse = context.switchToHttp().getResponse();
           if (this.isResponseCacheable(httpResponse)) {
             this.cacheStore!.set(key, response, requestSize);
-            this.logger.debug('Cached assessor response.');
+            const remainingTtlMs = this.cacheStore!.getRemainingTtl(key);
+            this.logger.debug(
+              `Cached assessor response for key ${key}. Remaining TTL=${remainingTtlMs}ms.`,
+            );
+          } else {
+            this.logger.debug(
+              `Assessor response not cached for key ${key}. Status=${httpResponse?.statusCode ?? 'unknown'}.`,
+            );
           }
         } catch (error) {
           this.logger.warn(

@@ -98,6 +98,47 @@ const buildImagePayload = (
 const countLlmDispatches = (logFilePath: string): number =>
   CacheE2ETestHelper.countLlmDispatches(logFilePath);
 
+const waitForDispatchCount = async (
+  logFilePath: string,
+  expectedCount: number,
+  timeoutMs = 10000,
+): Promise<number> => {
+  const startTime = Date.now();
+  let currentCount = countLlmDispatches(logFilePath);
+
+  while (currentCount < expectedCount) {
+    if (Date.now() - startTime > timeoutMs) {
+      throw new Error(
+        `Timed out waiting for ${expectedCount} LLM dispatch logs; last count: ${currentCount}`,
+      );
+    }
+
+    await delay(100);
+    currentCount = countLlmDispatches(logFilePath);
+  }
+
+  return currentCount;
+};
+
+const assertDispatchCountStable = async (
+  logFilePath: string,
+  expectedCount: number,
+  windowMs = 2000,
+): Promise<void> => {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < windowMs) {
+    const currentCount = countLlmDispatches(logFilePath);
+    if (currentCount > expectedCount) {
+      throw new Error(
+        `Expected dispatch count to remain at ${expectedCount}, but saw ${currentCount}`,
+      );
+    }
+
+    await delay(100);
+  }
+};
+
 describe('Assessor cache behaviour (e2e)', () => {
   describe('Cache hits, misses, and error guards', () => {
     let app: AppInstance;
@@ -286,12 +327,55 @@ describe('Assessor cache behaviour (e2e)', () => {
       stopApp(app.appProcess);
     });
 
-    // Note: TTL expiry is verified at the unit level in assessor-cache.store.spec.ts.
-    // This E2E test is skipped because the pino file transport in the child process
-    // may not flush log entries reliably after a 60+ second idle period, making the
-    // log-counting assertion flaky. The cache behaviour itself is correct (lru-cache
-    // TTL is set to 60s and entries expire as expected).
-    it.skip('expires cached entries after TTL', async () => {
+    it('flushes dispatch logs after a long idle period', async () => {
+      const payload = buildTextPayload(`idle-first-${Date.now()}`);
+      const beforeCount = countLlmDispatches(logFilePath);
+
+      await request(app.appUrl)
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${app.apiKey}`)
+        .send(payload)
+        .expect(201);
+
+      await waitForDispatchCount(logFilePath, beforeCount + 1);
+
+      await delay(65000);
+
+      const secondPayload = buildTextPayload(`idle-second-${Date.now()}`);
+      await request(app.appUrl)
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${app.apiKey}`)
+        .send(secondPayload)
+        .expect(201);
+
+      const afterSecond = await waitForDispatchCount(
+        logFilePath,
+        beforeCount + 2,
+      );
+
+      expect(afterSecond).toBe(beforeCount + 2);
+    });
+
+    it('keeps dispatch counts stable once logs are flushed', async () => {
+      const payload = buildTextPayload(`stable-${Date.now()}`);
+      const beforeCount = countLlmDispatches(logFilePath);
+
+      await request(app.appUrl)
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${app.apiKey}`)
+        .send(payload)
+        .expect(201);
+
+      const afterCount = await waitForDispatchCount(
+        logFilePath,
+        beforeCount + 1,
+      );
+
+      expect(afterCount).toBe(beforeCount + 1);
+      await assertDispatchCountStable(logFilePath, afterCount);
+    });
+
+    it('expires cached entries after TTL', async () => {
       const payload = buildTextPayload(`ttl-${Date.now()}`);
       const beforeCount = countLlmDispatches(logFilePath);
 
@@ -302,9 +386,10 @@ describe('Assessor cache behaviour (e2e)', () => {
         .send(payload)
         .expect(201);
 
-      // Brief delay to ensure log is written
-      await delay(200);
-      const afterFirst = countLlmDispatches(logFilePath);
+      const afterFirst = await waitForDispatchCount(
+        logFilePath,
+        beforeCount + 1,
+      );
 
       // Second request: cache hit (same payload, before TTL expires)
       await request(app.appUrl)
@@ -313,8 +398,8 @@ describe('Assessor cache behaviour (e2e)', () => {
         .send(payload)
         .expect(201);
 
-      await delay(200);
       const afterSecond = countLlmDispatches(logFilePath);
+      await assertDispatchCountStable(logFilePath, afterFirst);
 
       // CRITICAL: Wait for TTL to expire (1 minute = 60 seconds)
       // Wait 75 seconds to account for timing variations:
@@ -331,8 +416,10 @@ describe('Assessor cache behaviour (e2e)', () => {
         .send(payload)
         .expect(201);
 
-      await delay(200);
-      const afterThird = countLlmDispatches(logFilePath);
+      const afterThird = await waitForDispatchCount(
+        logFilePath,
+        afterSecond + 1,
+      );
 
       expect(afterFirst - beforeCount).toBe(1);
       expect(afterSecond - afterFirst).toBe(0);

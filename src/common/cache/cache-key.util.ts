@@ -13,7 +13,30 @@ type CanonicalValue =
   | CanonicalValue[]
   | { [key: string]: CanonicalValue };
 
-const dataUriPattern = /^data:([^;,]+)(?:;[^,]*)?;base64,(.*)$/su;
+const base64Marker = ';base64,';
+
+const parseDataUri = (
+  value: string,
+): { mimeType: string; data: string } | null => {
+  if (!value.startsWith('data:')) {
+    return null;
+  }
+
+  const markerIndex = value.indexOf(base64Marker);
+  if (markerIndex === -1) {
+    return null;
+  }
+
+  const header = value.slice('data:'.length, markerIndex);
+  const mimeType = header.split(';')[0]?.toLowerCase() ?? '';
+  const data = value.slice(markerIndex + base64Marker.length);
+
+  if (!mimeType || !data) {
+    return null;
+  }
+
+  return { mimeType, data };
+};
 
 const detectBufferMimeType = (buffer: Buffer): string => {
   if (
@@ -56,7 +79,7 @@ const detectBufferMimeType = (buffer: Buffer): string => {
   return 'application/octet-stream';
 };
 
-const normaliseImageValue = (value: string | Buffer): CanonicalValue => {
+const normaliseImageValue = (value: unknown): CanonicalValue => {
   if (Buffer.isBuffer(value)) {
     return {
       mimeType: detectBufferMimeType(value),
@@ -64,15 +87,16 @@ const normaliseImageValue = (value: string | Buffer): CanonicalValue => {
     };
   }
 
-  const match = value.match(dataUriPattern);
-  if (match) {
-    return {
-      mimeType: match[1].toLowerCase(),
-      data: match[2],
-    };
+  if (typeof value === 'string') {
+    const parsed = parseDataUri(value);
+    if (parsed) {
+      return parsed;
+    }
+
+    return value;
   }
 
-  return value;
+  return String(value);
 };
 
 const sortKeysRecursively = (value: unknown): CanonicalValue => {
