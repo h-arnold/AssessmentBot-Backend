@@ -1,6 +1,8 @@
 import { ExecutionContext } from '@nestjs/common';
 import { firstValueFrom, of } from 'rxjs';
 
+import { ImageValidationPipe } from '../pipes/image-validation.pipe';
+
 type AssessorCacheInterceptorModule = {
   AssessorCacheInterceptor: new (...args: unknown[]) => {
     isRequestCacheable: (ctx: ExecutionContext) => boolean;
@@ -254,5 +256,56 @@ describe('AssessorCacheInterceptor', () => {
       { live: true },
       expect.any(Number),
     );
+  });
+
+  it('validates image payloads before handling the request', async () => {
+    const { AssessorCacheInterceptor } = loadInterceptor();
+    const cacheStore = {
+      has: jest.fn().mockReturnValue(false),
+      get: jest.fn(),
+      getRemainingTtl: jest.fn().mockReturnValue(60000),
+      set: jest.fn(),
+    };
+    const interceptor = new AssessorCacheInterceptor(
+      {
+        get: jest.fn().mockReturnValue('secret'),
+      },
+      cacheStore,
+    );
+    const transformSpy = jest
+      .spyOn(ImageValidationPipe.prototype, 'transform')
+      .mockResolvedValue('ok');
+    const payload = {
+      taskType: 'IMAGE',
+      reference: 'data:image/png;base64,abcd',
+      template: 'data:image/png;base64,efgh',
+      studentResponse: 'data:image/png;base64,ijkl',
+    };
+    const request = {
+      method: 'POST',
+      url: '/v1/assessor',
+      originalUrl: '/v1/assessor',
+      body: payload,
+    };
+    const context = {
+      switchToHttp: (): {
+        getRequest: () => typeof request;
+        getResponse: () => { statusCode: number };
+      } => ({
+        getRequest: (): typeof request => request,
+        getResponse: (): { statusCode: number } => ({
+          statusCode: 201,
+        }),
+      }),
+    } as unknown as ExecutionContext;
+    const next = { handle: jest.fn(() => of({ live: true })) };
+
+    await firstValueFrom(await interceptor.intercept(context, next));
+
+    expect(transformSpy).toHaveBeenCalledTimes(3);
+    expect(transformSpy).toHaveBeenNthCalledWith(1, payload.reference);
+    expect(transformSpy).toHaveBeenNthCalledWith(2, payload.studentResponse);
+    expect(transformSpy).toHaveBeenNthCalledWith(3, payload.template);
+    expect(request.body).toEqual(payload);
   });
 });

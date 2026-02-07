@@ -40,6 +40,7 @@ Adhere to these principles in all contributions:
 
 - **Unit/Integration Tests**: Co-locate test files with source code (e.g., `assessor.service.spec.ts` next to `assessor.service.ts`). Use NestJS's `TestingModule` for integration tests.
 - **E2E Tests**: Place end-to-end tests in the root `test/` directory (e.g., `assessor.e2e-spec.ts`).
+- **E2E Cache TTL Tests**: The assessor cache E2E tests include 60+ second TTL waits and can take several minutes to complete. This is expected.
 - Run tests using the project's npm scripts.
 
 **Linting & Committing**:

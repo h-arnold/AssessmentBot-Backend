@@ -279,3 +279,46 @@ export const API_CALL_DELAY_MS = 2000;
 export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * Delays execution with periodic heartbeat logs to avoid silent test timeouts.
+ *
+ * @param ms - The number of milliseconds to delay.
+ * @param heartbeatMs - Interval for heartbeat logs in milliseconds.
+ * @param message - Optional heartbeat message prefix.
+ * @returns A Promise that resolves after the delay.
+ */
+export function delayWithHeartbeat(
+  ms: number,
+  heartbeatMs = 15000,
+  message = 'Heartbeat: waiting',
+): Promise<void> {
+  if (ms <= 0) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    const startTime = Date.now();
+    const totalSeconds = Math.ceil(ms / 1000);
+
+    const logHeartbeat = (): void => {
+      const elapsedMs = Date.now() - startTime;
+      const remainingMs = Math.max(ms - elapsedMs, 0);
+      const remainingSeconds = Math.ceil(remainingMs / 1000);
+      console.info(
+        `${message} (${remainingSeconds}s remaining of ${totalSeconds}s).`,
+      );
+    };
+
+    logHeartbeat();
+
+    const interval = setInterval(logHeartbeat, heartbeatMs);
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      resolve();
+    }, ms);
+
+    timeout.unref?.();
+    interval.unref?.();
+  });
+}
