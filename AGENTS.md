@@ -5,6 +5,8 @@ This document provides guidance for interacting with the Assessment Bot backend 
 **IMPORTANT: This project uses British English. Ensure all code, comments, documentation, and commit messages use British English spellings (e.g., 'authorise', 'colour', 'centre').**
 **IMPORTANT: Do not disable or override any quality gate (including linter rules) without explicit authorisation.**
 
+Agent instructions live in `.codex/` (source-of-truth) and are mirrored in `.github/agents/*.agent.md` with the required front matter so GitHub Copilot can run them via `runSubagent`.
+
 ## Core Principles
 
 Adhere to these principles in all contributions:
@@ -82,9 +84,11 @@ The project uses `nestjs-pino` for logging. To ensure consistency and maintainab
 
 By following this pattern, the application remains decoupled from the specific logging library, and all log messages will be correctly processed by `pino` as configured globally.
 
-## Codex delegation (codex-delegate)
-
 ## Spawning sub-agents
+
+How you do this will depend on whether you're in a codex environment of a Github Copilot environment.
+
+### Codex Environment
 
 Use `codex-delegate` to spawn a focused sub-agent for a specific task. Keep tasks small, pass constraints in `--instructions`, and set `--timeout-minutes` to 10 or more for long-running jobs.
 
@@ -102,54 +106,24 @@ While a sub-agent is running, expect a heartbeat line (`agent is still working`)
 
 **IMPORTANT**: Be patient. Some tasks will take several minutes and if the agent is thinking, you may not see any output for a while. If you see the heartbeat line, it is still working. If there is an error with the agent, `codex-delegate` will throw an error. If you stop it early, you may lose the work it has done so far. If you think it has stalled, check the logs for details `codex-delegate.log` (or set `--log-file` to write logs to a different path).
 
-### Sub-agent roles
+### Github Copilot Environment
 
-Sub-agent roles are defined in the `.codex` folder, along with the configuration file. To create a new role, add a markdown file with the role name (e.g. `implementation.md`) and a prompt template for that role. Empty files are ignored. Use `--list-roles` to see the discovered roles.
+In a Github Copilot environment, use the `runSubagent` tool to spawn sub-agent.
 
-## Creating new agents (roles)
+**MANDATORY**: Every sub-agent call must include `agentName: "{name of subagent}"` in its payload.
 
-Roles are defined by prompt templates in the `.codex` folder. To create a new agent:
+## Available sub-agents
 
-1. Create a new file at `.codex/<role>.md` with the prompt template for that role.
-2. Keep the template non-empty; empty files are ignored.
-3. Run `codex-delegate --list-roles` to confirm it is discovered.
-4. Invoke it with `codex-delegate --role <role> --task "..."`.
+You can use the following sub-agents to assist with you with your tasks. Always provide clear instructions and context when invoking them and err on the side of being more rather than less detailed.
 
-`AGENTS.md` files inside `.codex` are ignored for role discovery.
+Spawn these agents using either `runSubagent` (Github Copilot) or `codex-delegate` (Codex environment) following the instructions above.
 
-## Configuration (.codex)
+- `Testing` – validates the codebase, creates/updates tests, and reports plans/results/blockers; refer to `.codex/testing.md` for conventions and output expectations.
+- `Implementer` – turns approved tests or specifications into precise code/API changes with risks, files touched, and next steps; see `.codex/implementation.md`.
+- `Review` – performs a security-first code review, listing risks, improvements, confidence, and commands to run; rules live in `.codex/review.md`.
+- `Documentation` – reviews and updates documentation, summarises edits, flags gaps, and notes follow-ups; instructions are in `.codex/documentation.md`.
 
-The CLI uses a per-project `.codex` folder for both configuration and role templates.
-
-- Config file: `.codex/codex-delegate-config.json`
-- Role templates: `.codex/<role>.md` (ignored if empty)
-- `AGENTS.md` is always ignored for role discovery
-
-Run the init command to create the default config file, or let the CLI create it on first run:
-
-```bash
-codex-delegate init
-```
-
-Config defaults (stored when the file is first created) come from the CLI defaults:
-
-- `sandbox`: `danger-full-access`
-- `approval`: `never`
-- `network`: `true`
-- `webSearch`: `live`
-- `overrideWireApi`: `true`
-- `verbose`: `false`
-- `timeoutMinutes`: `10`
-
-Role, task, and instructions are CLI-only and are never read from config files.
-
-Config precedence is:
-
-1. Built-in defaults
-2. `.codex/codex-delegate-config.json`
-3. CLI flags
-
-Wire API note: `codex-delegate` overrides `wire_api` to `responses` by default. If you set `overrideWireApi` to `false`, ensure your Codex `config.toml` uses `wire_api = "responses"` or `wire_api = "chat"` to avoid startup errors. If `responses_websocket` is detected in `config.toml`, `codex-delegate` will isolate `CODEX_HOME` to a local `.codex/codex-home` folder to avoid the failure.
+Use the exact agentName strings above when invoking `runSubagent` and pass any task-specific context as described in the corresponding `.codex` file.
 
 ## Standard Workflow
 
@@ -175,7 +149,11 @@ Pass the summary of the implemented changes to the testing agent (`--role testin
 
 Pass details of the changes to the review agent (`--role review`) for a thorough code review. The review agent should focus on identifying any security vulnerabilities, code quality issues, adherence to coding standards, and potential improvements. Review the feedback provided by the review agent and address any critical or high-priority issues. Once all concerns have been addressed, proceed to the documentation phase.
 
-### 5. Documentation
+### 5. Repeat steps 2-4 as needed
+
+Repeat steps 2-4 until the code review is clean, the tests are passing, the test coverage is satisfactory, and the implementation meets all defined requirements and acceptance criteria. Ensure all linter checks pass and that the code adheres to the project's coding standards throughout this iterative process.
+
+### 6. Documentation
 
 Pass details of the changes to the documentation agent (`--role documentation`) to ensure that all relevant documentation is updated accordingly. This includes updating JSDoc comments, Swagger documentation, and any relevant guides or READMEs. Review the documentation updates to ensure they are clear, accurate, and helpful for future developers. Once the documentation is complete, finalise the changes and prepare for deployment or merging into the main codebase.
 
