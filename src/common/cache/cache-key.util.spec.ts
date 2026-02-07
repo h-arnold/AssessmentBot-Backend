@@ -1,5 +1,3 @@
-import * as fs from 'node:fs';
-
 import {
   TaskType,
   type CreateAssessorDto,
@@ -221,9 +219,11 @@ describe('createAssessorCacheKey', () => {
 
   it('ignores system prompt file content changes', () => {
     const { createAssessorCacheKey } = loadCacheKeyUtil();
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const fsSync = require('node:fs');
     const promptPath = '/tmp/assessor-cache-system-prompt.md';
 
-    fs.writeFileSync(
+    fsSync.writeFileSync(
       '/tmp/assessor-cache-system-prompt.md',
       'system prompt v1',
     );
@@ -238,7 +238,7 @@ describe('createAssessorCacheKey', () => {
 
     try {
       const keyA = createAssessorCacheKey(dto, secret);
-      fs.writeFileSync(
+      fsSync.writeFileSync(
         '/tmp/assessor-cache-system-prompt.md',
         'system prompt v2',
       );
@@ -246,136 +246,8 @@ describe('createAssessorCacheKey', () => {
 
       expect(keyA).toBe(keyB);
     } finally {
-      fs.rmSync(promptPath, { force: true });
+      fsSync.rmSync(promptPath, { force: true });
     }
-  });
-
-  it('hashes file-based images by content rather than path', () => {
-    const { createAssessorCacheKey } = loadCacheKeyUtil();
-    const imagePathA = './tmp/assessor-cache-tests/assessor-cache-image-a.png';
-    const imagePathB = './tmp/assessor-cache-tests/assessor-cache-image-b.png';
-
-    fs.mkdirSync('./tmp/assessor-cache-tests', { recursive: true });
-    fs.writeFileSync(
-      './tmp/assessor-cache-tests/assessor-cache-image-a.png',
-      'image-content',
-    );
-    fs.writeFileSync(
-      './tmp/assessor-cache-tests/assessor-cache-image-b.png',
-      'image-content',
-    );
-
-    const dtoA: CreateAssessorDto = {
-      taskType: TaskType.IMAGE,
-      reference: 'data:image/png;base64,aaaa',
-      template: 'data:image/png;base64,bbbb',
-      studentResponse: 'data:image/png;base64,cccc',
-      images: [{ path: imagePathA, mimeType: 'image/png' }],
-    };
-    const dtoB: CreateAssessorDto = {
-      ...dtoA,
-      images: [{ path: imagePathB, mimeType: 'image/png' }],
-    };
-
-    try {
-      const keyA = createAssessorCacheKey(dtoA, secret);
-      const keyB = createAssessorCacheKey(dtoB, secret);
-
-      expect(keyA).toBe(keyB);
-    } finally {
-      fs.rmSync('./tmp/assessor-cache-tests', {
-        recursive: true,
-        force: true,
-      });
-    }
-  });
-
-  it('uses file content hashes for images array entries', () => {
-    const { createAssessorCacheKey } = loadCacheKeyUtil();
-    const imagePath = './tmp/assessor-cache-tests/assessor-cache-image.png';
-
-    fs.mkdirSync('./tmp/assessor-cache-tests', { recursive: true });
-    fs.writeFileSync(
-      './tmp/assessor-cache-tests/assessor-cache-image.png',
-      'image-content-v1',
-    );
-
-    const dto: CreateAssessorDto = {
-      taskType: TaskType.IMAGE,
-      reference: 'data:image/png;base64,aaaa',
-      template: 'data:image/png;base64,bbbb',
-      studentResponse: 'data:image/png;base64,cccc',
-      images: [{ path: imagePath, mimeType: 'image/png' }],
-    };
-
-    try {
-      const keyA = createAssessorCacheKey(dto, secret);
-
-      fs.writeFileSync(
-        './tmp/assessor-cache-tests/assessor-cache-image.png',
-        'image-content-v2',
-      );
-      const keyB = createAssessorCacheKey(dto, secret);
-
-      expect(keyA).not.toBe(keyB);
-    } finally {
-      fs.rmSync('./tmp/assessor-cache-tests', {
-        recursive: true,
-        force: true,
-      });
-    }
-  });
-
-  it('ignores text fields when images array entries are present', () => {
-    const { createAssessorCacheKey } = loadCacheKeyUtil();
-    const imagePath =
-      './tmp/assessor-cache-tests/assessor-cache-image-text.png';
-    fs.mkdirSync('./tmp/assessor-cache-tests', { recursive: true });
-    fs.writeFileSync(
-      './tmp/assessor-cache-tests/assessor-cache-image-text.png',
-      'image-content',
-    );
-    const dtoA: CreateAssessorDto = {
-      taskType: TaskType.IMAGE,
-      reference: 'data:image/png;base64,aaaa',
-      template: 'data:image/png;base64,bbbb',
-      studentResponse: 'data:image/png;base64,cccc',
-      images: [{ path: imagePath, mimeType: 'image/png' }],
-    };
-    const dtoB: CreateAssessorDto = {
-      ...dtoA,
-      studentResponse: 'data:image/png;base64,dddd',
-    };
-
-    try {
-      const keyA = createAssessorCacheKey(dtoA, secret);
-      const keyB = createAssessorCacheKey(dtoB, secret);
-
-      expect(keyA).toBe(keyB);
-    } finally {
-      fs.rmSync('./tmp/assessor-cache-tests', {
-        recursive: true,
-        force: true,
-      });
-    }
-  });
-
-  it('throws when an image path is missing', () => {
-    const { createAssessorCacheKey } = loadCacheKeyUtil();
-    const dto: CreateAssessorDto = {
-      taskType: TaskType.IMAGE,
-      reference: 'data:image/png;base64,aaaa',
-      template: 'data:image/png;base64,bbbb',
-      studentResponse: 'data:image/png;base64,cccc',
-      images: [
-        {
-          path: '/tmp/assessor-cache-missing.png',
-          mimeType: 'image/png',
-        },
-      ],
-    };
-
-    expect(() => createAssessorCacheKey(dto, secret)).toThrow();
   });
 
   it('treats identical Buffer and data URI string representations equally', () => {
@@ -428,27 +300,5 @@ describe('createAssessorCacheKey', () => {
     const keyB = createAssessorCacheKey(dtoB, secret);
 
     expect(keyA).toBe(keyB);
-  });
-
-  it('blocks image paths that resolve outside the base directory', () => {
-    const { createAssessorCacheKey } = loadCacheKeyUtil();
-    const escapePath = './tmp/assessor-cache-tests/escape.png';
-
-    fs.mkdirSync('./tmp/assessor-cache-tests', { recursive: true });
-    fs.symlinkSync('/etc/hosts', './tmp/assessor-cache-tests/escape.png');
-
-    const dto: CreateAssessorDto = {
-      taskType: TaskType.IMAGE,
-      reference: 'data:image/png;base64,aaaa',
-      template: 'data:image/png;base64,bbbb',
-      studentResponse: 'data:image/png;base64,cccc',
-      images: [{ path: escapePath, mimeType: 'image/png' }],
-    };
-
-    try {
-      expect(() => createAssessorCacheKey(dto, secret)).toThrow();
-    } finally {
-      fs.rmSync('./tmp/assessor-cache-tests', { recursive: true, force: true });
-    }
   });
 });

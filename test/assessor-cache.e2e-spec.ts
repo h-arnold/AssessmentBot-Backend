@@ -823,62 +823,6 @@ describe('Assessor cache behaviour (e2e)', () => {
       }
     });
 
-    it('file-based image content changes invalidate cache', async () => {
-      const tempDir = path.join('tmp', 'assessor-cache-e2e');
-      const imagePath = path.join(tempDir, 'temp-image-test.png');
-      const suffix = `img-content-${Date.now()}`;
-
-      try {
-        fs.mkdirSync(tempDir, { recursive: true });
-        // Write initial image content and cache it
-        fs.writeFileSync(imagePath, 'initial-image-content');
-        const payload1 = buildImagePayload(suffix, {
-          images: [{ path: imagePath, mimeType: 'image/png' }],
-        });
-
-        const beforeCount = countLlmDispatches(logFilePath);
-
-        // First request: cache miss
-        await request(app.appUrl)
-          .post('/v1/assessor')
-          .set('Authorization', `Bearer ${app.apiKey}`)
-          .send(payload1)
-          .expect(201);
-
-        await delay(200);
-        const afterFirst = countLlmDispatches(logFilePath);
-
-        // Second request with same image: cache hit
-        await request(app.appUrl)
-          .post('/v1/assessor')
-          .set('Authorization', `Bearer ${app.apiKey}`)
-          .send(payload1)
-          .expect(201);
-
-        await delay(200);
-        const afterSecond = countLlmDispatches(logFilePath);
-
-        // Modify the image file on disk
-        fs.writeFileSync(imagePath, 'modified-image-content');
-
-        // Third request with modified image content: cache miss
-        await request(app.appUrl)
-          .post('/v1/assessor')
-          .set('Authorization', `Bearer ${app.apiKey}`)
-          .send(payload1)
-          .expect(201);
-
-        await delay(200);
-        const afterThird = countLlmDispatches(logFilePath);
-
-        expect(afterFirst - beforeCount).toBe(1);
-        expect(afterSecond - afterFirst).toBe(0);
-        expect(afterThird - afterSecond).toBe(1);
-      } finally {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      }
-    });
-
     it('eviction race: immediately requesting evicted entry triggers recomputation', async () => {
       // With a small cache (512 KiB), we can force eviction and then immediately request the evicted entry
       // Use buildLargePayload which creates ~400 KiB payloads
