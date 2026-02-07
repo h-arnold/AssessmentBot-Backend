@@ -312,11 +312,12 @@ describe('Assessor cache behaviour (e2e)', () => {
       const afterSecond = countLlmDispatches(logFilePath);
 
       // CRITICAL: Wait for TTL to expire (1 minute = 60 seconds)
-      // Wait 70 seconds to account for timing variations:
+      // Wait 75 seconds to account for timing variations:
       // - Clock skew and timing variations in Node.js
       // - Event loop delays
       // - Cache expiration not happening exactly at 60s mark
-      await delay(70000);
+      // - CI runner scheduling overhead
+      await delay(75000);
 
       // Third request: cache miss (TTL expired, LLM is called again)
       await request(app.appUrl)
@@ -822,19 +823,50 @@ describe('Assessor cache behaviour (e2e)', () => {
         fs.rmSync(tempDir, { recursive: true, force: true });
       }
     });
+  });
+
+  describe('Eviction race (small cache)', () => {
+    let app: AppInstance;
+    const logFilePath = path.join(
+      __dirname,
+      'logs',
+      'assessor-cache-eviction-race.e2e-spec.log',
+    );
+
+    beforeAll(async () => {
+      try {
+        fs.truncateSync(logFilePath, 0);
+      } catch {
+        // Log file may not exist yet, that's OK
+      }
+
+      app = await startApp(logFilePath, {
+        ASSESSOR_CACHE_HASH_SECRET: 'e2e-eviction-race-secret',
+        ASSESSOR_CACHE_TTL_MINUTES: '10',
+        ASSESSOR_CACHE_MAX_SIZE_MIB: '1',
+        AUTHENTICATED_THROTTLER_LIMIT: '100',
+      });
+    });
+
+    afterAll(() => {
+      stopApp(app.appProcess);
+    });
 
     it('eviction race: immediately requesting evicted entry triggers recomputation', async () => {
-      // With a small cache (512 KiB), we can force eviction and then immediately request the evicted entry
+      // With a small cache (1 MiB), we can force eviction and then immediately request the evicted entry
       // Use buildLargePayload which creates ~400 KiB payloads
+      // 3 payloads (1.2 MiB total) exceeds 1 MiB cache, forcing eviction of the oldest
       const suffixA = `evict-race-a-${Date.now()}`;
       const suffixB = `evict-race-b-${Date.now()}`;
+      const suffixC = `evict-race-c-${Date.now()}`;
 
       const payloadA = CacheE2ETestHelper.buildLargePayload(suffixA);
       const payloadB = CacheE2ETestHelper.buildLargePayload(suffixB);
+      const payloadC = CacheE2ETestHelper.buildLargePayload(suffixC);
 
       const beforeCount = countLlmDispatches(logFilePath);
 
-      // First request: cache miss
+      // First request: cache miss (payloadA stored)
       await request(app.appUrl)
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${app.apiKey}`)
@@ -854,7 +886,7 @@ describe('Assessor cache behaviour (e2e)', () => {
       await delay(200);
       const afterSecond = countLlmDispatches(logFilePath);
 
-      // Third request with a different large payload: likely triggers eviction of payloadA
+      // Third request: cache miss (payloadB stored, cache now ~800 KiB)
       await request(app.appUrl)
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${app.apiKey}`)
@@ -864,8 +896,17 @@ describe('Assessor cache behaviour (e2e)', () => {
       await delay(200);
       const afterThird = countLlmDispatches(logFilePath);
 
-      // Immediately request the original payload again (evicted entry)
-      // This should be a cache miss because it was evicted
+      // Fourth request: cache miss (payloadC stored, exceeds 1 MiB → payloadA evicted)
+      await request(app.appUrl)
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${app.apiKey}`)
+        .send(payloadC)
+        .expect(201);
+
+      await delay(200);
+      const afterFourth = countLlmDispatches(logFilePath);
+
+      // Fifth request: payloadA was evicted, so this is a cache miss
       await request(app.appUrl)
         .post('/v1/assessor')
         .set('Authorization', `Bearer ${app.apiKey}`)
@@ -873,13 +914,14 @@ describe('Assessor cache behaviour (e2e)', () => {
         .expect(201);
 
       await delay(200);
-      const afterFourth = countLlmDispatches(logFilePath);
+      const afterFifth = countLlmDispatches(logFilePath);
 
       expect(afterFirst - beforeCount).toBe(1);
       expect(afterSecond - afterFirst).toBe(0);
       expect(afterThird - afterSecond).toBe(1);
-      // The evicted entry should be recomputed
       expect(afterFourth - afterThird).toBe(1);
+      // The evicted entry should be recomputed
+      expect(afterFifth - afterFourth).toBe(1);
     });
   });
 });
