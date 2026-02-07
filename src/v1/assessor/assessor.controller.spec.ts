@@ -1,29 +1,17 @@
 import { AssessorController } from './assessor.controller';
 import { TaskType, type CreateAssessorDto } from './dto/create-assessor.dto';
-import { ImageValidationPipe } from '../../common/pipes/image-validation.pipe';
-import { ConfigService } from '../../config/config.service';
 
 describe('AssessorController', () => {
   const mockAssessorService = {
     createAssessment: jest.fn(),
   };
 
-  const mockConfigService = {
-    get: jest.fn(),
-  } as unknown as ConfigService;
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('validates image payloads when task type is IMAGE', async () => {
-    const controller = new AssessorController(
-      mockAssessorService as never,
-      mockConfigService,
-    );
-    const transformSpy = jest
-      .spyOn(ImageValidationPipe.prototype, 'transform')
-      .mockResolvedValue('ok');
+  it('creates assessments for image payloads', async () => {
+    const controller = new AssessorController(mockAssessorService as never);
 
     const payload: CreateAssessorDto = {
       taskType: TaskType.IMAGE,
@@ -38,19 +26,11 @@ describe('AssessorController', () => {
 
     await controller.create(payload);
 
-    expect(transformSpy).toHaveBeenCalledTimes(3);
-    expect(transformSpy).toHaveBeenNthCalledWith(1, payload.reference);
-    expect(transformSpy).toHaveBeenNthCalledWith(2, payload.studentResponse);
-    expect(transformSpy).toHaveBeenNthCalledWith(3, payload.template);
     expect(mockAssessorService.createAssessment).toHaveBeenCalledWith(payload);
   });
 
-  it('skips image validation for non-image task types', async () => {
-    const controller = new AssessorController(
-      mockAssessorService as never,
-      mockConfigService,
-    );
-    const transformSpy = jest.spyOn(ImageValidationPipe.prototype, 'transform');
+  it('creates assessments for non-image payloads', async () => {
+    const controller = new AssessorController(mockAssessorService as never);
 
     const payload: CreateAssessorDto = {
       taskType: TaskType.TEXT,
@@ -65,16 +45,12 @@ describe('AssessorController', () => {
 
     await controller.create(payload);
 
-    expect(transformSpy).not.toHaveBeenCalled();
     expect(mockAssessorService.createAssessment).toHaveBeenCalledWith(payload);
   });
 
   describe('Integration: Caching interceptor application', () => {
     it('applies caching interceptor to the create endpoint', async () => {
-      const controller = new AssessorController(
-        mockAssessorService as never,
-        mockConfigService,
-      );
+      const controller = new AssessorController(mockAssessorService as never);
 
       const descriptors = Object.getOwnPropertyDescriptors(
         AssessorController.prototype,

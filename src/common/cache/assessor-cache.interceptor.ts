@@ -57,7 +57,12 @@ export class AssessorCacheInterceptor implements NestInterceptor {
 
     const request = ctx.switchToHttp().getRequest();
     const body = request.body as CreateAssessorDto;
-    const hash = createAssessorCacheKey(body, this.secret);
+    const parsed = createAssessorDtoSchema.safeParse(body);
+    if (!parsed.success) {
+      this.logger.debug('Assessor cache key skipped due to invalid payload.');
+      return undefined;
+    }
+    const hash = createAssessorCacheKey(parsed.data, this.secret);
     return `assessor:${hash}`;
   }
 
@@ -92,12 +97,11 @@ export class AssessorCacheInterceptor implements NestInterceptor {
     context: ExecutionContext,
     next: CallHandler,
   ): Promise<Observable<unknown>> {
-    if (!this.isRequestCacheable(context) || !this.cacheStore) {
+    if (!this.isRequestCacheable(context)) {
       return next.handle();
     }
 
     const request = context.switchToHttp().getRequest();
-    const requestSize = this.estimateRequestSize(request.body);
     const validationPipe = new ZodValidationPipe(createAssessorDtoSchema);
     const validatedBody = validationPipe.transform(request.body, {
       type: 'body',
@@ -112,6 +116,13 @@ export class AssessorCacheInterceptor implements NestInterceptor {
       await imagePipe.transform(validatedBody.template);
     }
 
+    request.body = validatedBody;
+
+    if (!this.cacheStore) {
+      return next.handle();
+    }
+
+    const requestSize = this.estimateRequestSize(validatedBody);
     const validatedKey = `assessor:${createAssessorCacheKey(
       validatedBody,
       this.secret,

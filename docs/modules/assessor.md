@@ -36,6 +36,18 @@ The controller handles HTTP requests for assessment operations:
 - **Rate Limiting:** Uses authenticated throttler configuration for stricter limits
 - **Input Validation:** Multi-layer validation including Zod schema and specialised image validation
 
+#### Assessor Cache (In-Memory)
+
+The controller applies the `AssessorCacheInterceptor`, which provides privacy-preserving, in-memory caching for `POST /v1/assessor` requests.
+
+- **Cache scope:** Only successful (2xx) responses for `POST /v1/assessor` are cacheable.
+- **Keying:** Cache keys are an HMAC of a canonicalised DTO payload (`taskType`, `reference`, `template`, `studentResponse`), using `ASSESSOR_CACHE_HASH_SECRET`.
+- **Normalisation:** JSON key ordering and image payload representations are normalised so semantically identical requests map to the same entry.
+- **Exclusions:** Headers, API keys, `systemPromptFile`, and any additional image list metadata do **not** affect the cache key.
+- **Eviction:** Entries expire based on TTL and are evicted using an LRU size cap.
+
+This interceptor also performs Zod schema validation and, for `IMAGE` tasks, runs the `ImageValidationPipe` before any caching or service handling.
+
 #### Request Processing Flow
 
 1. **Authentication Check:** Validates API key via `ApiKeyGuard`
