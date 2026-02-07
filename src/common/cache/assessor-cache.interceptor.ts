@@ -92,35 +92,33 @@ export class AssessorCacheInterceptor implements NestInterceptor {
     context: ExecutionContext,
     next: CallHandler,
   ): Promise<Observable<unknown>> {
-    const key = this.trackBy(context);
-
-    if (!key || !this.cacheStore) {
+    if (!this.isRequestCacheable(context) || !this.cacheStore) {
       return next.handle();
     }
 
     const request = context.switchToHttp().getRequest();
     const requestSize = this.estimateRequestSize(request.body);
-    const cacheHit = this.cacheStore.has(key);
+    const validationPipe = new ZodValidationPipe(createAssessorDtoSchema);
+    const validatedBody = validationPipe.transform(request.body, {
+      type: 'body',
+      metatype: undefined,
+      data: '',
+    }) as CreateAssessorDto;
+
+    if (validatedBody.taskType === 'IMAGE') {
+      const imagePipe = new ImageValidationPipe(this.configService);
+      await imagePipe.transform(validatedBody.reference);
+      await imagePipe.transform(validatedBody.studentResponse);
+      await imagePipe.transform(validatedBody.template);
+    }
+
+    const validatedKey = `assessor:${createAssessorCacheKey(
+      validatedBody,
+      this.secret,
+    )}`;
+    const cacheHit = this.cacheStore.has(validatedKey);
 
     if (cacheHit) {
-      const validationPipe = new ZodValidationPipe(createAssessorDtoSchema);
-      const validatedBody = validationPipe.transform(request.body, {
-        type: 'body',
-        metatype: null,
-        data: '',
-      }) as CreateAssessorDto;
-
-      if (validatedBody.taskType === 'IMAGE') {
-        const imagePipe = new ImageValidationPipe(this.configService);
-        await imagePipe.transform(validatedBody.reference);
-        await imagePipe.transform(validatedBody.studentResponse);
-        await imagePipe.transform(validatedBody.template);
-      }
-
-      const validatedKey = `assessor:${createAssessorCacheKey(
-        validatedBody,
-        this.secret,
-      )}`;
       const cachedValue = this.cacheStore.get<unknown>(validatedKey);
       const remainingTtlMs = this.cacheStore.getRemainingTtl(validatedKey);
 
@@ -137,7 +135,7 @@ export class AssessorCacheInterceptor implements NestInterceptor {
     }
 
     this.logger.debug(
-      `Assessor cache miss for key ${key}. Request size=${requestSize} bytes.`,
+      `Assessor cache miss for key ${validatedKey}. Request size=${requestSize} bytes.`,
     );
 
     return next.handle().pipe(
@@ -145,14 +143,15 @@ export class AssessorCacheInterceptor implements NestInterceptor {
         try {
           const httpResponse = context.switchToHttp().getResponse();
           if (this.isResponseCacheable(httpResponse)) {
-            this.cacheStore!.set(key, response, requestSize);
-            const remainingTtlMs = this.cacheStore!.getRemainingTtl(key);
+            this.cacheStore!.set(validatedKey, response, requestSize);
+            const remainingTtlMs =
+              this.cacheStore!.getRemainingTtl(validatedKey);
             this.logger.debug(
-              `Cached assessor response for key ${key}. Remaining TTL=${remainingTtlMs}ms.`,
+              `Cached assessor response for key ${validatedKey}. Remaining TTL=${remainingTtlMs}ms.`,
             );
           } else {
             this.logger.debug(
-              `Assessor response not cached for key ${key}. Status=${httpResponse?.statusCode ?? 'unknown'}.`,
+              `Assessor response not cached for key ${validatedKey}. Status=${httpResponse?.statusCode ?? 'unknown'}.`,
             );
           }
         } catch (error) {

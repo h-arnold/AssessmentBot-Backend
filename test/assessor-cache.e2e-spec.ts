@@ -534,8 +534,10 @@ describe('Assessor cache behaviour (e2e)', () => {
         .send(payloadA)
         .expect(201);
 
-      await delay(200);
-      const afterFirst = countLlmDispatches(logFilePath);
+      const afterFirst = await waitForDispatchCount(
+        logFilePath,
+        beforeCount + 1,
+      );
 
       await request(app.appUrl)
         .post('/v1/assessor')
@@ -543,7 +545,7 @@ describe('Assessor cache behaviour (e2e)', () => {
         .send(payloadA)
         .expect(201);
 
-      await delay(200);
+      await assertDispatchCountStable(logFilePath, afterFirst);
       const afterSecond = countLlmDispatches(logFilePath);
 
       await request(app.appUrl)
@@ -552,8 +554,10 @@ describe('Assessor cache behaviour (e2e)', () => {
         .send(payloadB)
         .expect(201);
 
-      await delay(200);
-      const afterThird = countLlmDispatches(logFilePath);
+      const afterThird = await waitForDispatchCount(
+        logFilePath,
+        afterSecond + 1,
+      );
 
       await request(app.appUrl)
         .post('/v1/assessor')
@@ -561,8 +565,10 @@ describe('Assessor cache behaviour (e2e)', () => {
         .send(payloadC)
         .expect(201);
 
-      await delay(200);
-      const afterFourth = countLlmDispatches(logFilePath);
+      const afterFourth = await waitForDispatchCount(
+        logFilePath,
+        afterThird + 1,
+      );
 
       // At this point, payloadA has been evicted from the cache (oldest entry).
       // Request it again to verify it must be recomputed.
@@ -572,8 +578,10 @@ describe('Assessor cache behaviour (e2e)', () => {
         .send(payloadA)
         .expect(201);
 
-      await delay(200);
-      const afterFifth = countLlmDispatches(logFilePath);
+      const afterFifth = await waitForDispatchCount(
+        logFilePath,
+        afterFourth + 1,
+      );
 
       expect(afterFirst - beforeCount).toBe(1);
       expect(afterSecond - afterFirst).toBe(0);
@@ -965,8 +973,10 @@ describe('Assessor cache behaviour (e2e)', () => {
         .send(payloadA)
         .expect(201);
 
-      await delay(200);
-      const afterFirst = countLlmDispatches(logFilePath);
+      const afterFirst = await waitForDispatchCount(
+        logFilePath,
+        beforeCount + 1,
+      );
 
       // Second request (same payload): cache hit
       await request(app.appUrl)
@@ -975,7 +985,7 @@ describe('Assessor cache behaviour (e2e)', () => {
         .send(payloadA)
         .expect(201);
 
-      await delay(200);
+      await assertDispatchCountStable(logFilePath, afterFirst);
       const afterSecond = countLlmDispatches(logFilePath);
 
       // Third request: cache miss (payloadB stored, cache now ~800 KiB)
@@ -985,8 +995,10 @@ describe('Assessor cache behaviour (e2e)', () => {
         .send(payloadB)
         .expect(201);
 
-      await delay(200);
-      const afterThird = countLlmDispatches(logFilePath);
+      const afterThird = await waitForDispatchCount(
+        logFilePath,
+        afterSecond + 1,
+      );
 
       // Fourth request: cache miss (payloadC stored, exceeds 1 MiB → payloadA evicted)
       await request(app.appUrl)
@@ -995,8 +1007,10 @@ describe('Assessor cache behaviour (e2e)', () => {
         .send(payloadC)
         .expect(201);
 
-      await delay(200);
-      const afterFourth = countLlmDispatches(logFilePath);
+      const afterFourth = await waitForDispatchCount(
+        logFilePath,
+        afterThird + 1,
+      );
 
       // Fifth request: payloadA was evicted, so this is a cache miss
       await request(app.appUrl)
@@ -1005,8 +1019,10 @@ describe('Assessor cache behaviour (e2e)', () => {
         .send(payloadA)
         .expect(201);
 
-      await delay(200);
-      const afterFifth = countLlmDispatches(logFilePath);
+      const afterFifth = await waitForDispatchCount(
+        logFilePath,
+        afterFourth + 1,
+      );
 
       expect(afterFirst - beforeCount).toBe(1);
       expect(afterSecond - afterFirst).toBe(0);

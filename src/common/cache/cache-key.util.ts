@@ -87,6 +87,10 @@ const normaliseImageValue = (value: unknown): CanonicalValue => {
     };
   }
 
+  if (value === null || value === undefined) {
+    return null;
+  }
+
   if (typeof value === 'string') {
     const parsed = parseDataUri(value);
     if (parsed) {
@@ -94,6 +98,18 @@ const normaliseImageValue = (value: unknown): CanonicalValue => {
     }
 
     return value;
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => normaliseImageValue(item));
+  }
+
+  if (typeof value === 'object') {
+    return value as CanonicalValue;
   }
 
   return String(value);
