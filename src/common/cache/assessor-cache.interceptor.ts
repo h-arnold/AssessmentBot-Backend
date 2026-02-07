@@ -13,6 +13,9 @@ import { ASSESSOR_CACHE, AssessorCacheStore } from './assessor-cache.store';
 import { createAssessorCacheKey } from './cache-key.util';
 import { ConfigService } from '../../config/config.service';
 import { type CreateAssessorDto } from '../../v1/assessor/dto/create-assessor.dto';
+import { createAssessorDtoSchema } from '../../v1/assessor/dto/create-assessor.dto';
+import { ImageValidationPipe } from '../pipes/image-validation.pipe';
+import { ZodValidationPipe } from '../zod-validation.pipe';
 
 /**
  * Interceptor that provides in-memory caching for assessor requests.
@@ -89,22 +92,67 @@ export class AssessorCacheInterceptor implements NestInterceptor {
     context: ExecutionContext,
     next: CallHandler,
   ): Promise<Observable<unknown>> {
-    const key = this.trackBy(context);
-
-    if (!key || !this.cacheStore) {
+    if (!this.isRequestCacheable(context) || !this.cacheStore) {
       return next.handle();
     }
 
     const request = context.switchToHttp().getRequest();
     const requestSize = this.estimateRequestSize(request.body);
+    const validationPipe = new ZodValidationPipe(createAssessorDtoSchema);
+    const validatedBody = validationPipe.transform(request.body, {
+      type: 'body',
+      metatype: undefined,
+      data: '',
+    }) as CreateAssessorDto;
+
+    if (validatedBody.taskType === 'IMAGE') {
+      const imagePipe = new ImageValidationPipe(this.configService);
+      await imagePipe.transform(validatedBody.reference);
+      await imagePipe.transform(validatedBody.studentResponse);
+      await imagePipe.transform(validatedBody.template);
+    }
+
+    const validatedKey = `assessor:${createAssessorCacheKey(
+      validatedBody,
+      this.secret,
+    )}`;
+    const cacheHit = this.cacheStore.has(validatedKey);
+
+    if (cacheHit) {
+      const cachedValue = this.cacheStore.get<unknown>(validatedKey);
+      const remainingTtlMs = this.cacheStore.getRemainingTtl(validatedKey);
+
+      if (cachedValue !== undefined) {
+        this.logger.debug(
+          `Assessor cache hit for key ${validatedKey}. Remaining TTL=${remainingTtlMs}ms.`,
+        );
+        return of(cachedValue);
+      }
+
+      this.logger.debug(
+        `Assessor cache reported hit for key ${validatedKey}, but no value was returned.`,
+      );
+    }
+
+    this.logger.debug(
+      `Assessor cache miss for key ${validatedKey}. Request size=${requestSize} bytes.`,
+    );
 
     return next.handle().pipe(
       tap((response) => {
         try {
           const httpResponse = context.switchToHttp().getResponse();
           if (this.isResponseCacheable(httpResponse)) {
-            this.cacheStore!.set(key, response, requestSize);
-            this.logger.debug('Cached assessor response.');
+            this.cacheStore!.set(validatedKey, response, requestSize);
+            const remainingTtlMs =
+              this.cacheStore!.getRemainingTtl(validatedKey);
+            this.logger.debug(
+              `Cached assessor response for key ${validatedKey}. Remaining TTL=${remainingTtlMs}ms.`,
+            );
+          } else {
+            this.logger.debug(
+              `Assessor response not cached for key ${validatedKey}. Status=${httpResponse?.statusCode ?? 'unknown'}.`,
+            );
           }
         } catch (error) {
           this.logger.warn(
