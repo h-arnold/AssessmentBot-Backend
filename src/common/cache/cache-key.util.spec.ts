@@ -219,11 +219,73 @@ describe('createAssessorCacheKey', () => {
     expect(keyA).toBe(keyB);
   });
 
+  it('ignores system prompt file content changes', () => {
+    const { createAssessorCacheKey } = loadCacheKeyUtil();
+    const promptPath = '/tmp/assessor-cache-system-prompt.md';
+
+    fs.writeFileSync(
+      '/tmp/assessor-cache-system-prompt.md',
+      'system prompt v1',
+    );
+
+    const dto: CreateAssessorDto = {
+      taskType: TaskType.IMAGE,
+      reference: 'data:image/png;base64,aaaa',
+      template: 'data:image/png;base64,bbbb',
+      studentResponse: 'data:image/png;base64,cccc',
+      systemPromptFile: promptPath,
+    };
+
+    try {
+      const keyA = createAssessorCacheKey(dto, secret);
+      fs.writeFileSync(
+        '/tmp/assessor-cache-system-prompt.md',
+        'system prompt v2',
+      );
+      const keyB = createAssessorCacheKey(dto, secret);
+
+      expect(keyA).toBe(keyB);
+    } finally {
+      fs.rmSync(promptPath, { force: true });
+    }
+  });
+
+  it('hashes file-based images by content rather than path', () => {
+    const { createAssessorCacheKey } = loadCacheKeyUtil();
+    const imagePathA = '/tmp/assessor-cache-image-a.png';
+    const imagePathB = '/tmp/assessor-cache-image-b.png';
+
+    fs.writeFileSync('/tmp/assessor-cache-image-a.png', 'image-content');
+    fs.writeFileSync('/tmp/assessor-cache-image-b.png', 'image-content');
+
+    const dtoA: CreateAssessorDto = {
+      taskType: TaskType.IMAGE,
+      reference: 'data:image/png;base64,aaaa',
+      template: 'data:image/png;base64,bbbb',
+      studentResponse: 'data:image/png;base64,cccc',
+      images: [{ path: imagePathA, mimeType: 'image/png' }],
+    };
+    const dtoB: CreateAssessorDto = {
+      ...dtoA,
+      images: [{ path: imagePathB, mimeType: 'image/png' }],
+    };
+
+    try {
+      const keyA = createAssessorCacheKey(dtoA, secret);
+      const keyB = createAssessorCacheKey(dtoB, secret);
+
+      expect(keyA).toBe(keyB);
+    } finally {
+      fs.rmSync(imagePathA, { force: true });
+      fs.rmSync(imagePathB, { force: true });
+    }
+  });
+
   it('uses file content hashes for images array entries', () => {
     const { createAssessorCacheKey } = loadCacheKeyUtil();
     const imagePath = '/tmp/assessor-cache-image.png';
 
-    fs.writeFileSync(imagePath, 'image-content-v1');
+    fs.writeFileSync('/tmp/assessor-cache-image.png', 'image-content-v1');
 
     const dto: CreateAssessorDto = {
       taskType: TaskType.IMAGE,
@@ -233,33 +295,42 @@ describe('createAssessorCacheKey', () => {
       images: [{ path: imagePath, mimeType: 'image/png' }],
     };
 
-    const keyA = createAssessorCacheKey(dto, secret);
+    try {
+      const keyA = createAssessorCacheKey(dto, secret);
 
-    fs.writeFileSync(imagePath, 'image-content-v2');
-    const keyB = createAssessorCacheKey(dto, secret);
+      fs.writeFileSync('/tmp/assessor-cache-image.png', 'image-content-v2');
+      const keyB = createAssessorCacheKey(dto, secret);
 
-    expect(keyA).not.toBe(keyB);
+      expect(keyA).not.toBe(keyB);
+    } finally {
+      fs.rmSync(imagePath, { force: true });
+    }
   });
 
   it('ignores text fields when images array entries are present', () => {
     const { createAssessorCacheKey } = loadCacheKeyUtil();
-    fs.writeFileSync('/tmp/image.png', 'image-content');
+    const imagePath = '/tmp/assessor-cache-image-text.png';
+    fs.writeFileSync('/tmp/assessor-cache-image-text.png', 'image-content');
     const dtoA: CreateAssessorDto = {
       taskType: TaskType.IMAGE,
       reference: 'data:image/png;base64,aaaa',
       template: 'data:image/png;base64,bbbb',
       studentResponse: 'data:image/png;base64,cccc',
-      images: [{ path: '/tmp/image.png', mimeType: 'image/png' }],
+      images: [{ path: imagePath, mimeType: 'image/png' }],
     };
     const dtoB: CreateAssessorDto = {
       ...dtoA,
       studentResponse: 'data:image/png;base64,dddd',
     };
 
-    const keyA = createAssessorCacheKey(dtoA, secret);
-    const keyB = createAssessorCacheKey(dtoB, secret);
+    try {
+      const keyA = createAssessorCacheKey(dtoA, secret);
+      const keyB = createAssessorCacheKey(dtoB, secret);
 
-    expect(keyA).toBe(keyB);
+      expect(keyA).toBe(keyB);
+    } finally {
+      fs.rmSync(imagePath, { force: true });
+    }
   });
 
   it('throws when an image path is missing', () => {

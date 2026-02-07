@@ -76,6 +76,24 @@ describe('configSchema assessor cache validation', () => {
     ).toThrow();
   });
 
+  it('rejects zero or negative TTL hours', () => {
+    expect(() =>
+      configSchema.parse({
+        ...buildBaseEnv(),
+        ASSESSOR_CACHE_HASH_SECRET: 'secret',
+        ASSESSOR_CACHE_TTL_HOURS: '0',
+      }),
+    ).toThrow();
+
+    expect(() =>
+      configSchema.parse({
+        ...buildBaseEnv(),
+        ASSESSOR_CACHE_HASH_SECRET: 'secret',
+        ASSESSOR_CACHE_TTL_HOURS: '-3',
+      }),
+    ).toThrow();
+  });
+
   it('rejects non-positive cache max size', () => {
     expect(() =>
       configSchema.parse({

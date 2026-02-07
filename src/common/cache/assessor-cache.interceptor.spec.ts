@@ -66,6 +66,30 @@ describe('AssessorCacheInterceptor', () => {
     expect(result).toBe(false);
   });
 
+  it('rejects non-POST assessor routes for caching', () => {
+    const { AssessorCacheInterceptor } = loadInterceptor();
+    const interceptor = new AssessorCacheInterceptor({
+      get: jest.fn().mockReturnValue('secret'),
+    });
+    const context = createHttpContext('GET', '/v1/assessor');
+
+    const result = interceptor.isRequestCacheable(context);
+
+    expect(result).toBe(false);
+  });
+
+  it('returns undefined cache keys for non-assessor routes', () => {
+    const { AssessorCacheInterceptor } = loadInterceptor();
+    const interceptor = new AssessorCacheInterceptor({
+      get: jest.fn().mockReturnValue('secret'),
+    });
+    const context = createHttpContext('POST', '/v1/status');
+
+    const key = interceptor.trackBy(context);
+
+    expect(key).toBeUndefined();
+  });
+
   it('does not cache error responses', () => {
     const { AssessorCacheInterceptor } = loadInterceptor();
     const interceptor = new AssessorCacheInterceptor({
@@ -78,6 +102,20 @@ describe('AssessorCacheInterceptor', () => {
     );
 
     expect(result).toBe(false);
+  });
+
+  it.each([200, 201])('caches successful %d responses', (statusCode) => {
+    const { AssessorCacheInterceptor } = loadInterceptor();
+    const interceptor = new AssessorCacheInterceptor({
+      get: jest.fn().mockReturnValue('secret'),
+    });
+    const context = createHttpContext('POST', '/v1/assessor', statusCode);
+
+    const result = interceptor.isResponseCacheable(
+      context.switchToHttp().getResponse(),
+    );
+
+    expect(result).toBe(true);
   });
 
   it('derives a namespaced cache key for assessor requests', () => {
@@ -124,7 +162,7 @@ describe('AssessorCacheInterceptor', () => {
     expect(keyA).not.toBe(keyB);
   });
 
-  describe.each([
+  it.each([
     [400, 'Bad Request'],
     [401, 'Unauthorised'],
     [403, 'Forbidden'],
@@ -147,4 +185,3 @@ describe('AssessorCacheInterceptor', () => {
     expect(result).toBe(false);
   });
 });
-

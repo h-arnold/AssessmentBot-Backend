@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import * as path from 'node:path';
 
 import request from 'supertest';
@@ -26,6 +27,28 @@ class CacheE2ETestHelper {
       reference: `Reference ${suffix}`,
       template: `Template ${suffix}`,
       studentResponse: `Student response ${suffix}`,
+      ...overrides,
+    };
+  }
+
+  /**
+   * Builds an IMAGE task payload with random suffix to avoid collisions.
+   * @param suffix Unique identifier appended to fields for test isolation
+   * @param overrides Optional field overrides to customise the payload
+   * @returns An IMAGE task DTO suitable for the assessor endpoint
+   */
+  static buildImagePayload(
+    suffix: string,
+    overrides?: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const base64 = Buffer.from(`image-${suffix}`).toString('base64');
+    const dataUri = `data:image/png;base64,${base64}`;
+
+    return {
+      taskType: 'IMAGE',
+      reference: dataUri,
+      template: dataUri,
+      studentResponse: dataUri,
       ...overrides,
     };
   }
@@ -63,7 +86,14 @@ class CacheE2ETestHelper {
 const buildTextPayload = (
   suffix: string,
   overrides: Record<string, string> = {},
-): Record<string, string> => CacheE2ETestHelper.buildTextPayload(suffix, overrides);
+): Record<string, string> =>
+  CacheE2ETestHelper.buildTextPayload(suffix, overrides);
+
+const buildImagePayload = (
+  suffix: string,
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> =>
+  CacheE2ETestHelper.buildImagePayload(suffix, overrides);
 
 const countLlmDispatches = (logFilePath: string): number =>
   CacheE2ETestHelper.countLlmDispatches(logFilePath);
@@ -195,6 +225,38 @@ describe('Assessor cache behaviour (e2e)', () => {
       expect(afterThird - afterSecond).toBe(0);
       expect(afterFourth - afterThird).toBe(0);
     });
+
+    it('does not cache 400/422 responses', async () => {
+      const invalidPayload = {
+        taskType: 'TEXT',
+        reference: '',
+        template: 'Template',
+        studentResponse: 'Response',
+      };
+      const beforeCount = countLlmDispatches(logFilePath);
+
+      const response = await request(app.appUrl)
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${app.apiKey}`)
+        .send(invalidPayload);
+
+      await delay(200);
+      const afterInvalid = countLlmDispatches(logFilePath);
+
+      const payload = buildTextPayload(`bad-${Date.now()}`);
+      await request(app.appUrl)
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${app.apiKey}`)
+        .send(payload)
+        .expect(201);
+
+      await delay(200);
+      const afterValid = countLlmDispatches(logFilePath);
+
+      expect([400, 422]).toContain(response.status);
+      expect(afterInvalid - beforeCount).toBe(0);
+      expect(afterValid - afterInvalid).toBe(1);
+    });
   });
 
   describe('TTL expiry via environment overrides', () => {
@@ -269,6 +331,73 @@ describe('Assessor cache behaviour (e2e)', () => {
       expect(afterFirst - beforeCount).toBe(1);
       expect(afterSecond - afterFirst).toBe(0);
       expect(afterThird - afterSecond).toBe(1);
+    });
+  });
+
+  describe('TTL hours precedence', () => {
+    jest.setTimeout(120000);
+
+    let app: AppInstance;
+    const logFilePath = path.join(
+      __dirname,
+      'logs',
+      'assessor-cache-ttl-hours.e2e-spec.log',
+    );
+
+    beforeAll(async () => {
+      try {
+        fs.truncateSync(logFilePath, 0);
+      } catch {
+        // Log file may not exist yet, that's OK
+      }
+
+      app = await startApp(logFilePath, {
+        ASSESSOR_CACHE_HASH_SECRET: 'e2e-cache-secret',
+        ASSESSOR_CACHE_TTL_MINUTES: '1',
+        ASSESSOR_CACHE_TTL_HOURS: '1',
+      });
+    });
+
+    afterAll(() => {
+      stopApp(app.appProcess);
+    });
+
+    it('prefers TTL hours when both hours and minutes are set', async () => {
+      const payload = buildTextPayload(`ttl-hours-${Date.now()}`);
+      const beforeCount = countLlmDispatches(logFilePath);
+
+      await request(app.appUrl)
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${app.apiKey}`)
+        .send(payload)
+        .expect(201);
+
+      await delay(200);
+      const afterFirst = countLlmDispatches(logFilePath);
+
+      await request(app.appUrl)
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${app.apiKey}`)
+        .send(payload)
+        .expect(201);
+
+      await delay(200);
+      const afterSecond = countLlmDispatches(logFilePath);
+
+      await delay(70000);
+
+      await request(app.appUrl)
+        .post('/v1/assessor')
+        .set('Authorization', `Bearer ${app.apiKey}`)
+        .send(payload)
+        .expect(201);
+
+      await delay(200);
+      const afterThird = countLlmDispatches(logFilePath);
+
+      expect(afterFirst - beforeCount).toBe(1);
+      expect(afterSecond - afterFirst).toBe(0);
+      expect(afterThird - afterSecond).toBe(0);
     });
   });
 
@@ -383,6 +512,38 @@ describe('Assessor cache behaviour (e2e)', () => {
         app = await startApp(logFilePath, {
           ASSESSOR_CACHE_TTL_MINUTES: '0',
           ASSESSOR_CACHE_HASH_SECRET: '',
+        });
+      } catch (err) {
+        startupError = err;
+      } finally {
+        if (app) {
+          stopApp(app.appProcess);
+        }
+      }
+
+      expect(startupError).toBeDefined();
+    });
+
+    it('fails fast when cache size is invalid', async () => {
+      const logFilePath = path.join(
+        __dirname,
+        'logs',
+        'assessor-cache-invalid-size.e2e-spec.log',
+      );
+
+      let app: AppInstance | null = null;
+      let startupError: unknown;
+
+      try {
+        try {
+          fs.truncateSync(logFilePath, 0);
+        } catch {
+          // Log file may not exist yet, that's OK
+        }
+
+        app = await startApp(logFilePath, {
+          ASSESSOR_CACHE_HASH_SECRET: 'e2e-cache-secret',
+          ASSESSOR_CACHE_MAX_SIZE_MIB: '0',
         });
       } catch (err) {
         startupError = err;
@@ -589,7 +750,7 @@ describe('Assessor cache behaviour (e2e)', () => {
       expect(response1.body).toEqual(response2.body);
     });
 
-    it('cache hits are not affected by API key differences', async () => {
+    it('cache hits are shared across valid API keys', async () => {
       const payload = buildTextPayload(`sec-api-key-${Date.now()}`);
       const beforeCount = countLlmDispatches(logFilePath);
 
@@ -603,20 +764,10 @@ describe('Assessor cache behaviour (e2e)', () => {
       await delay(200);
       const afterFirst = countLlmDispatches(logFilePath);
 
-      // Second request with invalid API key: should fail authentication before cache lookup
-      const invalidKeyResponse = await request(app.appUrl)
-        .post('/v1/assessor')
-        .set('Authorization', 'Bearer different-invalid-key')
-        .send(payload);
-
-      await delay(200);
-      const afterInvalidAttempt = countLlmDispatches(logFilePath);
-
-      // Third request with valid API key again: should be a cache hit
-      // (demonstrating cache is global, not scoped by API key)
+      // Second request with another valid API key: should be a cache hit
       const response3 = await request(app.appUrl)
         .post('/v1/assessor')
-        .set('Authorization', `Bearer ${app.apiKey}`)
+        .set('Authorization', `Bearer ${app.apiKey2}`)
         .send(payload)
         .expect(201);
 
@@ -624,67 +775,67 @@ describe('Assessor cache behaviour (e2e)', () => {
       const afterSecond = countLlmDispatches(logFilePath);
 
       expect(afterFirst - beforeCount).toBe(1);
-      expect(afterInvalidAttempt - afterFirst).toBe(0);
-      expect(afterSecond - afterInvalidAttempt).toBe(0);
-      expect(invalidKeyResponse.status).toBe(401);
+      expect(afterSecond - afterFirst).toBe(0);
       expect(response1.body).toEqual(response3.body);
     });
 
-    it('template version changes invalidate cache', async () => {
+    it('system prompt template drift does not affect cache keys', async () => {
       const suffix = `tmpl-v-${Date.now()}`;
-      const payload1 = buildTextPayload(suffix, {
-        template: 'Template v1',
-      });
-      const payload2 = buildTextPayload(suffix, {
-        template: 'Template v2', // Different template version
-      });
+      const tempDir = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'assessor-cache-system-prompt-'),
+      );
+      const promptPath = path.join(tempDir, 'system.prompt.md');
 
-      const beforeCount = countLlmDispatches(logFilePath);
+      try {
+        fs.writeFileSync(promptPath, 'system prompt v1');
 
-      // First request with template v1: cache miss
-      await request(app.appUrl)
-        .post('/v1/assessor')
-        .set('Authorization', `Bearer ${app.apiKey}`)
-        .send(payload1)
-        .expect(201);
+        const payload = buildImagePayload(suffix, {
+          systemPromptFile: promptPath,
+        });
 
-      await delay(200);
-      const afterFirst = countLlmDispatches(logFilePath);
+        const beforeCount = countLlmDispatches(logFilePath);
 
-      // Second request with template v1 again: cache hit
-      await request(app.appUrl)
-        .post('/v1/assessor')
-        .set('Authorization', `Bearer ${app.apiKey}`)
-        .send(payload1)
-        .expect(201);
+        // First request: cache miss
+        await request(app.appUrl)
+          .post('/v1/assessor')
+          .set('Authorization', `Bearer ${app.apiKey}`)
+          .send(payload)
+          .expect(201);
 
-      await delay(200);
-      const afterSecond = countLlmDispatches(logFilePath);
+        await delay(200);
+        const afterFirst = countLlmDispatches(logFilePath);
 
-      // Third request with template v2: cache miss (new template version)
-      await request(app.appUrl)
-        .post('/v1/assessor')
-        .set('Authorization', `Bearer ${app.apiKey}`)
-        .send(payload2)
-        .expect(201);
+        fs.writeFileSync(promptPath, 'system prompt v2');
 
-      await delay(200);
-      const afterThird = countLlmDispatches(logFilePath);
+        // Second request with same DTO: cache hit (prompt drift excluded)
+        await request(app.appUrl)
+          .post('/v1/assessor')
+          .set('Authorization', `Bearer ${app.apiKey}`)
+          .send(payload)
+          .expect(201);
 
-      expect(afterFirst - beforeCount).toBe(1);
-      expect(afterSecond - afterFirst).toBe(0);
-      expect(afterThird - afterSecond).toBe(1);
+        await delay(200);
+        const afterSecond = countLlmDispatches(logFilePath);
+
+        expect(afterFirst - beforeCount).toBe(1);
+        expect(afterSecond - afterFirst).toBe(0);
+      } finally {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      }
     });
 
     it('file-based image content changes invalidate cache', async () => {
-      const imagePath = path.join(__dirname, 'logs', 'temp-image-test.png');
+      const tempDir = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'assessor-cache-image-'),
+      );
+      const imagePath = path.join(tempDir, 'temp-image-test.png');
       const suffix = `img-content-${Date.now()}`;
 
       try {
         // Write initial image content and cache it
         fs.writeFileSync(imagePath, 'initial-image-content');
-        const payload1 = buildTextPayload(suffix, {
-          images: JSON.stringify([{ path: imagePath, mimeType: 'image/png' }]),
+        const payload1 = buildImagePayload(suffix, {
+          images: [{ path: imagePath, mimeType: 'image/png' }],
         });
 
         const beforeCount = countLlmDispatches(logFilePath);
@@ -726,12 +877,7 @@ describe('Assessor cache behaviour (e2e)', () => {
         expect(afterSecond - afterFirst).toBe(0);
         expect(afterThird - afterSecond).toBe(1);
       } finally {
-        // Clean up temporary image file
-        try {
-          fs.unlinkSync(imagePath);
-        } catch {
-          // File may not exist, that's OK
-        }
+        fs.rmSync(tempDir, { recursive: true, force: true });
       }
     });
 
