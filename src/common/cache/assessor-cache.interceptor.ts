@@ -13,6 +13,9 @@ import { ASSESSOR_CACHE, AssessorCacheStore } from './assessor-cache.store';
 import { createAssessorCacheKey } from './cache-key.util';
 import { ConfigService } from '../../config/config.service';
 import { type CreateAssessorDto } from '../../v1/assessor/dto/create-assessor.dto';
+import { createAssessorDtoSchema } from '../../v1/assessor/dto/create-assessor.dto';
+import { ImageValidationPipe } from '../pipes/image-validation.pipe';
+import { ZodValidationPipe } from '../zod-validation.pipe';
 
 /**
  * Interceptor that provides in-memory caching for assessor requests.
@@ -100,18 +103,36 @@ export class AssessorCacheInterceptor implements NestInterceptor {
     const cacheHit = this.cacheStore.has(key);
 
     if (cacheHit) {
-      const cachedValue = this.cacheStore.get<unknown>(key);
-      const remainingTtlMs = this.cacheStore.getRemainingTtl(key);
+      const validationPipe = new ZodValidationPipe(createAssessorDtoSchema);
+      const validatedBody = validationPipe.transform(request.body, {
+        type: 'body',
+        metatype: null,
+        data: '',
+      }) as CreateAssessorDto;
+
+      if (validatedBody.taskType === 'IMAGE') {
+        const imagePipe = new ImageValidationPipe(this.configService);
+        await imagePipe.transform(validatedBody.reference);
+        await imagePipe.transform(validatedBody.studentResponse);
+        await imagePipe.transform(validatedBody.template);
+      }
+
+      const validatedKey = `assessor:${createAssessorCacheKey(
+        validatedBody,
+        this.secret,
+      )}`;
+      const cachedValue = this.cacheStore.get<unknown>(validatedKey);
+      const remainingTtlMs = this.cacheStore.getRemainingTtl(validatedKey);
 
       if (cachedValue !== undefined) {
         this.logger.debug(
-          `Assessor cache hit for key ${key}. Remaining TTL=${remainingTtlMs}ms.`,
+          `Assessor cache hit for key ${validatedKey}. Remaining TTL=${remainingTtlMs}ms.`,
         );
         return of(cachedValue);
       }
 
       this.logger.debug(
-        `Assessor cache reported hit for key ${key}, but no value was returned.`,
+        `Assessor cache reported hit for key ${validatedKey}, but no value was returned.`,
       );
     }
 
