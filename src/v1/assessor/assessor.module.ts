@@ -1,8 +1,18 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 
 import { AssessorController } from './assessor.controller';
 import { AssessorService } from './assessor.service';
+import {
+  resolveAssessorCacheTtlSeconds,
+  resolveAssessorCacheMaxSizeBytes,
+} from '../../common/cache/assessor-cache.config';
+import { AssessorCacheInterceptor } from '../../common/cache/assessor-cache.interceptor';
+import {
+  ASSESSOR_CACHE,
+  AssessorCacheStore,
+} from '../../common/cache/assessor-cache.store';
 import { ConfigModule } from '../../config/config.module';
+import { ConfigService } from '../../config/config.service';
 import { LlmModule } from '../../llm/llm.module';
 import { PromptModule } from '../../prompt/prompt.module';
 
@@ -18,10 +28,36 @@ import { PromptModule } from '../../prompt/prompt.module';
  * @imports PromptModule - Manages prompt-related operations.
  * @controllers AssessorController - Handles HTTP requests for assessor-related operations.
  * @providers AssessorService - Contains business logic for assessor functionality.
+ * @providers AssessorCacheInterceptor - Caches assessor responses in memory.
  */
 @Module({
   imports: [ConfigModule, LlmModule, PromptModule],
   controllers: [AssessorController],
-  providers: [AssessorService],
+  providers: [
+    AssessorService,
+    {
+      provide: ASSESSOR_CACHE,
+      useFactory: (configService: ConfigService): AssessorCacheStore => {
+        const ttlHours = configService.get('ASSESSOR_CACHE_TTL_HOURS');
+        const ttlMinutes = configService.get('ASSESSOR_CACHE_TTL_MINUTES');
+        const ttlSeconds = resolveAssessorCacheTtlSeconds({
+          ASSESSOR_CACHE_TTL_HOURS: ttlHours,
+          ASSESSOR_CACHE_TTL_MINUTES: ttlMinutes,
+        });
+        const maxSizeBytes = resolveAssessorCacheMaxSizeBytes({
+          ASSESSOR_CACHE_MAX_SIZE_MIB: configService.get(
+            'ASSESSOR_CACHE_MAX_SIZE_MIB',
+          ),
+        });
+        const logger = new Logger('AssessorCacheFactory');
+        logger.log(
+          `Assessor cache initialised: TTL=${ttlSeconds}s, maxSize=${maxSizeBytes} bytes`,
+        );
+        return new AssessorCacheStore(maxSizeBytes, ttlSeconds * 1000);
+      },
+      inject: [ConfigService],
+    },
+    AssessorCacheInterceptor,
+  ],
 })
 export class AssessorModule {}

@@ -1,13 +1,9 @@
-import { createHash, createHmac } from 'node:crypto';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import { createHmac } from 'node:crypto';
 
 import {
   TaskType,
   type CreateAssessorDto,
 } from '../../v1/assessor/dto/create-assessor.dto';
-
-type ImageEntry = { path: string; mimeType: string };
 
 type CanonicalValue =
   | string
@@ -79,36 +75,6 @@ const normaliseImageValue = (value: string | Buffer): CanonicalValue => {
   return value;
 };
 
-const resolveImagePath = (imagePath: string): string => {
-  if (imagePath.includes('..')) {
-    throw new Error('Invalid image filename');
-  }
-  if (path.isAbsolute(imagePath)) {
-    throw new Error('Unauthorised file path');
-  }
-
-  const baseDir = fs.realpathSync(process.cwd());
-  const resolvedPath = path.resolve(baseDir, imagePath);
-  const realPath = fs.realpathSync(resolvedPath);
-
-  if (realPath !== baseDir && !realPath.startsWith(`${baseDir}${path.sep}`)) {
-    throw new Error('Unauthorised file path');
-  }
-
-  return realPath;
-};
-
-const hashFileContent = (filePath: string): string => {
-  const resolvedPath = resolveImagePath(filePath);
-  const fileBytes = fs.readFileSync(resolvedPath);
-  return createHash('sha256').update(fileBytes).digest('hex');
-};
-
-const normaliseImageEntry = (entry: ImageEntry): CanonicalValue => ({
-  mimeType: entry.mimeType.toLowerCase(),
-  contentHash: hashFileContent(entry.path),
-});
-
 const sortKeysRecursively = (value: unknown): CanonicalValue => {
   if (Buffer.isBuffer(value)) {
     return value.toString('base64');
@@ -134,13 +100,6 @@ const sortKeysRecursively = (value: unknown): CanonicalValue => {
 
 const buildCachePayload = (dto: CreateAssessorDto): CanonicalValue => {
   if (dto.taskType === TaskType.IMAGE) {
-    if (Array.isArray(dto.images) && dto.images.length > 0) {
-      return {
-        taskType: dto.taskType,
-        images: dto.images.map((entry) => normaliseImageEntry(entry)),
-      };
-    }
-
     return {
       taskType: dto.taskType,
       reference: normaliseImageValue(dto.reference),

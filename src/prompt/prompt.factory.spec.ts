@@ -55,7 +55,6 @@ describe('PromptFactory', () => {
       reference: 'ref',
       studentResponse: 'stud',
       template: 'temp',
-      images: [],
     };
     return factory.create(dto).then((prompt) => {
       expect(prompt).toBeInstanceOf(ImagePrompt);

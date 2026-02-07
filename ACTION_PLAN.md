@@ -14,13 +14,13 @@ This plan is written to follow the repo’s TDD workflow and British English sta
 ### Progress Update (Current State)
 
 - [x] Added assessor cache configuration variables and validation rules.
-- [ ] Updated documentation for cache configuration variables.
-- [x] Implemented HMAC-based cache key generation with canonicalisation and image content hashing.
-- [ ] Implemented an in-memory cache interceptor for `POST /v1/assessor` with error-response guards.
-- [ ] Implemented a size-aware LRU cache store and wired it through `CacheModule.registerAsync`.
-- [ ] Updated assessor controller and module to enable caching.
-- [ ] Add remaining unit/integration/E2E tests outlined below (only cache-key utility tests exist so far).
-- [ ] Run the full test suite (`npm test`, `npm run test:e2e`) after completing test coverage.
+- [x] Updated documentation for cache configuration variables.
+- [x] Implemented HMAC-based cache key generation with canonicalisation and base64 image normalisation.
+- [x] Implemented an in-memory cache interceptor for `POST /v1/assessor` with error-response guards.
+- [x] Implemented a size-aware LRU cache store and wired it via the custom `ASSESSOR_CACHE` provider in `AssessorModule`.
+- [x] Updated assessor controller and module to enable caching.
+- [x] Add remaining unit/integration/E2E tests outlined below.
+- [x] Run the full test suite (`npm test`, `npm run test:e2e`) after completing test coverage.
 
 ---
 
@@ -122,7 +122,6 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 - **TTL = 0 semantics**: explicitly reject `ttl = 0` in configuration validation to prevent unbounded retention (privacy requirement).
 - **Size calculation strategy**: define a consistent byte sizing approach (for example, serialised JSON byte length for objects and `Buffer.byteLength` for strings/buffers) to avoid under/over-eviction.
 - **Template/version drift**: decide whether to include prompt template content or version hash in the cache key to avoid stale responses after template edits.
-- **Image file content**: if `images` file paths are supported, **always** include file content hashes in the cache key. File-based requests are the most expensive and must remain cacheable, so content hashing is mandatory.
 - **Response purity**: confirm cached responses are purely derived from the DTO (no API key or request-context variation) to justify global caching.
 - **Observability**: add lightweight metrics or logging (without sensitive data) to track cache hit rate and eviction counts.
 
@@ -148,8 +147,6 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
    - Same DTO with a different `ASSESSOR_CACHE_HASH_SECRET` should produce a different hash.
 7. **Prompt template drift**
    - If template versions are included in the key, updating templates must invalidate the cache.
-8. **File-based images**
-   - File-based images must always be content-hashed and included in the cache key to keep high-cost requests cacheable.
 
 #### B. Config Schema
 
@@ -238,10 +235,6 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 
 - Modify prompt templates between requests and ensure cache keys change (or explicitly validate configured behaviour).
 
-1. **File-based image invalidation**
-
-- Change an image file on disk between requests and ensure cache misses occur (content hashing must invalidate cached entries).
-
 ### 6.4 E2E Live (Optional)
 
 - Not required for basic caching behaviour. If run, ensure delays respect rate limits and confirm cache hits do not call the live API unnecessarily.
@@ -301,7 +294,7 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 
 ### 10.1 Cache Key Utility (Unit Tests → Implementation)
 
-**Scope**: canonicalisation, HMAC hashing, prompt-template drift handling, and image content hashing for file-based images.
+**Scope**: canonicalisation, HMAC hashing, prompt-template drift handling, and base64 image normalisation.
 
 **Acceptance criteria**
 
@@ -313,11 +306,10 @@ Use NestJS caching with an **explicit interceptor** for assessor requests to all
 - Changing `ASSESSOR_CACHE_HASH_SECRET` changes the cache key.
 - Prompt template drift behaviour is explicit (either included in the key, or explicitly excluded and documented).
 - Prompt template changes do not alter cache keys; cache invalidation relies on service restart.
-- File-based image content changes invalidate the cache key.
 
 **TDD tests that must pass**
 
-- `src/common/cache/cache-key.util.spec.ts` (add prompt template drift and file-based image coverage if missing).
+- `src/common/cache/cache-key.util.spec.ts` (add prompt template drift coverage if missing).
 
 **Constraints & considerations**
 

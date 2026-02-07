@@ -180,12 +180,7 @@ export class PromptFactory {
             ? dto.template.toString()
             : dto.template,
         };
-        return new ImagePrompt(
-          imageInputs,
-          this.logger,
-          dto.images,
-          systemPrompt,
-        );
+        return new ImagePrompt(imageInputs, this.logger, systemPrompt);
       }
       default:
         throw new Error('Unsupported task type');
