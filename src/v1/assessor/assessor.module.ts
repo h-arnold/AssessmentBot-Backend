@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 
 import { AssessorController } from './assessor.controller';
 import { AssessorService } from './assessor.service';
@@ -38,19 +38,21 @@ import { PromptModule } from '../../prompt/prompt.module';
     {
       provide: ASSESSOR_CACHE,
       useFactory: (configService: ConfigService): AssessorCacheStore => {
+        const ttlHours = configService.get('ASSESSOR_CACHE_TTL_HOURS');
+        const ttlMinutes = configService.get('ASSESSOR_CACHE_TTL_MINUTES');
         const ttlSeconds = resolveAssessorCacheTtlSeconds({
-          ASSESSOR_CACHE_TTL_HOURS: configService.get(
-            'ASSESSOR_CACHE_TTL_HOURS',
-          ),
-          ASSESSOR_CACHE_TTL_MINUTES: configService.get(
-            'ASSESSOR_CACHE_TTL_MINUTES',
-          ),
+          ASSESSOR_CACHE_TTL_HOURS: ttlHours,
+          ASSESSOR_CACHE_TTL_MINUTES: ttlMinutes,
         });
         const maxSizeBytes = resolveAssessorCacheMaxSizeBytes({
           ASSESSOR_CACHE_MAX_SIZE_MIB: configService.get(
             'ASSESSOR_CACHE_MAX_SIZE_MIB',
           ),
         });
+        const logger = new Logger('AssessorCacheFactory');
+        logger.log(
+          `Assessor cache initialised: TTL=${ttlSeconds}s, maxSize=${maxSizeBytes} bytes`,
+        );
         return new AssessorCacheStore(maxSizeBytes, ttlSeconds * 1000);
       },
       inject: [ConfigService],

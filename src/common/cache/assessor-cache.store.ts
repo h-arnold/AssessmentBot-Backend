@@ -15,6 +15,8 @@ export class AssessorCacheStore {
     this.cache = new LRUCache<string, CacheValue>({
       maxSize: maxSizeBytes,
       ttl: defaultTtlMs,
+      ttlAutopurge: true,
+      allowStale: false,
       sizeCalculation: (value: unknown): number => {
         if (typeof value === 'string') {
           return Buffer.byteLength(value, 'utf8');
