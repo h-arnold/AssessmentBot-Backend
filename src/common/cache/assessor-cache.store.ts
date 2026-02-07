@@ -35,6 +35,14 @@ export class AssessorCacheStore {
   }
 
   /**
+   * Returns the remaining TTL in milliseconds for a cache entry.
+   * Useful for diagnostics and debugging.
+   */
+  getRemainingTtl(key: string): number {
+    return this.cache.getRemainingTTL(key);
+  }
+
+  /**
    * Stores a value in the cache.
    * @param key Cache key
    * @param value Value to cache
