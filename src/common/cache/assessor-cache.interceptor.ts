@@ -1,4 +1,3 @@
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   CallHandler,
   ExecutionContext,
@@ -10,18 +9,10 @@ import {
 } from '@nestjs/common';
 import { Observable, of, tap } from 'rxjs';
 
+import { ASSESSOR_CACHE, AssessorCacheStore } from './assessor-cache.store';
 import { createAssessorCacheKey } from './cache-key.util';
 import { ConfigService } from '../../config/config.service';
 import { type CreateAssessorDto } from '../../v1/assessor/dto/create-assessor.dto';
-
-/**
- * Cache interface matching cache-manager's Cache type.
- * Kept minimal to avoid importing the full cache-manager module in unit tests.
- */
-interface CacheStore {
-  get<T>(key: string): Promise<T | undefined>;
-  set<T>(key: string, value: T, ttl?: number): Promise<T>;
-}
 
 /**
  * Interceptor that provides in-memory caching for assessor requests.
@@ -36,8 +27,8 @@ export class AssessorCacheInterceptor implements NestInterceptor {
   constructor(
     private readonly configService: ConfigService,
     @Optional()
-    @Inject(CACHE_MANAGER)
-    private readonly cacheManager?: CacheStore,
+    @Inject(ASSESSOR_CACHE)
+    private readonly cacheStore?: AssessorCacheStore,
   ) {
     this.secret = this.configService.get('ASSESSOR_CACHE_HASH_SECRET');
   }
@@ -77,6 +68,19 @@ export class AssessorCacheInterceptor implements NestInterceptor {
   }
 
   /**
+   * Estimates the byte size of a request body for cache eviction purposes.
+   * This ensures cache size limits reflect the cost of processing the request,
+   * not just the size of the cached response.
+   */
+  private estimateRequestSize(body: unknown): number {
+    try {
+      return Buffer.byteLength(JSON.stringify(body), 'utf8');
+    } catch {
+      return 1024;
+    }
+  }
+
+  /**
    * Intercepts HTTP requests to provide caching behaviour.
    * Checks the cache before proceeding to the handler and caches
    * successful responses for future identical requests.
@@ -87,12 +91,12 @@ export class AssessorCacheInterceptor implements NestInterceptor {
   ): Promise<Observable<unknown>> {
     const key = this.trackBy(context);
 
-    if (!key || !this.cacheManager) {
+    if (!key || !this.cacheStore) {
       return next.handle();
     }
 
     try {
-      const cached = await this.cacheManager.get(key);
+      const cached = this.cacheStore.get(key);
       if (cached !== undefined && cached !== null) {
         this.logger.debug('Cache hit for assessor request.');
         return of(cached);
@@ -104,12 +108,15 @@ export class AssessorCacheInterceptor implements NestInterceptor {
       );
     }
 
+    const request = context.switchToHttp().getRequest();
+    const requestSize = this.estimateRequestSize(request.body);
+
     return next.handle().pipe(
-      tap(async (response) => {
+      tap((response) => {
         try {
           const httpResponse = context.switchToHttp().getResponse();
           if (this.isResponseCacheable(httpResponse)) {
-            await this.cacheManager!.set(key, response);
+            this.cacheStore!.set(key, response, requestSize);
             this.logger.debug('Cached assessor response.');
           }
         } catch (error) {

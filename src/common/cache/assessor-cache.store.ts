@@ -1,17 +1,14 @@
-import { type KeyvStoreAdapter } from 'keyv';
 import { LRUCache } from 'lru-cache';
 
- 
+export const ASSESSOR_CACHE = Symbol('ASSESSOR_CACHE');
+
 type CacheValue = {};
 
 /**
- * A KeyvStoreAdapter-compatible in-memory store backed by lru-cache.
- * Supports size-based eviction (maxSize in bytes) and TTL-based expiry.
+ * In-memory cache for assessor responses backed by an LRU eviction strategy.
+ * Supports size-based eviction (in bytes) and TTL-based expiry.
  */
-export class AssessorLruStore implements Omit<KeyvStoreAdapter, 'on'> {
-  opts: Record<string, unknown> = {};
-  namespace?: string;
-
+export class AssessorCacheStore {
   private readonly cache: LRUCache<string, CacheValue>;
 
   constructor(maxSizeBytes: number, defaultTtlMs: number) {
@@ -31,25 +28,28 @@ export class AssessorLruStore implements Omit<KeyvStoreAdapter, 'on'> {
     });
   }
 
-  async get<T>(key: string): Promise<T | undefined> {
+  get<T>(key: string): T | undefined {
     return this.cache.get(key) as T | undefined;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async set(key: string, value: any, ttl?: number): Promise<void> {
-    const options = typeof ttl === 'number' && ttl > 0 ? { ttl } : undefined;
+  /**
+   * Stores a value in the cache.
+   * @param key Cache key
+   * @param value Value to cache
+   * @param size Optional explicit byte size for eviction calculation.
+   *             When provided, overrides the default sizeCalculation.
+   *             Use this to reflect the true cost of caching (e.g., request payload size).
+   */
+  set(key: string, value: unknown, size?: number): void {
+    const options = typeof size === 'number' && size > 0 ? { size } : undefined;
     this.cache.set(key, value as CacheValue, options);
   }
 
-  async delete(key: string): Promise<boolean> {
-    return this.cache.delete(key);
-  }
-
-  async clear(): Promise<void> {
-    this.cache.clear();
-  }
-
-  async has(key: string): Promise<boolean> {
+  has(key: string): boolean {
     return this.cache.has(key);
+  }
+
+  clear(): void {
+    this.cache.clear();
   }
 }

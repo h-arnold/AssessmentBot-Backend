@@ -84,6 +84,7 @@ export const configSchema = z
           inclusive: true,
           minimum: 1,
           type: 'number',
+          origin: 'number',
           path: ['ASSESSOR_CACHE_TTL_HOURS'],
         });
       }
@@ -94,6 +95,7 @@ export const configSchema = z
           inclusive: true,
           maximum: 48,
           type: 'number',
+          origin: 'number',
           path: ['ASSESSOR_CACHE_TTL_HOURS'],
         });
       }
@@ -107,6 +109,7 @@ export const configSchema = z
         inclusive: true,
         minimum: 1,
         type: 'number',
+        origin: 'number',
         path: ['ASSESSOR_CACHE_TTL_MINUTES'],
       });
     }
@@ -117,6 +120,7 @@ export const configSchema = z
         inclusive: true,
         maximum: 2880,
         type: 'number',
+        origin: 'number',
         path: ['ASSESSOR_CACHE_TTL_MINUTES'],
       });
     }
