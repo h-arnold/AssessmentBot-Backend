@@ -1,20 +1,14 @@
-```chatagent
 ---
-description: 'Describe what this custom agent does and when to use it.'
+name: 'Documentation'
+description: 'Documentation sub-agent for maintaining accurate guidance.'
 tools:
   [
     'execute/getTerminalOutput',
     'execute/runTask',
-    'execute/createAndRunTask',
-    'execute/runTests',
-    'execute/runInTerminal',
-    'read/terminalSelection',
-    'read/terminalLastCommand',
     'read/getTaskOutput',
-    'read/problems',
     'read/readFile',
-    'edit/createFile',
     'edit/editFiles',
+    'edit/createFile',
     'search',
     'web',
     'todo',
@@ -68,5 +62,3 @@ Doc workflow for code changes:
 - After adding new pages, update folder TOCs (if any) and always update `docs/README.md` with links to the new page.
 
 Be concise and avoid verbose logging.
-
-```

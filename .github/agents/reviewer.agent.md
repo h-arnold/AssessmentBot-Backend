@@ -1,5 +1,6 @@
 ---
-description: 'Describe what this custom agent does and when to use it.'
+name: 'Reviewer'
+description: 'Code review sub-agent with a security-first mindset for this repository.'
 tools:
   [
     'execute/getTerminalOutput',

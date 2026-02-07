@@ -1,5 +1,6 @@
 ---
-description: 'Describe what this custom agent does and when to use it.'
+name: 'Testing'
+description: 'Testing sub-agent for this repository; validates codebases and authors tests.'
 tools:
   [
     'execute/getTerminalOutput',

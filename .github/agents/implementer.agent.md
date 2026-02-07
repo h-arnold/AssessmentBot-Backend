@@ -1,5 +1,6 @@
 ---
-description: 'Describe what this custom agent does and when to use it.'
+name: 'Implementer'
+description: 'Implementation sub-agent for translating approved tests into minimal code changes.'
 tools:
   [
     'vscode',
