@@ -1,3 +1,5 @@
+import * as fs from 'node:fs';
+
 import {
   TaskType,
   type CreateAssessorDto,
@@ -219,11 +221,9 @@ describe('createAssessorCacheKey', () => {
 
   it('ignores system prompt file content changes', () => {
     const { createAssessorCacheKey } = loadCacheKeyUtil();
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const fsSync = require('node:fs');
     const promptPath = '/tmp/assessor-cache-system-prompt.md';
 
-    fsSync.writeFileSync(
+    fs.writeFileSync(
       '/tmp/assessor-cache-system-prompt.md',
       'system prompt v1',
     );
@@ -238,7 +238,7 @@ describe('createAssessorCacheKey', () => {
 
     try {
       const keyA = createAssessorCacheKey(dto, secret);
-      fsSync.writeFileSync(
+      fs.writeFileSync(
         '/tmp/assessor-cache-system-prompt.md',
         'system prompt v2',
       );
@@ -246,7 +246,7 @@ describe('createAssessorCacheKey', () => {
 
       expect(keyA).toBe(keyB);
     } finally {
-      fsSync.rmSync(promptPath, { force: true });
+      fs.rmSync(promptPath, { force: true });
     }
   });
 
