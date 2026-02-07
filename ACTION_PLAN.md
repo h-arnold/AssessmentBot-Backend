@@ -17,7 +17,7 @@ This plan is written to follow the repo’s TDD workflow and British English sta
 - [x] Updated documentation for cache configuration variables.
 - [x] Implemented HMAC-based cache key generation with canonicalisation and base64 image normalisation.
 - [x] Implemented an in-memory cache interceptor for `POST /v1/assessor` with error-response guards.
-- [x] Implemented a size-aware LRU cache store and wired it through `CacheModule.registerAsync`.
+- [x] Implemented a size-aware LRU cache store and wired it via the custom `ASSESSOR_CACHE` provider in `AssessorModule`.
 - [x] Updated assessor controller and module to enable caching.
 - [x] Add remaining unit/integration/E2E tests outlined below.
 - [x] Run the full test suite (`npm test`, `npm run test:e2e`) after completing test coverage.
