@@ -95,19 +95,6 @@ export class AssessorCacheInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    try {
-      const cached = this.cacheStore.get(key);
-      if (cached !== undefined && cached !== null) {
-        this.logger.debug('Cache hit for assessor request.');
-        return of(cached);
-      }
-    } catch (error) {
-      this.logger.warn(
-        'Cache lookup failed; proceeding without cache.',
-        error instanceof Error ? error.message : String(error),
-      );
-    }
-
     const request = context.switchToHttp().getRequest();
     const requestSize = this.estimateRequestSize(request.body);
 
