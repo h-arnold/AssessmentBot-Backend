@@ -17,6 +17,9 @@ const mockConfigService = {
       MAX_IMAGE_UPLOAD_SIZE_MB: 5,
       ALLOWED_IMAGE_MIME_TYPES: 'image/png,image/jpeg',
       LOG_LEVEL: 'debug',
+      ASSESSOR_CACHE_HASH_SECRET: 'test-cache-secret',
+      ASSESSOR_CACHE_TTL_MINUTES: 1440,
+      ASSESSOR_CACHE_MAX_SIZE_MIB: 384,
     };
     return config[key];
   }),
