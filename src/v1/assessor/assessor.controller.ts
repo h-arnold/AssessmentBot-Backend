@@ -1,6 +1,13 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { ApiKeyGuard } from 'src/auth/api-key.guard';
+import { AssessorCacheInterceptor } from 'src/common/cache/assessor-cache.interceptor';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import { ZodValidationPipe } from 'src/common/zod-validation.pipe';
 import { ConfigService } from 'src/config/config.service';
@@ -40,6 +47,7 @@ import { LlmResponse } from '../../llm/types';
 @Controller('v1/assessor')
 @UseGuards(ApiKeyGuard)
 @Throttle(authenticatedThrottler)
+@UseInterceptors(AssessorCacheInterceptor)
 export class AssessorController {
   constructor(
     private readonly assessorService: AssessorService,
