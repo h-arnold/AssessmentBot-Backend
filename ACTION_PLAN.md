@@ -14,7 +14,7 @@ This plan is written to follow the repo’s TDD workflow and British English sta
 ### Progress Update (Current State)
 
 - [ ] Added assessor cache configuration variables, validation rules, and documentation.
-- [ ] Implemented HMAC-based cache key generation with canonicalisation and image content hashing.
+- [x] Implemented HMAC-based cache key generation with canonicalisation and image content hashing.
 - [ ] Implemented an in-memory cache interceptor for `POST /v1/assessor` with error-response guards.
 - [ ] Implemented a size-aware LRU cache store and wired it through `CacheModule.registerAsync`.
 - [ ] Updated assessor controller and module to enable caching.

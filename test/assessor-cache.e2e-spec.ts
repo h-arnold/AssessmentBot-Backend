@@ -825,13 +825,12 @@ describe('Assessor cache behaviour (e2e)', () => {
     });
 
     it('file-based image content changes invalidate cache', async () => {
-      const tempDir = fs.mkdtempSync(
-        path.join(os.tmpdir(), 'assessor-cache-image-'),
-      );
+      const tempDir = path.join('tmp', 'assessor-cache-e2e');
       const imagePath = path.join(tempDir, 'temp-image-test.png');
       const suffix = `img-content-${Date.now()}`;
 
       try {
+        fs.mkdirSync(tempDir, { recursive: true });
         // Write initial image content and cache it
         fs.writeFileSync(imagePath, 'initial-image-content');
         const payload1 = buildImagePayload(suffix, {

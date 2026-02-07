@@ -252,11 +252,18 @@ describe('createAssessorCacheKey', () => {
 
   it('hashes file-based images by content rather than path', () => {
     const { createAssessorCacheKey } = loadCacheKeyUtil();
-    const imagePathA = '/tmp/assessor-cache-image-a.png';
-    const imagePathB = '/tmp/assessor-cache-image-b.png';
+    const imagePathA = './tmp/assessor-cache-tests/assessor-cache-image-a.png';
+    const imagePathB = './tmp/assessor-cache-tests/assessor-cache-image-b.png';
 
-    fs.writeFileSync('/tmp/assessor-cache-image-a.png', 'image-content');
-    fs.writeFileSync('/tmp/assessor-cache-image-b.png', 'image-content');
+    fs.mkdirSync('./tmp/assessor-cache-tests', { recursive: true });
+    fs.writeFileSync(
+      './tmp/assessor-cache-tests/assessor-cache-image-a.png',
+      'image-content',
+    );
+    fs.writeFileSync(
+      './tmp/assessor-cache-tests/assessor-cache-image-b.png',
+      'image-content',
+    );
 
     const dtoA: CreateAssessorDto = {
       taskType: TaskType.IMAGE,
@@ -276,16 +283,22 @@ describe('createAssessorCacheKey', () => {
 
       expect(keyA).toBe(keyB);
     } finally {
-      fs.rmSync(imagePathA, { force: true });
-      fs.rmSync(imagePathB, { force: true });
+      fs.rmSync('./tmp/assessor-cache-tests', {
+        recursive: true,
+        force: true,
+      });
     }
   });
 
   it('uses file content hashes for images array entries', () => {
     const { createAssessorCacheKey } = loadCacheKeyUtil();
-    const imagePath = '/tmp/assessor-cache-image.png';
+    const imagePath = './tmp/assessor-cache-tests/assessor-cache-image.png';
 
-    fs.writeFileSync('/tmp/assessor-cache-image.png', 'image-content-v1');
+    fs.mkdirSync('./tmp/assessor-cache-tests', { recursive: true });
+    fs.writeFileSync(
+      './tmp/assessor-cache-tests/assessor-cache-image.png',
+      'image-content-v1',
+    );
 
     const dto: CreateAssessorDto = {
       taskType: TaskType.IMAGE,
@@ -298,19 +311,30 @@ describe('createAssessorCacheKey', () => {
     try {
       const keyA = createAssessorCacheKey(dto, secret);
 
-      fs.writeFileSync('/tmp/assessor-cache-image.png', 'image-content-v2');
+      fs.writeFileSync(
+        './tmp/assessor-cache-tests/assessor-cache-image.png',
+        'image-content-v2',
+      );
       const keyB = createAssessorCacheKey(dto, secret);
 
       expect(keyA).not.toBe(keyB);
     } finally {
-      fs.rmSync(imagePath, { force: true });
+      fs.rmSync('./tmp/assessor-cache-tests', {
+        recursive: true,
+        force: true,
+      });
     }
   });
 
   it('ignores text fields when images array entries are present', () => {
     const { createAssessorCacheKey } = loadCacheKeyUtil();
-    const imagePath = '/tmp/assessor-cache-image-text.png';
-    fs.writeFileSync('/tmp/assessor-cache-image-text.png', 'image-content');
+    const imagePath =
+      './tmp/assessor-cache-tests/assessor-cache-image-text.png';
+    fs.mkdirSync('./tmp/assessor-cache-tests', { recursive: true });
+    fs.writeFileSync(
+      './tmp/assessor-cache-tests/assessor-cache-image-text.png',
+      'image-content',
+    );
     const dtoA: CreateAssessorDto = {
       taskType: TaskType.IMAGE,
       reference: 'data:image/png;base64,aaaa',
@@ -329,7 +353,10 @@ describe('createAssessorCacheKey', () => {
 
       expect(keyA).toBe(keyB);
     } finally {
-      fs.rmSync(imagePath, { force: true });
+      fs.rmSync('./tmp/assessor-cache-tests', {
+        recursive: true,
+        force: true,
+      });
     }
   });
 
@@ -375,5 +402,53 @@ describe('createAssessorCacheKey', () => {
     const keyWithDataUri = createAssessorCacheKey(dtoWithDataUri, secret);
 
     expect(keyWithBuffer).toBe(keyWithDataUri);
+  });
+
+  it('normalises data URIs with parameters', () => {
+    const { createAssessorCacheKey } = loadCacheKeyUtil();
+    const base64Str = Buffer.from('image-bytes').toString('base64');
+    const plainDataUri = `data:image/png;base64,${base64Str}`;
+    const parameterisedDataUri = `data:image/png;charset=utf-8;base64,${base64Str}`;
+
+    const dtoA: CreateAssessorDto = {
+      taskType: TaskType.IMAGE,
+      reference: plainDataUri,
+      template: plainDataUri,
+      studentResponse: plainDataUri,
+    };
+
+    const dtoB: CreateAssessorDto = {
+      taskType: TaskType.IMAGE,
+      reference: parameterisedDataUri,
+      template: parameterisedDataUri,
+      studentResponse: parameterisedDataUri,
+    };
+
+    const keyA = createAssessorCacheKey(dtoA, secret);
+    const keyB = createAssessorCacheKey(dtoB, secret);
+
+    expect(keyA).toBe(keyB);
+  });
+
+  it('blocks image paths that resolve outside the base directory', () => {
+    const { createAssessorCacheKey } = loadCacheKeyUtil();
+    const escapePath = './tmp/assessor-cache-tests/escape.png';
+
+    fs.mkdirSync('./tmp/assessor-cache-tests', { recursive: true });
+    fs.symlinkSync('/etc/hosts', './tmp/assessor-cache-tests/escape.png');
+
+    const dto: CreateAssessorDto = {
+      taskType: TaskType.IMAGE,
+      reference: 'data:image/png;base64,aaaa',
+      template: 'data:image/png;base64,bbbb',
+      studentResponse: 'data:image/png;base64,cccc',
+      images: [{ path: escapePath, mimeType: 'image/png' }],
+    };
+
+    try {
+      expect(() => createAssessorCacheKey(dto, secret)).toThrow();
+    } finally {
+      fs.rmSync('./tmp/assessor-cache-tests', { recursive: true, force: true });
+    }
   });
 });
