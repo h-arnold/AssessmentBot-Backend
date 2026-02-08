@@ -28,6 +28,12 @@ The mocked run builds the application and executes all `*.e2e-spec.ts` tests in 
 
 E2E tests are managed by utilities in `test/utils/` to ensure each test file runs against a fresh, isolated application instance.
 
+### Cache E2E Tests
+
+The assessor cache suites (`test/assessor-cache.e2e-spec.ts`) include TTL and eviction scenarios that wait 60–75 seconds per case. Expect the full E2E run to take several minutes when these tests are included.
+
+These tests also rely on LLM dispatch log messages (`Dispatching LLM request`) to count cache hits and misses. If the log message changes, update the log watcher expectations in `test/utils/log-watcher.ts` and the cache E2E suite.
+
 ### Environment Configuration
 
 The test setup uses a specific strategy for managing environment variables to ensure reliability and security:

@@ -46,6 +46,7 @@ Repository context & conventions:
 
 - Primary checks: `npm run lint`, `npm run lint:british`, `npm run test`. Coverage gate: `npm run test:cov`.
 - E2E: `npm run test:e2e`; tests live in `test/*.e2e-spec.ts`. Use `startApp`/`stopApp` from `test/utils/app-lifecycle.ts`. Defaults are hardcoded there; only `GEMINI_API_KEY` should come from `.test.env`. Honour the documented delays/backoff for Gemini calls.
+- Note: the assessor cache E2E suite includes 60+ second TTL waits, so the overall run can take several minutes; this is expected.
 - Unit/integration tests are co-located in `src/**/*.spec.ts` and use Nest `TestingModule` patterns with `supertest` where relevant.
 - Production image tests: `prod-tests/`, command `npm run test:prod` (Docker required).
 - Coverage expectations: use Jest coverage output (`npm run test:cov`) which reads `collectCoverageFrom` for `src/**/*.{js,ts}` and writes to `coverage/`. Use the report to flag untested branches/paths in changed areas and propose focused tests to close gaps.

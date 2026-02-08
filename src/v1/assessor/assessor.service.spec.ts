@@ -111,16 +111,6 @@ describe('AssessorService', () => {
         reference: 'A picture of a cat',
         studentResponse: 'A drawing of a cat',
         template: 'An empty canvas',
-        images: [
-          {
-            mimeType: 'image/png',
-            base64: 'base64-encoded-string-1',
-          },
-          {
-            mimeType: 'image/png',
-            base64: 'base64-encoded-string-2',
-          },
-        ],
       };
 
       const mockMultimodalPayload = {

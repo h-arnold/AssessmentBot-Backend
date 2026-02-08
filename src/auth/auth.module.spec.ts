@@ -6,7 +6,8 @@ import { ApiKeyGuard } from './api-key.guard';
 import { ApiKeyService } from './api-key.service';
 import { ApiKeyStrategy } from './api-key.strategy';
 import { AuthModule } from './auth.module';
-import { ConfigService, Config } from '../config/config.service';
+import { ConfigService } from '../config/config.service';
+import { type Config } from '../config/env.schema';
 
 describe('AuthModule', () => {
   let module: TestingModule;

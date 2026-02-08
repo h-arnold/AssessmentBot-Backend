@@ -9,9 +9,25 @@ describe('StatusController', () => {
   let service: StatusService;
 
   beforeEach(async () => {
+    const healthResponse: HealthCheckResponse = {
+      status: 'ok',
+      version: '1.0.0',
+      timestamp: '2024-01-01T00:00:00.000Z',
+      systemInfo: {
+        platform: 'linux',
+        arch: 'x64',
+        release: 'test-release',
+        uptime: 123,
+        hostname: 'test-host',
+        totalMemory: 1024,
+        freeMemory: 512,
+        cpus: 4,
+      },
+    };
+
     const mockStatusService = {
       getHello: jest.fn().mockReturnValue('Hello World!'),
-      getHealth: jest.fn().mockReturnValue({ status: 'ok', uptime: 123 }),
+      getHealth: jest.fn().mockReturnValue(healthResponse),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -37,8 +53,23 @@ describe('StatusController', () => {
 
   describe('getHealth', () => {
     it('should return health check response', () => {
-      const result: HealthCheckResponse = { status: 'ok', uptime: 123 };
-      expect(controller.getHealth()).toEqual(result);
+      expect(controller.getHealth()).toEqual(
+        expect.objectContaining({
+          status: 'ok',
+          version: '1.0.0',
+          timestamp: '2024-01-01T00:00:00.000Z',
+          systemInfo: expect.objectContaining({
+            platform: 'linux',
+            arch: 'x64',
+            release: 'test-release',
+            uptime: 123,
+            hostname: 'test-host',
+            totalMemory: 1024,
+            freeMemory: 512,
+            cpus: 4,
+          }),
+        }),
+      );
       expect(service.getHealth).toHaveBeenCalled();
     });
   });

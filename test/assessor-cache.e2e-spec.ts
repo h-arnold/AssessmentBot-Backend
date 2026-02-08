@@ -4,7 +4,13 @@ import * as path from 'node:path';
 
 import request from 'supertest';
 
-import { startApp, stopApp, AppInstance, delay } from './utils/app-lifecycle';
+import {
+  startApp,
+  stopApp,
+  AppInstance,
+  delay,
+  delayWithHeartbeat,
+} from './utils/app-lifecycle';
 import { getLogObjects } from './utils/log-watcher';
 
 /**
@@ -339,7 +345,11 @@ describe('Assessor cache behaviour (e2e)', () => {
 
       await waitForDispatchCount(logFilePath, beforeCount + 1);
 
-      await delay(65000);
+      await delayWithHeartbeat(
+        65000,
+        15000,
+        'Heartbeat: waiting for cache TTL flush',
+      );
 
       const secondPayload = buildTextPayload(`idle-second-${Date.now()}`);
       await request(app.appUrl)
@@ -407,7 +417,11 @@ describe('Assessor cache behaviour (e2e)', () => {
       // - Event loop delays
       // - Cache expiration not happening exactly at 60s mark
       // - CI runner scheduling overhead
-      await delay(75000);
+      await delayWithHeartbeat(
+        75000,
+        15000,
+        'Heartbeat: waiting for cache TTL to expire',
+      );
 
       // Third request: cache miss (TTL expired, LLM is called again)
       await request(app.appUrl)
@@ -477,7 +491,11 @@ describe('Assessor cache behaviour (e2e)', () => {
       await delay(200);
       const afterSecond = countLlmDispatches(logFilePath);
 
-      await delay(70000);
+      await delayWithHeartbeat(
+        70000,
+        15000,
+        'Heartbeat: waiting to confirm TTL hours override',
+      );
 
       await request(app.appUrl)
         .post('/v1/assessor')

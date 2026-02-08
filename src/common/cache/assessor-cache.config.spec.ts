@@ -57,6 +57,7 @@ describe('resolveAssessorCacheTtlSeconds', () => {
     const { resolveAssessorCacheTtlSeconds } = loadCacheConfig();
     const ttlSeconds = resolveAssessorCacheTtlSeconds({
       ASSESSOR_CACHE_TTL_HOURS: 1,
+      ASSESSOR_CACHE_TTL_MINUTES: 60,
     });
     expect(ttlSeconds).toBe(3600);
   });

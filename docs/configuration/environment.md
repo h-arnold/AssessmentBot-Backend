@@ -46,6 +46,11 @@ These variables have default values but can be customised to change application 
 - `ASSESSOR_CACHE_TTL_HOURS`: Cache TTL in hours. When set, this overrides `ASSESSOR_CACHE_TTL_MINUTES`. Maximum is `48`.
 - `ASSESSOR_CACHE_MAX_SIZE_MIB`: Maximum in-memory cache size in MiB. Default is `384`.
 
+Notes:
+
+- TTL and size values must be positive integers; invalid values fail application startup.
+- `ASSESSOR_CACHE_HASH_SECRET` must be set to enable the assessor cache; it is used to hash cache keys.
+
 ### Example Configuration
 
 ```env

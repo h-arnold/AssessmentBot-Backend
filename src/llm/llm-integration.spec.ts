@@ -57,12 +57,16 @@ describe('ResourceExhaustedError Integration', () => {
 
     try {
       throwResourceExhaustedError();
-    } catch (error) {
-      caughtError = error;
+    } catch (error: unknown) {
+      caughtError =
+        error instanceof Error ? error : new Error('Unknown error caught');
     }
 
     expect(caughtError).not.toBeNull();
     expect(caughtError instanceof ResourceExhaustedError).toBe(true);
+    if (!caughtError) {
+      throw new Error('Expected a caught error');
+    }
     expect(caughtError.message).toBe('API quota exhausted');
   });
 });
