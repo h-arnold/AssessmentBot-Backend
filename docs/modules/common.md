@@ -102,3 +102,5 @@ While not provided directly by `CommonModule`, several other reusable components
 - **[Validation Pipes](./pipes.md)**: For `ZodValidationPipe` and `ImageValidationPipe`.
 - **[Exception Filters](./filters.md)**: For a more detailed look at `HttpExceptionFilter`.
 - **[Utilities](./utilities.md)**: For standalone functions like `readMarkdown` and `isSystemUserMessage`.
+
+Testing helpers related to the common layer live under `test/utils/`. In particular, `test/utils/http-mocks.ts` provides shared `ArgumentsHost` and `ExecutionContext` builders for filter/interceptor specs to keep HTTP metadata consistent.

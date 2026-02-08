@@ -236,3 +236,36 @@ const mockConfigService = {
   useValue: mockConfigService,
 },
 ```
+
+### HTTP Request/Response Mocks
+
+For filters, interceptors, and pipes that depend on `ExecutionContext` or `ArgumentsHost`, reuse the shared helpers in `test/utils/http-mocks.ts` instead of duplicating ad-hoc mocks. This keeps request metadata (method, URL, headers, body, status code) consistent across specs.
+
+```typescript
+import {
+  createHttpArgumentsHost,
+  createHttpExecutionContext,
+} from '../../test/utils/http-mocks';
+
+it('handles filter responses', () => {
+  const { argumentsHost, json, status } = createHttpArgumentsHost({
+    method: 'POST',
+    url: '/v1/example',
+  });
+
+  filter.catch(exception, argumentsHost);
+
+  expect(status).toHaveBeenCalled();
+  expect(json).toHaveBeenCalled();
+});
+
+it('handles interceptor context', () => {
+  const { context } = createHttpExecutionContext({
+    method: 'POST',
+    url: '/v1/assessor',
+    statusCode: 201,
+  });
+
+  expect(interceptor.isRequestCacheable(context)).toBe(true);
+});
+```

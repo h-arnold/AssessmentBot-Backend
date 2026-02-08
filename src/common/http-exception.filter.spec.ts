@@ -1,11 +1,7 @@
-import {
-  HttpException,
-  HttpStatus,
-  Logger,
-  ArgumentsHost,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 
 import { HttpExceptionFilter } from './http-exception.filter';
+import { createHttpArgumentsHost } from '../../test/utils/http-mocks';
 import { ResourceExhaustedError } from '../llm/resource-exhausted.error';
 
 describe('HttpExceptionFilter', () => {
@@ -26,37 +22,18 @@ describe('HttpExceptionFilter', () => {
     const resourceExhaustedError = new ResourceExhaustedError(
       'Quota has been exceeded.',
     );
-    const mockJson = jest.fn();
-    const mockStatus = jest.fn().mockImplementation(() => ({ json: mockJson }));
-    const mockGetResponse = jest
-      .fn()
-      .mockImplementation(() => ({ status: mockStatus }));
-    const mockGetRequest = jest.fn().mockImplementation(() => ({
-      url: '/test-resource-exhausted',
+    const { argumentsHost, json, status } = createHttpArgumentsHost({
       method: 'POST',
-      ip: '127.0.0.1',
-      headers: { 'user-agent': 'jest' },
-    }));
-    const mockHttpArgumentsHost = jest.fn().mockImplementation(() => ({
-      getResponse: mockGetResponse,
-      getRequest: mockGetRequest,
-    }));
-    const mockArgumentsHost: ArgumentsHost = {
-      switchToHttp: mockHttpArgumentsHost,
-      getArgByIndex: jest.fn(),
-      getArgs: jest.fn(),
-      getType: jest.fn(),
-      switchToRpc: jest.fn(),
-      switchToWs: jest.fn(),
-    };
+      url: '/test-resource-exhausted',
+    });
     const loggerSpy = jest
       .spyOn(Logger.prototype, 'error')
       .mockImplementation();
 
-    filter.catch(resourceExhaustedError, mockArgumentsHost);
+    filter.catch(resourceExhaustedError, argumentsHost);
 
-    expect(mockStatus).toHaveBeenCalledWith(HttpStatus.SERVICE_UNAVAILABLE);
-    expect(mockJson).toHaveBeenCalledWith({
+    expect(status).toHaveBeenCalledWith(HttpStatus.SERVICE_UNAVAILABLE);
+    expect(json).toHaveBeenCalledWith({
       statusCode: HttpStatus.SERVICE_UNAVAILABLE,
       message: 'Quota has been exceeded.',
       timestamp: expect.any(String),
@@ -81,36 +58,16 @@ describe('HttpExceptionFilter', () => {
       type: 'entity.too.large',
       message: 'request entity too large',
     };
-    const mockJson = jest.fn();
-    const mockStatus = jest.fn().mockImplementation(() => ({ json: mockJson }));
-    const mockGetResponse = jest
-      .fn()
-      .mockImplementation(() => ({ status: mockStatus }));
-    const mockGetRequest = jest.fn().mockImplementation(() => ({
-      url: '/test-large',
+    const { argumentsHost, json, status } = createHttpArgumentsHost({
       method: 'POST',
-      ip: '127.0.0.1',
-      headers: { 'user-agent': 'jest' },
-    }));
-    const mockHttpArgumentsHost = jest.fn().mockImplementation(() => ({
-      getResponse: mockGetResponse,
-      getRequest: mockGetRequest,
-      getNext: jest.fn(),
-    }));
-    const mockArgumentsHost: ArgumentsHost = {
-      switchToHttp: mockHttpArgumentsHost,
-      getArgByIndex: jest.fn(),
-      getArgs: jest.fn(),
-      getType: jest.fn(),
-      switchToRpc: jest.fn(),
-      switchToWs: jest.fn(),
-    };
+      url: '/test-large',
+    });
     const loggerSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
 
-    filter.catch(payloadTooLargeError, mockArgumentsHost);
+    filter.catch(payloadTooLargeError, argumentsHost);
 
-    expect(mockStatus).toHaveBeenCalledWith(HttpStatus.PAYLOAD_TOO_LARGE);
-    expect(mockJson).toHaveBeenCalledWith({
+    expect(status).toHaveBeenCalledWith(HttpStatus.PAYLOAD_TOO_LARGE);
+    expect(json).toHaveBeenCalledWith({
       statusCode: HttpStatus.PAYLOAD_TOO_LARGE,
       message: 'Payload Too Large',
       timestamp: expect.any(String),
@@ -134,84 +91,15 @@ describe('HttpExceptionFilter', () => {
       'Test Exception',
       HttpStatus.BAD_REQUEST,
     );
-    // Mock the response object's json and status methods
-    const mockJson = jest.fn();
-    const mockStatus = jest.fn().mockImplementation(() => ({
-      json: mockJson,
-    }));
-    // Mock the getResponse method to return the mocked status
-    const mockGetResponse = jest.fn().mockImplementation(() => ({
-      status: mockStatus,
-    }));
-    // Mock the getRequest method to return a fake request object
-    const mockGetRequest = jest.fn().mockImplementation(() => ({
-      url: '/test',
+    const { argumentsHost, json, status } = createHttpArgumentsHost({
       method: 'POST',
-      ip: '127.0.0.1',
-      headers: { 'user-agent': 'jest' },
-    }));
-    // The following function signatures are required to satisfy strict linter and type checks
-    // They use explicit generic signatures and type assertions to match the expected interfaces
-    function statusFn(): { json: () => void } {
-      return { json: (): void => {} };
-    }
-    /**
-     * Mocks the `ArgumentsHost` interface for HTTP requests in NestJS unit tests.
-     *
-     * This mock provides implementations for `getResponse`, `getRequest`, and `getNext` methods,
-     * allowing tests to simulate the behavior of the HTTP context within exception filters or interceptors.
-     *
-     * @returns An object with mocked `getResponse`, `getRequest`, and `getNext` methods.
-     */
-    const mockHttpArgumentsHost = jest.fn().mockImplementation(() => ({
-      getResponse: mockGetResponse,
-      getRequest: mockGetRequest,
-      getNext: jest.fn(() => undefined),
-    }));
-    /**
-     * A mock implementation of the NestJS `ArgumentsHost` interface for use in unit tests.
-     *
-     * This mock provides stubbed methods for switching between HTTP, RPC, and WebSocket contexts,
-     * as well as retrieving arguments and context types. The HTTP context is provided by `mockHttpArgumentsHost`.
-     *
-     * Methods:
-     * - `switchToHttp`: Returns the mocked HTTP arguments host.
-     * - `getArgByIndex`: Returns `undefined` for any index, typed as generic `T`.
-     * - `getArgs`: Returns an empty array, typed as generic `T`.
-     * - `getType`: Always returns `'http'` as the context type.
-     * - `switchToRpc`: Returns a mock object with stubbed `getData` and `getContext` methods.
-     * - `switchToWs`: Returns a mock object with stubbed `getData`, `getClient`, and `getPattern` methods.
-     *
-     * Useful for simulating the behavior of `ArgumentsHost` in exception filters and other NestJS constructs during testing.
-     */
-    const mockArgumentsHost: ArgumentsHost = {
-      switchToHttp: mockHttpArgumentsHost,
-      getArgByIndex: function <T = unknown>(index: number): T {
-        return undefined as T;
-      },
-      getArgs: function <T extends unknown[] = unknown[]>(): T {
-        return [] as unknown as T;
-      },
-      getType: function <
-        TContext extends string = 'http' | 'rpc' | 'ws' | 'graphql',
-      >(): TContext {
-        return 'http' as TContext;
-      },
-      switchToRpc: jest.fn(() => ({
-        getData: jest.fn(),
-        getContext: jest.fn(),
-      })),
-      switchToWs: jest.fn(() => ({
-        getData: jest.fn(),
-        getClient: jest.fn(),
-        getPattern: jest.fn(),
-      })),
-    };
+      url: '/test',
+    });
     // Call the filter's catch method with the mocked exception and arguments host
-    filter.catch(exception, mockArgumentsHost);
+    filter.catch(exception, argumentsHost);
     // Assert that the response was set with the correct status and message
-    expect(mockStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
-    expect(mockJson).toHaveBeenCalledWith({
+    expect(status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
+    expect(json).toHaveBeenCalledWith({
       statusCode: HttpStatus.BAD_REQUEST,
       message: 'Test Exception',
       timestamp: expect.any(String),
@@ -219,56 +107,123 @@ describe('HttpExceptionFilter', () => {
     });
   });
 
+  it('should include Zod errors and join array messages', () => {
+    const exception = new HttpException(
+      {
+        message: ['First issue', 'Second issue'],
+        errors: [
+          {
+            code: 'invalid_type',
+            expected: 'string',
+            received: 'number',
+            path: ['field'],
+            message: 'Expected string',
+          },
+        ],
+      },
+      HttpStatus.BAD_REQUEST,
+    );
+    const { argumentsHost, json, status } = createHttpArgumentsHost({
+      method: 'POST',
+      url: '/test-zod',
+    });
+
+    filter.catch(exception, argumentsHost);
+
+    expect(status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
+    expect(json).toHaveBeenCalledWith({
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: 'First issue, Second issue',
+      timestamp: expect.any(String),
+      path: '/test-zod',
+      errors: [
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          received: 'number',
+          path: ['field'],
+          message: 'Expected string',
+        },
+      ],
+    });
+  });
+
+  it('should redact sensitive headers in warning logs', () => {
+    const exception = new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
+    const { argumentsHost } = createHttpArgumentsHost({
+      method: 'POST',
+      url: '/test-redact',
+      headers: {
+        'user-agent': 'jest',
+        authorization: 'Bearer secret',
+        cookie: 'session=secret',
+        'x-api-key': 'secret',
+      },
+    });
+    const loggerSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+
+    filter.catch(exception, argumentsHost);
+
+    expect(loggerSpy).toHaveBeenCalledWith(
+      {
+        method: 'POST',
+        path: '/test-redact',
+        ip: '127.0.0.1',
+        headers: {
+          'user-agent': 'jest',
+          authorization: '[REDACTED]',
+          cookie: '[REDACTED]',
+          'x-api-key': '[REDACTED]',
+        },
+        userAgent: 'jest',
+      },
+      `HTTP ${HttpStatus.BAD_REQUEST} - Bad Request`,
+    );
+  });
+
+  it('should sanitise production 5xx error messages', () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    const exception = new HttpException(
+      'Sensitive details',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+    const { argumentsHost, json } = createHttpArgumentsHost({
+      method: 'GET',
+      url: '/test-production',
+    });
+
+    filter.catch(exception, argumentsHost);
+
+    expect(json).toHaveBeenCalledWith({
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: 'Internal server error',
+      timestamp: expect.any(String),
+      path: '/test-production',
+    });
+
+    process.env.NODE_ENV = originalEnv;
+  });
+
   it('should sanitise sensitive messages in production', () => {
     const exception = new HttpException(
       'Internal database error',
       HttpStatus.INTERNAL_SERVER_ERROR,
     );
-    const mockJson = jest.fn();
-    const mockStatus = jest.fn().mockImplementation(() => ({ json: mockJson }));
-    const mockGetResponse = jest
-      .fn()
-      .mockImplementation(() => ({ status: mockStatus }));
-    /**
-     * Mocks the behavior of a request object for testing purposes.
-     *
-     * This mock function simulates an HTTP request with predefined properties:
-     * - `url`: The request URL (`/test`).
-     * - `method`: The HTTP method used (`POST`).
-     * - `ip`: The IP address of the requester (`127.0.0.1`).
-     * - `headers`: An object containing request headers (with `'user-agent': 'jest'`).
-     *
-     * @returns An object representing a mock HTTP request.
-     */
-    const mockGetRequest = jest.fn().mockImplementation(() => ({
-      url: '/test',
+    const { argumentsHost, json, status } = createHttpArgumentsHost({
       method: 'POST',
-      ip: '127.0.0.1',
-      headers: { 'user-agent': 'jest' },
-    }));
-    const mockHttpArgumentsHost = jest.fn().mockImplementation(() => ({
-      getResponse: mockGetResponse,
-      getRequest: mockGetRequest,
-      getNext: jest.fn(),
-    }));
-    const mockArgumentsHost = {
-      switchToHttp: mockHttpArgumentsHost,
-      getArgByIndex: jest.fn(),
-      getArgs: jest.fn(),
-      getType: jest.fn(),
-      switchToRpc: jest.fn(),
-      switchToWs: jest.fn(),
-    };
+      url: '/test',
+    });
 
     const originalNodeEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
 
-    filter.catch(exception, mockArgumentsHost);
+    filter.catch(exception, argumentsHost);
 
     process.env.NODE_ENV = originalNodeEnv;
 
-    expect(mockStatus).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
-    expect(mockJson).toHaveBeenCalledWith({
+    expect(status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
+    expect(json).toHaveBeenCalledWith({
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
       timestamp: expect.any(String),
@@ -278,46 +233,13 @@ describe('HttpExceptionFilter', () => {
 
   it('should include request context in logs', () => {
     const exception = new HttpException('Not Found', HttpStatus.NOT_FOUND);
-    const mockJson = jest.fn();
-    const mockStatus = jest.fn().mockImplementation(() => ({ json: mockJson }));
-    const mockGetResponse = jest
-      .fn()
-      .mockImplementation(() => ({ status: mockStatus }));
-    const mockGetRequest = jest.fn().mockImplementation(() => ({
-      url: '/not-found',
+    const { argumentsHost } = createHttpArgumentsHost({
       method: 'GET',
-      ip: '127.0.0.1',
-      headers: { 'user-agent': 'jest' },
-    }));
-    const mockHttpArgumentsHost = jest.fn().mockImplementation(() => ({
-      getResponse: mockGetResponse,
-      getRequest: mockGetRequest,
-      getNext: jest.fn(),
-    }));
-    /**
-     * Mock implementation of the `ArgumentsHost` interface used for testing purposes.
-     *
-     * This mock object provides stubbed methods to simulate the behavior of NestJS's `ArgumentsHost`,
-     * allowing for controlled testing of exception filters and other components that depend on the host context.
-     *
-     * @property switchToHttp - Mocked method to simulate switching to HTTP context.
-     * @property getArgByIndex - Jest mock function to retrieve an argument by index.
-     * @property getArgs - Jest mock function to retrieve all arguments.
-     * @property getType - Jest mock function to retrieve the type of the context.
-     * @property switchToRpc - Mocked method to simulate switching to RPC context.
-     * @property switchToWs - Mocked method to simulate switching to WebSocket context.
-     */
-    const mockArgumentsHost = {
-      switchToHttp: mockHttpArgumentsHost,
-      getArgByIndex: jest.fn(),
-      getArgs: jest.fn(),
-      getType: jest.fn(),
-      switchToRpc: jest.fn(),
-      switchToWs: jest.fn(),
-    };
+      url: '/not-found',
+    });
     const loggerSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
 
-    filter.catch(exception, mockArgumentsHost);
+    filter.catch(exception, argumentsHost);
 
     expect(loggerSpy).toHaveBeenCalledWith(
       {
@@ -335,38 +257,12 @@ describe('HttpExceptionFilter', () => {
     // This test checks that 404 errors are logged with warn level
     const exception = new HttpException('Not Found', HttpStatus.NOT_FOUND);
     const loggerSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    // The following function signatures are required to satisfy strict linter and type checks
-    function statusFn(): { json: () => void } {
-      return { json: (): void => {} };
-    }
-    const mockArgumentsHost: ArgumentsHost = {
-      switchToHttp: () => ({
-        getRequest: function <T = unknown>(): T {
-          // Return a fake request object with required properties
-          return {
-            url: '/not-found',
-            method: 'GET',
-            ip: '127.0.0.1',
-            headers: { 'user-agent': 'jest' },
-          } as T;
-        },
-        getResponse: function <T = unknown>(): T {
-          // Return a fake response object with a status method
-          return { status: statusFn } as T;
-        },
-        getNext: function <T = unknown>(): T {
-          // Return undefined as required by the interface
-          return undefined as T;
-        },
-      }),
-      getArgByIndex: jest.fn(),
-      getArgs: jest.fn(),
-      getType: jest.fn(),
-      switchToRpc: jest.fn(),
-      switchToWs: jest.fn(),
-    };
+    const { argumentsHost } = createHttpArgumentsHost({
+      method: 'GET',
+      url: '/not-found',
+    });
     // Call the filter's catch method and check that the logger was called with the expected arguments
-    filter.catch(exception, mockArgumentsHost);
+    filter.catch(exception, argumentsHost);
     expect(loggerSpy).toHaveBeenCalledWith(
       {
         method: 'GET',
@@ -388,38 +284,12 @@ describe('HttpExceptionFilter', () => {
     const loggerSpy = jest
       .spyOn(Logger.prototype, 'error')
       .mockImplementation();
-    // The following function signatures are required to satisfy strict linter and type checks
-    function statusFn2(): { json: () => void } {
-      return { json: (): void => {} };
-    }
-    const mockArgumentsHost: ArgumentsHost = {
-      switchToHttp: () => ({
-        getRequest: function <T = unknown>(): T {
-          // Return a fake request object with required properties
-          return {
-            url: '/error',
-            method: 'GET',
-            ip: '127.0.0.1',
-            headers: { 'user-agent': 'jest' },
-          } as T;
-        },
-        getResponse: function <T = unknown>(): T {
-          // Return a fake response object with a status method
-          return { status: statusFn2 } as T;
-        },
-        getNext: function <T = unknown>(): T {
-          // Return undefined as required by the interface
-          return undefined as T;
-        },
-      }),
-      getArgByIndex: jest.fn(),
-      getArgs: jest.fn(),
-      getType: jest.fn(),
-      switchToRpc: jest.fn(),
-      switchToWs: jest.fn(),
-    };
+    const { argumentsHost } = createHttpArgumentsHost({
+      method: 'GET',
+      url: '/error',
+    });
     // Call the filter's catch method and check that the logger was called with the expected arguments
-    filter.catch(exception, mockArgumentsHost);
+    filter.catch(exception, argumentsHost);
     expect(loggerSpy).toHaveBeenCalledWith(
       {
         method: 'GET',

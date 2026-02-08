@@ -29,5 +29,8 @@ coverage/
 # IDE and editor directories
 .vscode/
 
+# Codex delegation artefacts
+.codex/codex-home/
+
 # SonarLint Connected Mode config
 .sonarlint/
