@@ -297,6 +297,18 @@ export function delayWithHeartbeat(
     return Promise.resolve();
   }
 
+  if (!Number.isFinite(heartbeatMs) || heartbeatMs <= 0) {
+    return delay(ms);
+  }
+
+  if (heartbeatMs >= ms) {
+    const totalSeconds = Math.ceil(ms / 1000);
+    console.info(
+      `${message} (${totalSeconds}s remaining of ${totalSeconds}s).`,
+    );
+    return delay(ms);
+  }
+
   return new Promise((resolve) => {
     const startTime = Date.now();
     const totalSeconds = Math.ceil(ms / 1000);

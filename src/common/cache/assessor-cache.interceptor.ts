@@ -26,6 +26,10 @@ import { ZodValidationPipe } from '../zod-validation.pipe';
 export class AssessorCacheInterceptor implements NestInterceptor {
   private readonly logger = new Logger(AssessorCacheInterceptor.name);
   private readonly secret: string;
+  private readonly validationPipe = new ZodValidationPipe(
+    createAssessorDtoSchema,
+  );
+  private readonly imageValidationPipe: ImageValidationPipe;
 
   constructor(
     private readonly configService: ConfigService,
@@ -34,6 +38,7 @@ export class AssessorCacheInterceptor implements NestInterceptor {
     private readonly cacheStore?: AssessorCacheStore,
   ) {
     this.secret = this.configService.get('ASSESSOR_CACHE_HASH_SECRET');
+    this.imageValidationPipe = new ImageValidationPipe(this.configService);
   }
 
   /**
@@ -44,26 +49,6 @@ export class AssessorCacheInterceptor implements NestInterceptor {
     const request = ctx.switchToHttp().getRequest();
     const url: string = request.originalUrl ?? request.url ?? '';
     return request.method === 'POST' && url.includes('/v1/assessor');
-  }
-
-  /**
-   * Generates a unique cache key for cacheable requests.
-   * Returns undefined for non-cacheable requests.
-   */
-  trackBy(ctx: ExecutionContext): string | undefined {
-    if (!this.isRequestCacheable(ctx)) {
-      return undefined;
-    }
-
-    const request = ctx.switchToHttp().getRequest();
-    const body = request.body as CreateAssessorDto;
-    const parsed = createAssessorDtoSchema.safeParse(body);
-    if (!parsed.success) {
-      this.logger.debug('Assessor cache key skipped due to invalid payload.');
-      return undefined;
-    }
-    const hash = createAssessorCacheKey(parsed.data, this.secret);
-    return `assessor:${hash}`;
   }
 
   /**
@@ -102,18 +87,16 @@ export class AssessorCacheInterceptor implements NestInterceptor {
     }
 
     const request = context.switchToHttp().getRequest();
-    const validationPipe = new ZodValidationPipe(createAssessorDtoSchema);
-    const validatedBody = validationPipe.transform(request.body, {
+    const validatedBody = this.validationPipe.transform(request.body, {
       type: 'body',
       metatype: undefined,
       data: '',
     }) as CreateAssessorDto;
 
     if (validatedBody.taskType === 'IMAGE') {
-      const imagePipe = new ImageValidationPipe(this.configService);
-      await imagePipe.transform(validatedBody.reference);
-      await imagePipe.transform(validatedBody.studentResponse);
-      await imagePipe.transform(validatedBody.template);
+      await this.imageValidationPipe.transform(validatedBody.reference);
+      await this.imageValidationPipe.transform(validatedBody.studentResponse);
+      await this.imageValidationPipe.transform(validatedBody.template);
     }
 
     request.body = validatedBody;

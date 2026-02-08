@@ -1,17 +1,16 @@
 import { ExecutionContext } from '@nestjs/common';
-import { firstValueFrom, of } from 'rxjs';
+import { Observable, firstValueFrom, of } from 'rxjs';
 
 import { ImageValidationPipe } from '../pipes/image-validation.pipe';
 
 type AssessorCacheInterceptorModule = {
   AssessorCacheInterceptor: new (...args: unknown[]) => {
     isRequestCacheable: (ctx: ExecutionContext) => boolean;
-    trackBy: (ctx: ExecutionContext) => string | undefined;
     isResponseCacheable: (response: { statusCode?: number }) => boolean;
     intercept: (
       context: ExecutionContext,
-      next: { handle: () => ReturnType<typeof of> },
-    ) => Promise<ReturnType<typeof of>>;
+      next: { handle: () => Observable<unknown> },
+    ) => Promise<Observable<unknown>>;
   };
 };
 
@@ -49,6 +48,10 @@ const createHttpContext = (
   }) as unknown as ExecutionContext;
 
 describe('AssessorCacheInterceptor', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('treats POST /v1/assessor as cacheable', () => {
     const { AssessorCacheInterceptor } = loadInterceptor();
     const interceptor = new AssessorCacheInterceptor({
@@ -85,18 +88,6 @@ describe('AssessorCacheInterceptor', () => {
     expect(result).toBe(false);
   });
 
-  it('returns undefined cache keys for non-assessor routes', () => {
-    const { AssessorCacheInterceptor } = loadInterceptor();
-    const interceptor = new AssessorCacheInterceptor({
-      get: jest.fn().mockReturnValue('secret'),
-    });
-    const context = createHttpContext('POST', '/v1/status');
-
-    const key = interceptor.trackBy(context);
-
-    expect(key).toBeUndefined();
-  });
-
   it('does not cache error responses', () => {
     const { AssessorCacheInterceptor } = loadInterceptor();
     const interceptor = new AssessorCacheInterceptor({
@@ -123,50 +114,6 @@ describe('AssessorCacheInterceptor', () => {
     );
 
     expect(result).toBe(true);
-  });
-
-  it('derives a namespaced cache key for assessor requests', () => {
-    const { AssessorCacheInterceptor } = loadInterceptor();
-    const interceptor = new AssessorCacheInterceptor({
-      get: jest.fn().mockReturnValue('secret'),
-    });
-    const context = createHttpContext('POST', '/v1/assessor', 201, {
-      taskType: 'TEXT',
-      reference: 'Reference',
-      template: 'Template',
-      studentResponse: 'Response',
-    });
-
-    const key = interceptor.trackBy(context);
-
-    expect(key).toMatch(/^assessor:/u);
-    expect(key).not.toContain('Reference');
-    expect(key).not.toContain('Template');
-    expect(key).not.toContain('Response');
-  });
-
-  it('produces distinct cache keys for distinct request bodies', () => {
-    const { AssessorCacheInterceptor } = loadInterceptor();
-    const interceptor = new AssessorCacheInterceptor({
-      get: jest.fn().mockReturnValue('secret'),
-    });
-    const contextA = createHttpContext('POST', '/v1/assessor', 201, {
-      taskType: 'TEXT',
-      reference: 'Reference A',
-      template: 'Template',
-      studentResponse: 'Response',
-    });
-    const contextB = createHttpContext('POST', '/v1/assessor', 201, {
-      taskType: 'TEXT',
-      reference: 'Reference B',
-      template: 'Template',
-      studentResponse: 'Response',
-    });
-
-    const keyA = interceptor.trackBy(contextA);
-    const keyB = interceptor.trackBy(contextB);
-
-    expect(keyA).not.toBe(keyB);
   });
 
   it.each([

@@ -50,8 +50,6 @@ describe('AssessorController', () => {
 
   describe('Integration: Caching interceptor application', () => {
     it('applies caching interceptor to the create endpoint', async () => {
-      const controller = new AssessorController(mockAssessorService as never);
-
       const descriptors = Object.getOwnPropertyDescriptors(
         AssessorController.prototype,
       );
