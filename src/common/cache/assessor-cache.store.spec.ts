@@ -65,6 +65,7 @@ describe('AssessorCacheStore', () => {
 
     expect(smallStore.has('first')).toBe(false);
     expect(smallStore.has('third')).toBe(true);
+    expect(smallStore.getRemainingTtl('first')).toBe(0);
   });
 
   // --- explicit size parameter overrides sizeCalculation ---
@@ -94,6 +95,15 @@ describe('AssessorCacheStore', () => {
 
     expect(shortTtlStore.get('ephemeral')).toBeUndefined();
     expect(shortTtlStore.has('ephemeral')).toBe(false);
+  });
+
+  it('returns a remaining TTL for stored entries', () => {
+    store.set('ttl-key', 'value');
+
+    const remainingTtl = store.getRemainingTtl('ttl-key');
+
+    expect(remainingTtl).toBeGreaterThan(0);
+    expect(remainingTtl).toBeLessThanOrEqual(ONE_MINUTE_MS);
   });
 
   // --- LRU order ---

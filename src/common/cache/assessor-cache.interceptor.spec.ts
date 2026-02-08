@@ -1,6 +1,7 @@
 import { ExecutionContext } from '@nestjs/common';
 import { Observable, firstValueFrom, of } from 'rxjs';
 
+import { createHttpExecutionContext } from '../../../test/utils/http-mocks';
 import { ImageValidationPipe } from '../pipes/image-validation.pipe';
 
 type AssessorCacheInterceptorModule = {
@@ -27,26 +28,6 @@ const loadInterceptor = (): AssessorCacheInterceptorModule => {
   }
 };
 
-const createHttpContext = (
-  method: string,
-  url: string,
-  statusCode = 200,
-  body: Record<string, unknown> = {},
-): ExecutionContext =>
-  ({
-    switchToHttp: () => ({
-      getRequest: () => ({
-        method,
-        url,
-        originalUrl: url,
-        body,
-      }),
-      getResponse: () => ({
-        statusCode,
-      }),
-    }),
-  }) as unknown as ExecutionContext;
-
 describe('AssessorCacheInterceptor', () => {
   afterEach(() => {
     jest.restoreAllMocks();
@@ -57,7 +38,10 @@ describe('AssessorCacheInterceptor', () => {
     const interceptor = new AssessorCacheInterceptor({
       get: jest.fn().mockReturnValue('secret'),
     });
-    const context = createHttpContext('POST', '/v1/assessor');
+    const { context } = createHttpExecutionContext({
+      method: 'POST',
+      url: '/v1/assessor',
+    });
 
     const result = interceptor.isRequestCacheable(context);
 
@@ -69,7 +53,10 @@ describe('AssessorCacheInterceptor', () => {
     const interceptor = new AssessorCacheInterceptor({
       get: jest.fn().mockReturnValue('secret'),
     });
-    const context = createHttpContext('POST', '/v1/status');
+    const { context } = createHttpExecutionContext({
+      method: 'POST',
+      url: '/v1/status',
+    });
 
     const result = interceptor.isRequestCacheable(context);
 
@@ -81,7 +68,10 @@ describe('AssessorCacheInterceptor', () => {
     const interceptor = new AssessorCacheInterceptor({
       get: jest.fn().mockReturnValue('secret'),
     });
-    const context = createHttpContext('GET', '/v1/assessor');
+    const { context } = createHttpExecutionContext({
+      method: 'GET',
+      url: '/v1/assessor',
+    });
 
     const result = interceptor.isRequestCacheable(context);
 
@@ -93,7 +83,11 @@ describe('AssessorCacheInterceptor', () => {
     const interceptor = new AssessorCacheInterceptor({
       get: jest.fn().mockReturnValue('secret'),
     });
-    const context = createHttpContext('POST', '/v1/assessor', 500);
+    const { context } = createHttpExecutionContext({
+      method: 'POST',
+      url: '/v1/assessor',
+      statusCode: 500,
+    });
 
     const result = interceptor.isResponseCacheable(
       context.switchToHttp().getResponse(),
@@ -107,7 +101,11 @@ describe('AssessorCacheInterceptor', () => {
     const interceptor = new AssessorCacheInterceptor({
       get: jest.fn().mockReturnValue('secret'),
     });
-    const context = createHttpContext('POST', '/v1/assessor', statusCode);
+    const { context } = createHttpExecutionContext({
+      method: 'POST',
+      url: '/v1/assessor',
+      statusCode,
+    });
 
     const result = interceptor.isResponseCacheable(
       context.switchToHttp().getResponse(),
@@ -130,7 +128,11 @@ describe('AssessorCacheInterceptor', () => {
     const interceptor = new AssessorCacheInterceptor({
       get: jest.fn().mockReturnValue('secret'),
     });
-    const context = createHttpContext('POST', '/v1/assessor', statusCode);
+    const { context } = createHttpExecutionContext({
+      method: 'POST',
+      url: '/v1/assessor',
+      statusCode,
+    });
 
     const result = interceptor.isResponseCacheable(
       context.switchToHttp().getResponse(),
@@ -153,11 +155,16 @@ describe('AssessorCacheInterceptor', () => {
       },
       cacheStore,
     );
-    const context = createHttpContext('POST', '/v1/assessor', 201, {
-      taskType: 'TEXT',
-      reference: 'Reference',
-      template: 'Template',
-      studentResponse: 'Response',
+    const { context } = createHttpExecutionContext({
+      method: 'POST',
+      url: '/v1/assessor',
+      statusCode: 201,
+      body: {
+        taskType: 'TEXT',
+        reference: 'Reference',
+        template: 'Template',
+        studentResponse: 'Response',
+      },
     });
     const next = { handle: jest.fn(() => of({ live: true })) };
 
@@ -184,11 +191,16 @@ describe('AssessorCacheInterceptor', () => {
       },
       cacheStore,
     );
-    const context = createHttpContext('POST', '/v1/assessor', 201, {
-      taskType: 'TEXT',
-      reference: 'Reference',
-      template: 'Template',
-      studentResponse: 'Response',
+    const { context } = createHttpExecutionContext({
+      method: 'POST',
+      url: '/v1/assessor',
+      statusCode: 201,
+      body: {
+        taskType: 'TEXT',
+        reference: 'Reference',
+        template: 'Template',
+        studentResponse: 'Response',
+      },
     });
     const next = { handle: jest.fn(() => of({ live: true })) };
 
@@ -203,6 +215,89 @@ describe('AssessorCacheInterceptor', () => {
       { live: true },
       expect.any(Number),
     );
+  });
+
+  it('bypasses caching when no cache store is configured', async () => {
+    const { AssessorCacheInterceptor } = loadInterceptor();
+    const interceptor = new AssessorCacheInterceptor({
+      get: jest.fn().mockReturnValue('secret'),
+    });
+    const { context } = createHttpExecutionContext({
+      method: 'POST',
+      url: '/v1/assessor',
+      statusCode: 201,
+      body: {
+        taskType: 'TEXT',
+        reference: 'Reference',
+        template: 'Template',
+        studentResponse: 'Response',
+      },
+    });
+    const next = { handle: jest.fn(() => of({ live: true })) };
+
+    const result = await firstValueFrom(
+      await interceptor.intercept(context, next),
+    );
+
+    expect(result).toEqual({ live: true });
+    expect(next.handle).toHaveBeenCalledTimes(1);
+  });
+
+  it('treats cache hits without values as misses', async () => {
+    const { AssessorCacheInterceptor } = loadInterceptor();
+    const cacheStore = {
+      has: jest.fn().mockReturnValue(true),
+      get: jest.fn().mockReturnValue(undefined),
+      getRemainingTtl: jest.fn().mockReturnValue(120000),
+      set: jest.fn(),
+    };
+    const interceptor = new AssessorCacheInterceptor(
+      {
+        get: jest.fn().mockReturnValue('secret'),
+      },
+      cacheStore,
+    );
+    const { context } = createHttpExecutionContext({
+      method: 'POST',
+      url: '/v1/assessor',
+      statusCode: 201,
+      body: {
+        taskType: 'TEXT',
+        reference: 'Reference',
+        template: 'Template',
+        studentResponse: 'Response',
+      },
+    });
+    const next = { handle: jest.fn(() => of({ live: true })) };
+
+    const result = await firstValueFrom(
+      await interceptor.intercept(context, next),
+    );
+
+    expect(result).toEqual({ live: true });
+    expect(next.handle).toHaveBeenCalledTimes(1);
+    expect(cacheStore.set).toHaveBeenCalledWith(
+      expect.stringMatching(/^assessor:/u),
+      { live: true },
+      expect.any(Number),
+    );
+  });
+
+  it('falls back to a default request size when JSON serialisation fails', () => {
+    const { AssessorCacheInterceptor } = loadInterceptor();
+    const interceptor = new AssessorCacheInterceptor({
+      get: jest.fn().mockReturnValue('secret'),
+    });
+    const circular: Record<string, unknown> = {};
+    circular.self = circular;
+
+    const estimatedSize = (
+      interceptor as unknown as {
+        estimateRequestSize: (body: unknown) => number;
+      }
+    ).estimateRequestSize(circular);
+
+    expect(estimatedSize).toBe(1024);
   });
 
   it('validates image payloads before handling the request', async () => {
@@ -228,23 +323,12 @@ describe('AssessorCacheInterceptor', () => {
       template: 'data:image/png;base64,efgh',
       studentResponse: 'data:image/png;base64,ijkl',
     };
-    const request = {
+    const { context, request } = createHttpExecutionContext({
       method: 'POST',
       url: '/v1/assessor',
-      originalUrl: '/v1/assessor',
+      statusCode: 201,
       body: payload,
-    };
-    const context = {
-      switchToHttp: (): {
-        getRequest: () => typeof request;
-        getResponse: () => { statusCode: number };
-      } => ({
-        getRequest: (): typeof request => request,
-        getResponse: (): { statusCode: number } => ({
-          statusCode: 201,
-        }),
-      }),
-    } as unknown as ExecutionContext;
+    });
     const next = { handle: jest.fn(() => of({ live: true })) };
 
     await firstValueFrom(await interceptor.intercept(context, next));

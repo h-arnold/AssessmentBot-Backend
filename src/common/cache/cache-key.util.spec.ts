@@ -301,4 +301,89 @@ describe('createAssessorCacheKey', () => {
 
     expect(keyA).toBe(keyB);
   });
+
+  it('treats non-base64 data URIs as literal strings', () => {
+    const { createAssessorCacheKey } = loadCacheKeyUtil();
+    const rawDataUri = 'data:image/png,not-base64';
+    const base64DataUri = `data:image/png;base64,${Buffer.from('data').toString('base64')}`;
+
+    const dtoA: CreateAssessorDto = {
+      taskType: TaskType.IMAGE,
+      reference: rawDataUri,
+      template: rawDataUri,
+      studentResponse: rawDataUri,
+    };
+
+    const dtoB: CreateAssessorDto = {
+      taskType: TaskType.IMAGE,
+      reference: base64DataUri,
+      template: base64DataUri,
+      studentResponse: base64DataUri,
+    };
+
+    const keyA = createAssessorCacheKey(dtoA, secret);
+    const keyB = createAssessorCacheKey(dtoB, secret);
+
+    expect(keyA).not.toBe(keyB);
+  });
+
+  it.each([
+    ['image/jpeg', Buffer.from([0xff, 0xd8, 0xff, 0x00])],
+    ['image/gif', Buffer.from([0x47, 0x49, 0x46, 0x38, 0x39, 0x61])],
+    [
+      'image/webp',
+      Buffer.from([
+        0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
+      ]),
+    ],
+  ])('normalises %s buffers to match data URIs', (mimeType, buffer) => {
+    const { createAssessorCacheKey } = loadCacheKeyUtil();
+    const base64Str = buffer.toString('base64');
+    const dataUri = `data:${mimeType};base64,${base64Str}`;
+
+    const dtoWithBuffer: CreateAssessorDto = {
+      taskType: TaskType.IMAGE,
+      reference: buffer,
+      template: buffer,
+      studentResponse: buffer,
+    };
+
+    const dtoWithDataUri: CreateAssessorDto = {
+      taskType: TaskType.IMAGE,
+      reference: dataUri,
+      template: dataUri,
+      studentResponse: dataUri,
+    };
+
+    const keyWithBuffer = createAssessorCacheKey(dtoWithBuffer, secret);
+    const keyWithDataUri = createAssessorCacheKey(dtoWithDataUri, secret);
+
+    expect(keyWithBuffer).toBe(keyWithDataUri);
+  });
+
+  it('normalises unknown buffers to application/octet-stream', () => {
+    const { createAssessorCacheKey } = loadCacheKeyUtil();
+    const buffer = Buffer.from([0x00, 0x01, 0x02]);
+    const base64Str = buffer.toString('base64');
+    const dataUri = `data:application/octet-stream;base64,${base64Str}`;
+
+    const dtoWithBuffer: CreateAssessorDto = {
+      taskType: TaskType.IMAGE,
+      reference: buffer,
+      template: buffer,
+      studentResponse: buffer,
+    };
+
+    const dtoWithDataUri: CreateAssessorDto = {
+      taskType: TaskType.IMAGE,
+      reference: dataUri,
+      template: dataUri,
+      studentResponse: dataUri,
+    };
+
+    const keyWithBuffer = createAssessorCacheKey(dtoWithBuffer, secret);
+    const keyWithDataUri = createAssessorCacheKey(dtoWithDataUri, secret);
+
+    expect(keyWithBuffer).toBe(keyWithDataUri);
+  });
 });

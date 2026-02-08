@@ -5,15 +5,24 @@ import { ImagePrompt } from './image.prompt';
 import { PromptFactory } from './prompt.factory';
 import { TablePrompt } from './table.prompt';
 import { TextPrompt } from './text.prompt';
+import { readMarkdown } from '../common/file-utils';
 import {
   CreateAssessorDto,
   TaskType,
 } from '../v1/assessor/dto/create-assessor.dto';
 
+jest.mock('../common/file-utils', () => ({
+  readMarkdown: jest.fn(),
+}));
+
 describe('PromptFactory', () => {
   let factory: PromptFactory;
+  const readMarkdownMock = readMarkdown as jest.MockedFunction<
+    typeof readMarkdown
+  >;
 
   beforeEach(async () => {
+    readMarkdownMock.mockResolvedValue('system prompt');
     const module: TestingModule = await Test.createTestingModule({
       providers: [PromptFactory, Logger],
     }).compile();
@@ -68,5 +77,28 @@ describe('PromptFactory', () => {
     return expect(factory.create(dto)).rejects.toThrow(
       'Unsupported task type: INVALID',
     );
+  });
+
+  it('logs and rethrows when the system prompt cannot be loaded', async () => {
+    const dto: CreateAssessorDto = {
+      taskType: TaskType.TEXT,
+      reference: 'ref',
+      studentResponse: 'stud',
+      template: 'temp',
+    };
+    const error = new Error('Missing prompt');
+    readMarkdownMock.mockRejectedValueOnce(error);
+    const loggerSpy = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation();
+
+    await expect(factory.create(dto)).rejects.toThrow('Missing prompt');
+
+    expect(loggerSpy).toHaveBeenCalledWith(
+      'Failed to load system prompt template: text.system.prompt.md.',
+      expect.any(String),
+    );
+
+    loggerSpy.mockRestore();
   });
 });
