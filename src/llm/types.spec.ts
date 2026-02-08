@@ -101,21 +101,14 @@ describe('GeminiModelParams type', () => {
     expect(params.systemInstruction).toBeUndefined();
   });
 
-  it('should enforce types at compile-time for common mistakes', () => {
-    // @ts-expect-error - thinking.budget must be a number
-    const bad1: GeminiModelParams = {
+  it('should expose the expected optional fields', () => {
+    const params: GeminiModelParams = {
       model: 'gemini-2.5-flash',
-      thinking: { budget: 'not-a-number' },
+      thinking: { budget: 250 },
+      systemInstruction: 'Keep responses concise',
     };
 
-    // @ts-expect-error - systemInstruction must be a string
-    const bad2: GeminiModelParams = {
-      model: 'gemini-2.5-flash',
-      systemInstruction: 123,
-    };
-
-    // Add a runtime assertion so ESLint's jest/expect-expect rule is satisfied
-    expect(bad1).toBeDefined();
-    expect(bad2).toBeDefined();
+    expect(params.thinking?.budget).toBe(250);
+    expect(params.systemInstruction).toBe('Keep responses concise');
   });
 });

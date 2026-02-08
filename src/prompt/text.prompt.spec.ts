@@ -73,7 +73,9 @@ describe('TextPrompt', () => {
     console.info('--- Rendered TextPrompt User Message ---');
     if (!isSystemUserMessage(message)) {
       throw new Error(
-        `Prompt did not return expected object shape. \n Actual message.system: \n ${message.system} \nActual message.user: \n ${message.user}`,
+        `Prompt did not return expected object shape. Actual message: ${JSON.stringify(
+          message,
+        )}`,
       );
     }
     expect(message.system).toBe(systemTemplate);

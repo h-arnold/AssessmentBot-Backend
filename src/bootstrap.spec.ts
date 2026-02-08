@@ -54,6 +54,7 @@ describe('bootstrap', () => {
 
   const loadBootstrap = async (options?: {
     bufferLogs?: boolean;
+    host?: string;
   }): Promise<LoadBootstrapResult> => {
     process.env = { ...originalEnv };
 

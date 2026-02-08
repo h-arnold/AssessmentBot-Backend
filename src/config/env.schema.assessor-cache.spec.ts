@@ -16,7 +16,7 @@ describe('configSchema assessor cache validation', () => {
     const parsed = configSchema.parse({
       ...buildBaseEnv(),
       ASSESSOR_CACHE_HASH_SECRET: 'secret',
-    }) as Record<string, unknown>;
+    });
 
     expect(parsed.ASSESSOR_CACHE_TTL_MINUTES).toBe(1440);
   });
@@ -25,7 +25,7 @@ describe('configSchema assessor cache validation', () => {
     const parsed = configSchema.parse({
       ...buildBaseEnv(),
       ASSESSOR_CACHE_HASH_SECRET: 'secret',
-    }) as Record<string, unknown>;
+    });
 
     expect(parsed.ASSESSOR_CACHE_MAX_SIZE_MIB).toBe(384);
   });
@@ -110,7 +110,7 @@ describe('configSchema assessor cache validation', () => {
       ASSESSOR_CACHE_HASH_SECRET: 'secret',
       ASSESSOR_CACHE_TTL_MINUTES: '30',
       ASSESSOR_CACHE_TTL_HOURS: '2',
-    }) as Record<string, unknown>;
+    });
 
     expect(resolveAssessorCacheTtlSeconds(parsed)).toBe(7200);
   });
@@ -125,9 +125,7 @@ describe('configSchema assessor cache validation', () => {
 
     expect(result.success).toBe(true);
     if (!result.success) return;
-    expect(
-      resolveAssessorCacheTtlSeconds(result.data as Record<string, unknown>),
-    ).toBe(3600);
+    expect(resolveAssessorCacheTtlSeconds(result.data)).toBe(3600);
   });
 
   it('converts minutes to seconds when hours are unset', () => {
@@ -135,7 +133,7 @@ describe('configSchema assessor cache validation', () => {
       ...buildBaseEnv(),
       ASSESSOR_CACHE_HASH_SECRET: 'secret',
       ASSESSOR_CACHE_TTL_MINUTES: '30',
-    }) as Record<string, unknown>;
+    });
 
     expect(resolveAssessorCacheTtlSeconds(parsed)).toBe(1800);
   });
@@ -145,7 +143,7 @@ describe('configSchema assessor cache validation', () => {
       ...buildBaseEnv(),
       ASSESSOR_CACHE_HASH_SECRET: 'secret',
       ASSESSOR_CACHE_MAX_SIZE_MIB: '2',
-    }) as Record<string, unknown>;
+    });
 
     expect(resolveAssessorCacheMaxSizeBytes(parsed)).toBe(2 * 1024 * 1024);
   });
