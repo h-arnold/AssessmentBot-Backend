@@ -87,17 +87,11 @@ export abstract class Prompt {
    * @param inputs The validated PromptInput object.
    */
   private logInputLengths(inputs: PromptInput): void {
-    const keys: (keyof PromptInput)[] = [
-      'referenceTask',
-      'studentTask',
-      'emptyTask',
-    ];
-    const lengths = keys
-      .map((key) => {
-        const value = inputs[key];
-        return `${key}: ${typeof value === 'string' ? value.length : 'N/A'}`;
-      })
-      .join(', ');
+    const lengths = [
+      `referenceTask: ${inputs.referenceTask.length}`,
+      `studentTask: ${inputs.studentTask.length}`,
+      `emptyTask: ${inputs.emptyTask.length}`,
+    ].join(', ');
     this.logger.log(`Prompt input lengths - ${lengths}`);
   }
 

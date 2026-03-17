@@ -62,7 +62,7 @@ export class JsonParserUtil {
 
     try {
       const repairedJsonString = jsonrepair(jsonContent);
-      const parsed = JSON.parse(repairedJsonString);
+      const parsed: unknown = JSON.parse(repairedJsonString);
 
       if (typeof parsed !== 'object' || parsed === null) {
         throw new Error('Parsed JSON is not a structured object or array.');
@@ -72,7 +72,10 @@ export class JsonParserUtil {
       return parsed;
     } catch (error) {
       this.logger.debug(`JSON parsing failed for input: ${jsonString}`, error);
-      this.logger.error('JSON parsing failed due to malformed or irreparable input.', error);
+      this.logger.error(
+        'JSON parsing failed due to malformed or irreparable input.',
+        error,
+      );
       throw new BadRequestException(
         'Malformed or irreparable JSON string provided.',
       );

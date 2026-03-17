@@ -12,7 +12,8 @@ export function getCurrentDirname(fallbackDir?: string): string {
   try {
     // Use dynamic evaluation to avoid TypeScript compilation issues in Jest
     // This will work in ESM runtime but fail gracefully in Jest
-    const metaUrl = new Function('return import.meta.url')();
+    const getImportMetaUrl = Function('return import.meta.url') as () => string;
+    const metaUrl = getImportMetaUrl();
     return path.dirname(fileURLToPath(metaUrl));
   } catch (error) {
     // In Jest environment or other environments where import.meta.url is not available

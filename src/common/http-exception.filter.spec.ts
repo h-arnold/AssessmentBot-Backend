@@ -8,6 +8,38 @@ import {
 import { HttpExceptionFilter } from './http-exception.filter';
 import { ResourceExhaustedError } from '../llm/resource-exhausted.error';
 
+interface JsonErrorResponseBody {
+  statusCode: number;
+  message: string;
+  timestamp: string;
+  path: string;
+}
+
+function expectJsonErrorResponse(
+  mockJson: jest.Mock,
+  expectedBody: Omit<JsonErrorResponseBody, 'timestamp'>,
+): void {
+  const firstCall = mockJson.mock.calls[0] as
+    | [JsonErrorResponseBody]
+    | undefined;
+
+  expect(firstCall).toBeDefined();
+
+  const [responseBody] = firstCall as [JsonErrorResponseBody];
+
+  expect(Object.keys(responseBody).sort()).toEqual([
+    'message',
+    'path',
+    'statusCode',
+    'timestamp',
+  ]);
+
+  expect(responseBody.statusCode).toBe(expectedBody.statusCode);
+  expect(responseBody.message).toBe(expectedBody.message);
+  expect(responseBody.path).toBe(expectedBody.path);
+  expect(responseBody.timestamp).toEqual(expect.any(String));
+}
+
 describe('HttpExceptionFilter', () => {
   let filter: HttpExceptionFilter;
   let logger: Logger;
@@ -56,10 +88,9 @@ describe('HttpExceptionFilter', () => {
     filter.catch(resourceExhaustedError, mockArgumentsHost);
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.SERVICE_UNAVAILABLE);
-    expect(mockJson).toHaveBeenCalledWith({
+    expectJsonErrorResponse(mockJson, {
       statusCode: HttpStatus.SERVICE_UNAVAILABLE,
       message: 'Quota has been exceeded.',
-      timestamp: expect.any(String),
       path: '/test-resource-exhausted',
     });
     expect(loggerSpy).toHaveBeenCalledWith(
@@ -110,10 +141,9 @@ describe('HttpExceptionFilter', () => {
     filter.catch(payloadTooLargeError, mockArgumentsHost);
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.PAYLOAD_TOO_LARGE);
-    expect(mockJson).toHaveBeenCalledWith({
+    expectJsonErrorResponse(mockJson, {
       statusCode: HttpStatus.PAYLOAD_TOO_LARGE,
       message: 'Payload Too Large',
-      timestamp: expect.any(String),
       path: '/test-large',
     });
     expect(loggerSpy).toHaveBeenCalledWith(
@@ -211,10 +241,9 @@ describe('HttpExceptionFilter', () => {
     filter.catch(exception, mockArgumentsHost);
     // Assert that the response was set with the correct status and message
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
-    expect(mockJson).toHaveBeenCalledWith({
+    expectJsonErrorResponse(mockJson, {
       statusCode: HttpStatus.BAD_REQUEST,
       message: 'Test Exception',
-      timestamp: expect.any(String),
       path: '/test',
     });
   });
@@ -268,10 +297,9 @@ describe('HttpExceptionFilter', () => {
     process.env.NODE_ENV = originalNodeEnv;
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
-    expect(mockJson).toHaveBeenCalledWith({
+    expectJsonErrorResponse(mockJson, {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
-      timestamp: expect.any(String),
       path: '/test',
     });
   });
