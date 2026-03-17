@@ -170,11 +170,14 @@ export abstract class LLMService {
   }
 
   private buildUnexpectedErrorMessage(error: unknown): string {
+    const messagePrefix =
+      'Failed to get a valid and structured response from the LLM.';
+
     if (error instanceof Error) {
-      return `Failed to get a valid and structured response from the LLM.\nOriginal error: ${error.message}\nStack: ${error.stack || 'N/A'}`;
+      return `${messagePrefix}\nOriginal error: ${error.message}\nStack: ${error.stack || 'N/A'}`;
     }
 
-    return `Failed to get a valid and structured response from the LLM.\nOriginal error: ${String(error)}\nStack: N/A`;
+    return `${messagePrefix}\nOriginal error: ${String(error)}\nStack: N/A`;
   }
 
   private getErrorStack(error: unknown): string | undefined {
