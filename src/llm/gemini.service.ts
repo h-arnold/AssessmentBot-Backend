@@ -66,7 +66,7 @@ export class GeminiService extends LLMService {
 
       this.geminiLogger.debug(`Raw response from Gemini: \n\n${responseText}`);
 
-      let parsedJson;
+      let parsedJson: unknown;
       try {
         parsedJson = this.jsonParserUtil.parse(responseText);
       } catch (parseError) {
@@ -78,8 +78,8 @@ export class GeminiService extends LLMService {
       );
 
       // Handle cases where the LLM returns an array with a single object
-      const dataToValidate = Array.isArray(parsedJson)
-        ? parsedJson[0]
+      const dataToValidate: unknown = Array.isArray(parsedJson)
+        ? (parsedJson as unknown[])[0]
         : parsedJson;
 
       return LlmResponseSchema.parse(dataToValidate);

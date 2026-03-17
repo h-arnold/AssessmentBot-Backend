@@ -8,13 +8,59 @@ import { JsonParserUtil } from '../../common/json-parser.util';
 import { GeminiService } from '../../llm/gemini.service';
 import { LlmModule } from '../../llm/llm.module';
 import { LLMService } from '../../llm/llm.service.interface';
+import { LlmResponse } from '../../llm/types';
+import { Prompt } from '../../prompt/prompt.base';
 import { PromptFactory } from '../../prompt/prompt.factory';
 import { PromptModule } from '../../prompt/prompt.module';
+
+const createMockLlmResponse = (score: number): LlmResponse => ({
+  completeness: {
+    score,
+    reasoning: 'Completeness reasoning',
+  },
+  accuracy: {
+    score,
+    reasoning: 'Accuracy reasoning',
+  },
+  spag: {
+    score,
+    reasoning: 'SPAG reasoning',
+  },
+});
+
+const getMockEnvValue = (key: string): string => {
+  switch (key) {
+    case 'GEMINI_API_KEY':
+      return process.env.GEMINI_API_KEY ?? '';
+    case 'NODE_ENV':
+      return process.env.NODE_ENV ?? '';
+    case 'PORT':
+      return process.env.PORT ?? '';
+    case 'API_KEYS':
+      return process.env.API_KEYS ?? '';
+    case 'MAX_IMAGE_UPLOAD_SIZE_MB':
+      return process.env.MAX_IMAGE_UPLOAD_SIZE_MB ?? '';
+    case 'ALLOWED_IMAGE_MIME_TYPES':
+      return process.env.ALLOWED_IMAGE_MIME_TYPES ?? '';
+    case 'APP_NAME':
+      return process.env.APP_NAME ?? '';
+    case 'APP_VERSION':
+      return process.env.APP_VERSION ?? '';
+    case 'LOG_LEVEL':
+      return process.env.LOG_LEVEL ?? '';
+    default:
+      return '';
+  }
+};
 
 describe('AssessorService', () => {
   let service: AssessorService;
   let llmService: LLMService;
   let promptFactory: PromptFactory;
+  let mockLlmService: { send: jest.Mock<Promise<LlmResponse>, [unknown]> };
+  let mockPromptFactory: {
+    create: jest.Mock<Promise<Prompt>, [CreateAssessorDto]>;
+  };
 
   beforeAll(() => {
     process.env.GEMINI_API_KEY = 'test-key';
@@ -28,13 +74,13 @@ describe('AssessorService', () => {
     process.env.LOG_LEVEL = 'debug';
   });
   beforeEach(async () => {
-    const mockLlmService = { send: jest.fn() };
-    const mockPromptFactory = { create: jest.fn() };
+    mockLlmService = { send: jest.fn<Promise<LlmResponse>, [unknown]>() };
+    mockPromptFactory = {
+      create: jest.fn<Promise<Prompt>, [CreateAssessorDto]>(),
+    };
     const mockJsonParserUtil = { parse: jest.fn() };
     const mockConfigService = {
-      get: jest.fn((key) => {
-        return process.env[key] || '';
-      }),
+      get: jest.fn((key: string) => getMockEnvValue(key)),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -91,8 +137,8 @@ describe('AssessorService', () => {
           user: 'prompt message',
         }),
       };
-      (promptFactory.create as jest.Mock).mockReturnValue(mockPrompt);
-      (llmService.send as jest.Mock).mockResolvedValue({ score: 5 });
+      mockPromptFactory.create.mockResolvedValue(mockPrompt as Prompt);
+      mockLlmService.send.mockResolvedValue(createMockLlmResponse(5));
 
       const result = await service.createAssessment(dto);
 
@@ -102,7 +148,7 @@ describe('AssessorService', () => {
         system: 'System prompt',
         user: 'prompt message',
       });
-      expect(result).toEqual({ score: 5 });
+      expect(result).toEqual(createMockLlmResponse(5));
     });
 
     it('should correctly handle a multimodal (image) payload', async () => {
@@ -141,15 +187,15 @@ describe('AssessorService', () => {
       const mockPrompt = {
         buildMessage: jest.fn().mockResolvedValue(mockMultimodalPayload),
       };
-      (promptFactory.create as jest.Mock).mockReturnValue(mockPrompt);
-      (llmService.send as jest.Mock).mockResolvedValue({ score: 4 });
+      mockPromptFactory.create.mockResolvedValue(mockPrompt as Prompt);
+      mockLlmService.send.mockResolvedValue(createMockLlmResponse(4));
 
       const result = await service.createAssessment(dto);
 
       expect(promptFactory.create).toHaveBeenCalledWith(dto);
       expect(mockPrompt.buildMessage).toHaveBeenCalled();
       expect(llmService.send).toHaveBeenCalledWith(mockMultimodalPayload);
-      expect(result).toEqual({ score: 4 });
+      expect(result).toEqual(createMockLlmResponse(4));
     });
     it('should not have __proto__ property in the DTO', async () => {
       const dto: CreateAssessorDto = {
@@ -165,12 +211,12 @@ describe('AssessorService', () => {
           user: 'prompt message',
         }),
       };
-      (promptFactory.create as jest.Mock).mockReturnValue(mockPrompt);
-      (llmService.send as jest.Mock).mockResolvedValue({ score: 5 });
+      mockPromptFactory.create.mockResolvedValue(mockPrompt as Prompt);
+      mockLlmService.send.mockResolvedValue(createMockLlmResponse(5));
 
       await service.createAssessment(dto);
 
-      const receivedDto = (promptFactory.create as jest.Mock).mock.calls[0][0];
+      const [[receivedDto]] = mockPromptFactory.create.mock.calls;
       expect(
         Object.prototype.hasOwnProperty.call(receivedDto, '__proto__'),
       ).toBe(false);
