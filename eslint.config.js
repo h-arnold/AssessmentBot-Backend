@@ -7,6 +7,7 @@ import noSecrets from 'eslint-plugin-no-secrets';
 import promise from 'eslint-plugin-promise';
 import regexp from 'eslint-plugin-regexp';
 import security from 'eslint-plugin-security';
+import sonarjs from 'eslint-plugin-sonarjs';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -24,6 +25,7 @@ export default tseslint.config(
       promise,
       regexp,
       security,
+      sonarjs,
       import: importPlugin,
     },
   },
@@ -58,6 +60,9 @@ export default tseslint.config(
       '@typescript-eslint/only-throw-error': 'error',
       '@typescript-eslint/use-unknown-in-catch-callback-variable': 'error',
       'security/detect-object-injection': 'off',
+      'sonarjs/cognitive-complexity': ['error', 15],
+      'sonarjs/no-duplicated-branches': 'error',
+      'sonarjs/no-identical-expressions': 'error',
     },
   },
   {

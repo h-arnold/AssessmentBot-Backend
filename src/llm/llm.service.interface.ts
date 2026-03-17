@@ -65,64 +65,120 @@ export abstract class LLMService {
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        this.logger.log(
-          `Dispatching LLM request (${payloadSummary}). Attempt ${attempt + 1} of ${maxRetries + 1}.`,
+        return await this.sendAttempt(
+          payload,
+          payloadSummary,
+          attempt,
+          maxRetries,
         );
-        const startTime = Date.now();
-        const response = await this._sendInternal(payload);
-        const elapsedMs = Date.now() - startTime;
-        this.logger.log(
-          `LLM response received in ${elapsedMs}ms (${payloadSummary}).`,
-        );
-        return response;
       } catch (error) {
-        // Check for resource exhausted errors first - these should bubble up immediately
-        if (this.isResourceExhaustedError(error)) {
-          this.logger.error(
-            `LLM resource exhausted for request (${payloadSummary}).`,
-            error instanceof Error ? error.stack : undefined,
-          );
-          throw new ResourceExhaustedError(
-            'API quota exhausted. Please try again later or upgrade your plan.',
-            error,
-          );
-        }
-
-        const isRateLimitError = this.isRateLimitError(error);
-        const isLastAttempt = attempt === maxRetries;
-
-        if (!isRateLimitError || isLastAttempt) {
-          // If it's not a rate limit error, or we've exhausted retries,
-          // wrap the error if it's not already a known error type
-          this.logger.error(
-            `LLM request failed after ${attempt + 1} attempt(s) (${payloadSummary}).`,
-            error instanceof Error ? error.stack : undefined,
-          );
-          if (isRateLimitError || error instanceof ZodError) {
-            throw error; // Throw original error for rate limits or Zod errors
-          }
-
-          const errObj = error as Error;
-          throw new Error(
-            `Failed to get a valid and structured response from the LLM.\nOriginal error: ${errObj.message || error}\nStack: ${errObj.stack || 'N/A'}`,
-          );
-        }
-
-        // Calculate exponential backoff delay
-        const delay =
-          baseBackoffMs * Math.pow(2, attempt) + Math.random() * 100;
-
-        this.logger.warn(
-          `Rate limit encountered on attempt ${attempt + 1}/${maxRetries + 1}. ` +
-            `Retrying in ${delay}ms. Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        await this.handleSendError(
+          error,
+          payloadSummary,
+          attempt,
+          maxRetries,
+          baseBackoffMs,
         );
-
-        await this.sleep(delay);
       }
     }
 
     // This should never be reached due to the logic above, but TypeScript requires it
     throw new Error('Unexpected end of retry loop');
+  }
+
+  private async sendAttempt(
+    payload: LlmPayload,
+    payloadSummary: string,
+    attempt: number,
+    maxRetries: number,
+  ): Promise<LlmResponse> {
+    this.logger.log(
+      `Dispatching LLM request (${payloadSummary}). Attempt ${attempt + 1} of ${maxRetries + 1}.`,
+    );
+    const startTime = Date.now();
+    const response = await this._sendInternal(payload);
+    const elapsedMs = Date.now() - startTime;
+    this.logger.log(
+      `LLM response received in ${elapsedMs}ms (${payloadSummary}).`,
+    );
+    return response;
+  }
+
+  private async handleSendError(
+    error: unknown,
+    payloadSummary: string,
+    attempt: number,
+    maxRetries: number,
+    baseBackoffMs: number,
+  ): Promise<void> {
+    if (this.isResourceExhaustedError(error)) {
+      this.logger.error(
+        `LLM resource exhausted for request (${payloadSummary}).`,
+        this.getErrorStack(error),
+      );
+      throw new ResourceExhaustedError(
+        'API quota exhausted. Please try again later or upgrade your plan.',
+        error,
+      );
+    }
+
+    const isRateLimitError = this.isRateLimitError(error);
+    if (!isRateLimitError || attempt === maxRetries) {
+      this.throwTerminalSendError(
+        error,
+        payloadSummary,
+        attempt,
+        isRateLimitError,
+      );
+    }
+
+    await this.waitBeforeRetry(error, attempt, maxRetries, baseBackoffMs);
+  }
+
+  private throwTerminalSendError(
+    error: unknown,
+    payloadSummary: string,
+    attempt: number,
+    isRateLimitError: boolean,
+  ): never {
+    this.logger.error(
+      `LLM request failed after ${attempt + 1} attempt(s) (${payloadSummary}).`,
+      this.getErrorStack(error),
+    );
+
+    if (isRateLimitError || error instanceof ZodError) {
+      throw error;
+    }
+
+    throw new Error(this.buildUnexpectedErrorMessage(error));
+  }
+
+  private async waitBeforeRetry(
+    error: unknown,
+    attempt: number,
+    maxRetries: number,
+    baseBackoffMs: number,
+  ): Promise<void> {
+    const delay = baseBackoffMs * Math.pow(2, attempt) + Math.random() * 100;
+
+    this.logger.warn(
+      `Rate limit encountered on attempt ${attempt + 1}/${maxRetries + 1}. ` +
+        `Retrying in ${delay}ms. Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
+
+    await this.sleep(delay);
+  }
+
+  private buildUnexpectedErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+      return `Failed to get a valid and structured response from the LLM.\nOriginal error: ${error.message}\nStack: ${error.stack || 'N/A'}`;
+    }
+
+    return `Failed to get a valid and structured response from the LLM.\nOriginal error: ${String(error)}\nStack: N/A`;
+  }
+
+  private getErrorStack(error: unknown): string | undefined {
+    return error instanceof Error ? error.stack : undefined;
   }
 
   /**
