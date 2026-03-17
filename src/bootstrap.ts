@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { json } from 'express';
+import { json, type Express } from 'express';
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
 
 import { AppModule } from './app.module';
@@ -10,6 +10,8 @@ export interface BootstrapOptions {
   host?: string;
 }
 
+type ExpressApplicationWithSet = Pick<Express, 'set'>;
+
 export async function bootstrap(options: BootstrapOptions = {}): Promise<void> {
   const { bufferLogs = true, host = '0.0.0.0' } = options;
   const app = await NestFactory.create(AppModule, {
@@ -19,7 +21,9 @@ export async function bootstrap(options: BootstrapOptions = {}): Promise<void> {
   app.useGlobalInterceptors(new LoggerErrorInterceptor());
 
   // Set Express query parser to 'extended' for compatibility with qs-style query strings
-  const expressApp = app.getHttpAdapter().getInstance();
+  const expressApp = app
+    .getHttpAdapter()
+    .getInstance() as ExpressApplicationWithSet;
   expressApp.set('query parser', 'extended');
 
   const configService = app.get(ConfigService);
