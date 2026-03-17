@@ -1,9 +1,5 @@
-jest.mock('fs/promises', () => ({
-  readFile: jest.fn(),
-}));
-
-import * as fs from 'fs/promises';
 import { readFileSync, type PathLike } from 'node:fs';
+import { readFile, type FileHandle } from 'node:fs/promises';
 import path from 'node:path';
 
 import { Logger } from '@nestjs/common';
@@ -13,9 +9,13 @@ import { PromptInputSchema, type PromptInput } from './prompt.base';
 import { TablePrompt } from './table.prompt';
 import { isSystemUserMessage } from '../common/utils/type-guards';
 
-const mockedReadFile = jest.mocked(fs.readFile);
+jest.mock('node:fs/promises', () => ({
+  readFile: jest.fn(),
+}));
 
-function normaliseFilePath(filePath: PathLike | fs.FileHandle): string {
+const mockedReadFile = jest.mocked(readFile);
+
+function normaliseFilePath(filePath: PathLike | FileHandle): string {
   if (typeof filePath === 'string') return filePath;
   if (Buffer.isBuffer(filePath)) return filePath.toString('utf-8');
   if (filePath instanceof URL) return filePath.pathname;
@@ -23,7 +23,7 @@ function normaliseFilePath(filePath: PathLike | fs.FileHandle): string {
   throw new Error('File handle paths are not supported in this test');
 }
 
-function getTemplateContent(filePath: PathLike | fs.FileHandle): string {
+function getTemplateContent(filePath: PathLike | FileHandle): string {
   const filePathStr = normaliseFilePath(filePath);
   if (filePathStr.includes('table.system.prompt.md')) return systemTemplate;
   if (filePathStr.includes('table.user.prompt.md')) return userTemplate;

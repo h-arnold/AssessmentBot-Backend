@@ -1,5 +1,5 @@
-import * as fs from 'fs/promises';
-import path from 'path';
+import * as fs from 'node:fs/promises';
+import path from 'node:path';
 
 import { Logger } from '@nestjs/common';
 
@@ -136,12 +136,11 @@ export class ImagePrompt extends Prompt {
       );
       return { mimeType, data };
     };
-    const images: { data: string; mimeType: string }[] = [];
-    images.push(parseDataUri(this.referenceTask));
-    images.push(parseDataUri(this.emptyTask));
-    images.push(parseDataUri(this.studentTask));
-
-    return images;
+    return [
+      parseDataUri(this.referenceTask),
+      parseDataUri(this.emptyTask),
+      parseDataUri(this.studentTask),
+    ];
   }
 
   /**

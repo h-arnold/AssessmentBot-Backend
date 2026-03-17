@@ -18,6 +18,10 @@ import { jsonrepair } from 'jsonrepair';
 export class JsonParserUtil {
   constructor(private readonly logger: Logger) {}
 
+  private parseJsonValue(jsonString: string): unknown {
+    return JSON.parse(jsonString) as unknown;
+  }
+
   /**
    * Parses and repairs a JSON string into a structured object or array.
    * Optionally trims content outside the first and last curly brackets.
@@ -33,9 +37,9 @@ export class JsonParserUtil {
     let jsonContent = '';
 
     const jsonBlockRegex = /```json\n([\s\S]*?)\n```/;
-    const match = jsonString.match(jsonBlockRegex);
+    const match = jsonBlockRegex.exec(jsonString);
 
-    if (match && match[1]) {
+    if (match?.[1]) {
       jsonContent = match[1];
       this.logger.debug('Extracted JSON from markdown block.');
     } else if (trim) {
@@ -62,7 +66,7 @@ export class JsonParserUtil {
 
     try {
       const repairedJsonString = jsonrepair(jsonContent);
-      const parsed: unknown = JSON.parse(repairedJsonString);
+      const parsed = this.parseJsonValue(repairedJsonString);
 
       if (typeof parsed !== 'object' || parsed === null) {
         throw new Error('Parsed JSON is not a structured object or array.');

@@ -15,6 +15,10 @@ interface JsonErrorResponseBody {
   path: string;
 }
 
+function createStatusOnlyResponse(): { json: () => void } {
+  return { json: (): void => {} };
+}
+
 function expectJsonErrorResponse(
   mockJson: jest.Mock,
   expectedBody: Omit<JsonErrorResponseBody, 'timestamp'>,
@@ -27,12 +31,9 @@ function expectJsonErrorResponse(
 
   const [responseBody] = firstCall as [JsonErrorResponseBody];
 
-  expect(Object.keys(responseBody).sort()).toEqual([
-    'message',
-    'path',
-    'statusCode',
-    'timestamp',
-  ]);
+  expect(
+    Object.keys(responseBody).sort((left, right) => left.localeCompare(right)),
+  ).toEqual(['message', 'path', 'statusCode', 'timestamp']);
 
   expect(responseBody.statusCode).toBe(expectedBody.statusCode);
   expect(responseBody.message).toBe(expectedBody.message);
@@ -180,11 +181,6 @@ describe('HttpExceptionFilter', () => {
       ip: '127.0.0.1',
       headers: { 'user-agent': 'jest' },
     }));
-    // The following function signatures are required to satisfy strict linter and type checks
-    // They use explicit generic signatures and type assertions to match the expected interfaces
-    function statusFn(): { json: () => void } {
-      return { json: (): void => {} };
-    }
     /**
      * Mocks the `ArgumentsHost` interface for HTTP requests in NestJS unit tests.
      *
@@ -363,10 +359,6 @@ describe('HttpExceptionFilter', () => {
     // This test checks that 404 errors are logged with warn level
     const exception = new HttpException('Not Found', HttpStatus.NOT_FOUND);
     const loggerSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    // The following function signatures are required to satisfy strict linter and type checks
-    function statusFn(): { json: () => void } {
-      return { json: (): void => {} };
-    }
     const mockArgumentsHost: ArgumentsHost = {
       switchToHttp: () => ({
         getRequest: function <T = unknown>(): T {
@@ -380,7 +372,7 @@ describe('HttpExceptionFilter', () => {
         },
         getResponse: function <T = unknown>(): T {
           // Return a fake response object with a status method
-          return { status: statusFn } as T;
+          return { status: createStatusOnlyResponse } as T;
         },
         getNext: function <T = unknown>(): T {
           // Return undefined as required by the interface
@@ -416,10 +408,6 @@ describe('HttpExceptionFilter', () => {
     const loggerSpy = jest
       .spyOn(Logger.prototype, 'error')
       .mockImplementation();
-    // The following function signatures are required to satisfy strict linter and type checks
-    function statusFn2(): { json: () => void } {
-      return { json: (): void => {} };
-    }
     const mockArgumentsHost: ArgumentsHost = {
       switchToHttp: () => ({
         getRequest: function <T = unknown>(): T {
@@ -433,7 +421,7 @@ describe('HttpExceptionFilter', () => {
         },
         getResponse: function <T = unknown>(): T {
           // Return a fake response object with a status method
-          return { status: statusFn2 } as T;
+          return { status: createStatusOnlyResponse } as T;
         },
         getNext: function <T = unknown>(): T {
           // Return undefined as required by the interface
