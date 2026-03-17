@@ -3,38 +3,53 @@ jest.mock('fs/promises', () => ({
 }));
 
 import * as fs from 'fs/promises';
-import path from 'path';
+import { readFileSync, type PathLike } from 'node:fs';
+import path from 'node:path';
 
 import { Logger } from '@nestjs/common';
 import * as mustache from 'mustache';
 
+import { PromptInputSchema, type PromptInput } from './prompt.base';
 import { TextPrompt } from './text.prompt';
 import { isSystemUserMessage } from '../common/utils/type-guards';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const textTask = require(path.join(process.cwd(), 'test/data/textTask.json'));
+
+const mockedReadFile = jest.mocked(fs.readFile);
+
+function normaliseFilePath(filePath: PathLike | fs.FileHandle): string {
+  if (typeof filePath === 'string') return filePath;
+  if (Buffer.isBuffer(filePath)) return filePath.toString('utf-8');
+  if (filePath instanceof URL) return filePath.pathname;
+
+  throw new Error('File handle paths are not supported in this test');
+}
+
+function getTemplateContent(filePath: PathLike | fs.FileHandle): string {
+  const filePathStr = normaliseFilePath(filePath);
+  if (filePathStr.includes('text.system.prompt.md')) return systemTemplate;
+  if (filePathStr.includes('text.user.prompt.md')) return userTemplate;
+  throw new Error('File not found');
+}
+
+const textTask: PromptInput = PromptInputSchema.parse(
+  JSON.parse(
+    readFileSync('test/data/textTask.json', { encoding: 'utf-8' }),
+  ) as unknown,
+);
 
 let systemTemplate: string;
 let userTemplate: string;
-beforeAll(async () => {
-  // Use the real fs to read files before mocking
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const realFs = require('fs');
-  systemTemplate = realFs.readFileSync(
+beforeAll(() => {
+  systemTemplate = readFileSync(
     path.join(process.cwd(), 'src/prompt/templates/text.system.prompt.md'),
     { encoding: 'utf-8' },
   );
-  userTemplate = realFs.readFileSync(
+  userTemplate = readFileSync(
     path.join(process.cwd(), 'src/prompt/templates/text.user.prompt.md'),
     { encoding: 'utf-8' },
   );
-  (fs.readFile as jest.Mock).mockImplementation((filePath: unknown) => {
-    const filePathStr = String(filePath);
-    if (filePathStr.includes('text.system.prompt.md'))
-      return Promise.resolve(systemTemplate);
-    if (filePathStr.includes('text.user.prompt.md'))
-      return Promise.resolve(userTemplate);
-    return Promise.reject(new Error('File not found'));
-  });
+  mockedReadFile.mockImplementation(async (filePath) =>
+    getTemplateContent(filePath),
+  );
 });
 
 describe('TextPrompt', () => {
@@ -50,16 +65,6 @@ describe('TextPrompt', () => {
       studentTask: textTask.studentTask,
       emptyTask: textTask.emptyTask,
     };
-
-    // Mock fs.readFile to return correct template content
-    jest.spyOn(fs, 'readFile').mockImplementation((filePath: unknown) => {
-      const filePathStr = String(filePath);
-      if (filePathStr.includes('text.system.prompt.md'))
-        return Promise.resolve(systemTemplate);
-      if (filePathStr.includes('text.user.prompt.md'))
-        return Promise.resolve(userTemplate);
-      return Promise.reject(new Error('File not found'));
-    });
 
     const prompt = new TextPrompt(
       inputs,
@@ -77,7 +82,6 @@ describe('TextPrompt', () => {
       );
     }
     expect(message.system).toBe(systemTemplate);
-    // Render expected user message using Mustache
     const expectedUser = mustache.render(userTemplate, {
       referenceTask: textTask.referenceTask,
       studentTask: textTask.studentTask,
