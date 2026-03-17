@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 import { Injectable } from '@nestjs/common';
 import * as dotenv from 'dotenv';
@@ -70,6 +70,8 @@ export class ConfigService {
    * @returns The typed configuration value.
    */
   get<T extends keyof Config>(key: T): Config[T] {
+    // `key` is constrained to validated schema keys, so this access is not user-controlled.
+    // eslint-disable-next-line security/detect-object-injection
     return this.config[key];
   }
 
