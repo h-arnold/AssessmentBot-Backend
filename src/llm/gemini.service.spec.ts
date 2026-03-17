@@ -341,7 +341,9 @@ describe('GeminiService', () => {
 
       mockGenerateContent.mockRejectedValueOnce(originalError);
 
-      const thrownError = await service.send(payload).catch((error) => error);
+      const thrownError = await service
+        .send(payload)
+        .catch((error: unknown) => error);
 
       expect(thrownError).toBeInstanceOf(ResourceExhaustedError);
       expect((thrownError as ResourceExhaustedError).originalError).toBe(

@@ -108,6 +108,7 @@ describe('Production Docker image smoke tests', () => {
         console.info('--- Container logs start ---');
         console.info(r.stdout);
         console.info('--- Container logs end ---');
+        return undefined;
       })
       .catch(() => undefined);
     await runCmd('docker', ['rm', '-f', CONTAINER_NAME]).catch(() => undefined);
