@@ -1,40 +1,55 @@
-jest.mock('fs/promises', () => ({
-  readFile: jest.fn(),
-}));
-
-import * as fs from 'fs/promises';
-import path from 'path';
+import { readFileSync, type PathLike } from 'node:fs';
+import { readFile, type FileHandle } from 'node:fs/promises';
+import path from 'node:path';
 
 import { Logger } from '@nestjs/common';
 import * as mustache from 'mustache';
 
+import { PromptInputSchema, type PromptInput } from './prompt.base';
 import { TablePrompt } from './table.prompt';
 import { isSystemUserMessage } from '../common/utils/type-guards';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const tableTask = require(path.join(process.cwd(), 'test/data/tableTask.json'));
+
+jest.mock('node:fs/promises', () => ({
+  readFile: jest.fn(),
+}));
+
+const mockedReadFile = jest.mocked(readFile);
+
+function normaliseFilePath(filePath: PathLike | FileHandle): string {
+  if (typeof filePath === 'string') return filePath;
+  if (Buffer.isBuffer(filePath)) return filePath.toString('utf-8');
+  if (filePath instanceof URL) return filePath.pathname;
+
+  throw new Error('File handle paths are not supported in this test');
+}
+
+function getTemplateContent(filePath: PathLike | FileHandle): string {
+  const filePathStr = normaliseFilePath(filePath);
+  if (filePathStr.includes('table.system.prompt.md')) return systemTemplate;
+  if (filePathStr.includes('table.user.prompt.md')) return userTemplate;
+  throw new Error('File not found');
+}
+
+const tableTask: PromptInput = PromptInputSchema.parse(
+  JSON.parse(
+    readFileSync('test/data/tableTask.json', { encoding: 'utf-8' }),
+  ) as unknown,
+);
 
 let systemTemplate: string;
 let userTemplate: string;
-beforeAll(async () => {
-  // Use the real fs to read files before mocking
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const realFs = require('fs');
-  systemTemplate = realFs.readFileSync(
+beforeAll(() => {
+  systemTemplate = readFileSync(
     path.join(process.cwd(), 'src/prompt/templates/table.system.prompt.md'),
     { encoding: 'utf-8' },
   );
-  userTemplate = realFs.readFileSync(
+  userTemplate = readFileSync(
     path.join(process.cwd(), 'src/prompt/templates/table.user.prompt.md'),
     { encoding: 'utf-8' },
   );
-  (fs.readFile as jest.Mock).mockImplementation((filePath: unknown) => {
-    const filePathStr = String(filePath);
-    if (filePathStr.includes('table.system.prompt.md'))
-      return Promise.resolve(systemTemplate);
-    if (filePathStr.includes('table.user.prompt.md'))
-      return Promise.resolve(userTemplate);
-    return Promise.reject(new Error('File not found'));
-  });
+  mockedReadFile.mockImplementation(async (filePath) =>
+    getTemplateContent(filePath),
+  );
 });
 
 describe('TablePrompt', () => {
@@ -51,16 +66,6 @@ describe('TablePrompt', () => {
       emptyTask: tableTask.emptyTask,
     };
 
-    // Mock fs.readFile to return correct template content
-    jest.spyOn(fs, 'readFile').mockImplementation((filePath: unknown) => {
-      const filePathStr = String(filePath);
-      if (filePathStr.includes('table.system.prompt.md'))
-        return Promise.resolve(systemTemplate);
-      if (filePathStr.includes('table.user.prompt.md'))
-        return Promise.resolve(userTemplate);
-      return Promise.reject(new Error('File not found'));
-    });
-
     const prompt = new TablePrompt(
       inputs,
       logger,
@@ -73,11 +78,10 @@ describe('TablePrompt', () => {
     console.info('--- Rendered TablePrompt User Message ---');
     if (!isSystemUserMessage(message)) {
       throw new Error(
-        'Prompt did not return expected object shape. \n Rendered TablePrompt User Message: ${message.user)',
+        `Prompt did not return expected object shape. \n Rendered TablePrompt payload: ${JSON.stringify(message)}`,
       );
     }
     expect(message.system).toBe(systemTemplate);
-    // Render expected user message using Mustache
     const expectedUser = mustache.render(userTemplate, {
       referenceTask: tableTask.referenceTask,
       studentTask: tableTask.studentTask,

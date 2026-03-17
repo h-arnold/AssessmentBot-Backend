@@ -1,55 +1,89 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import type { PathLike, PathOrFileDescriptor } from 'node:fs';
 
 import * as dotenv from 'dotenv';
-import { z } from 'zod';
 
-// Mock the fs module
-jest.mock('fs', () => ({
-  ...jest.requireActual('fs'),
-  existsSync: jest.fn(),
-  readFileSync: jest.fn(),
+jest.mock('node:fs', () => ({
+  existsSync: jest.fn<(path: PathLike) => boolean>(),
+  readFileSync:
+    jest.fn<
+      (
+        path: PathOrFileDescriptor,
+        options?:
+          | BufferEncoding
+          | { encoding?: BufferEncoding | null; flag?: string }
+          | null,
+      ) => string
+    >(),
 }));
 
+const mockExistsSync = jest.mocked(fs.existsSync);
+const mockReadFileSync = jest.mocked(fs.readFileSync);
+
+const normalisePath = (filePath: PathOrFileDescriptor): string => {
+  if (typeof filePath === 'string') {
+    return filePath;
+  }
+
+  if (filePath instanceof URL) {
+    return filePath.pathname;
+  }
+
+  if (Buffer.isBuffer(filePath)) {
+    return filePath.toString('utf-8');
+  }
+
+  return '';
+};
+
 describe('.env.example file', () => {
-  const expectedRequiredVars = ['NODE_ENV', 'PORT', 'APP_NAME', 'APP_VERSION']; // APP_VERSION is optional but should be in example
+  const expectedRequiredVars = ['NODE_ENV', 'PORT', 'APP_NAME', 'APP_VERSION'];
 
   beforeEach(() => {
-    // Clear mocks before each test
-    (fs.existsSync as jest.Mock).mockClear();
-    (fs.readFileSync as jest.Mock).mockClear();
+    mockExistsSync.mockReset();
+    mockReadFileSync.mockReset();
 
-    // Default mock for existsSync: .env.example exists
-    (fs.existsSync as jest.Mock).mockReturnValue(true);
+    mockExistsSync.mockReturnValue(true);
+    mockReadFileSync.mockImplementation((filePath: PathOrFileDescriptor) => {
+      if (!normalisePath(filePath).includes('.env.example')) {
+        return '';
+      }
 
-    // Default mock for readFileSync: provide a valid .env.example content
-    (fs.readFileSync as jest.Mock).mockReturnValue(`
+      return `
 NODE_ENV=development
 PORT=3000
 APP_NAME=AssessmentBot-Backend
 APP_VERSION=1.0.0
 DATABASE_URL=your_database_url_here
 API_KEY=your_api_key_here
-`);
+`;
+    });
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    jest.resetAllMocks();
   });
 
   it('should contain all required variables', () => {
-    const exampleContent = fs.readFileSync('.env.example', 'utf-8');
+    const exampleContent = fs.readFileSync('.env.example', {
+      encoding: 'utf-8',
+    });
     const exampleConfig = dotenv.parse(exampleContent);
 
-    const requiredKeys = ['NODE_ENV', 'PORT', 'APP_NAME', 'APP_VERSION'];
-    requiredKeys.forEach((key) => {
-      expect(exampleConfig).toHaveProperty(key);
-      expect(exampleConfig[key]).not.toBe('');
+    expectedRequiredVars.forEach((key) => {
+      const matchedEntry = Object.entries(exampleConfig).find(
+        ([entryKey]) => entryKey === key,
+      );
+
+      expect(matchedEntry).toBeDefined();
+      expect(matchedEntry?.[1]).not.toBe('');
     });
   });
 
   it('should use placeholder values', () => {
-    const exampleContent = fs.readFileSync('.env.example', 'utf-8');
+    const exampleContent = fs.readFileSync('.env.example', {
+      encoding: 'utf-8',
+    });
     const exampleConfig = dotenv.parse(exampleContent);
 
     expect(exampleConfig.NODE_ENV).toBe('development');

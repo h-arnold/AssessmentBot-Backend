@@ -8,6 +8,39 @@ import {
 import { HttpExceptionFilter } from './http-exception.filter';
 import { ResourceExhaustedError } from '../llm/resource-exhausted.error';
 
+interface JsonErrorResponseBody {
+  statusCode: number;
+  message: string;
+  timestamp: string;
+  path: string;
+}
+
+function createStatusOnlyResponse(): { json: () => void } {
+  return { json: (): void => {} };
+}
+
+function expectJsonErrorResponse(
+  mockJson: jest.Mock,
+  expectedBody: Omit<JsonErrorResponseBody, 'timestamp'>,
+): void {
+  const firstCall = mockJson.mock.calls[0] as
+    | [JsonErrorResponseBody]
+    | undefined;
+
+  expect(firstCall).toBeDefined();
+
+  const [responseBody] = firstCall as [JsonErrorResponseBody];
+
+  expect(
+    Object.keys(responseBody).sort((left, right) => left.localeCompare(right)),
+  ).toEqual(['message', 'path', 'statusCode', 'timestamp']);
+
+  expect(responseBody.statusCode).toBe(expectedBody.statusCode);
+  expect(responseBody.message).toBe(expectedBody.message);
+  expect(responseBody.path).toBe(expectedBody.path);
+  expect(responseBody.timestamp).toEqual(expect.any(String));
+}
+
 describe('HttpExceptionFilter', () => {
   let filter: HttpExceptionFilter;
   let logger: Logger;
@@ -56,10 +89,9 @@ describe('HttpExceptionFilter', () => {
     filter.catch(resourceExhaustedError, mockArgumentsHost);
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.SERVICE_UNAVAILABLE);
-    expect(mockJson).toHaveBeenCalledWith({
+    expectJsonErrorResponse(mockJson, {
       statusCode: HttpStatus.SERVICE_UNAVAILABLE,
       message: 'Quota has been exceeded.',
-      timestamp: expect.any(String),
       path: '/test-resource-exhausted',
     });
     expect(loggerSpy).toHaveBeenCalledWith(
@@ -110,10 +142,9 @@ describe('HttpExceptionFilter', () => {
     filter.catch(payloadTooLargeError, mockArgumentsHost);
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.PAYLOAD_TOO_LARGE);
-    expect(mockJson).toHaveBeenCalledWith({
+    expectJsonErrorResponse(mockJson, {
       statusCode: HttpStatus.PAYLOAD_TOO_LARGE,
       message: 'Payload Too Large',
-      timestamp: expect.any(String),
       path: '/test-large',
     });
     expect(loggerSpy).toHaveBeenCalledWith(
@@ -150,11 +181,6 @@ describe('HttpExceptionFilter', () => {
       ip: '127.0.0.1',
       headers: { 'user-agent': 'jest' },
     }));
-    // The following function signatures are required to satisfy strict linter and type checks
-    // They use explicit generic signatures and type assertions to match the expected interfaces
-    function statusFn(): { json: () => void } {
-      return { json: (): void => {} };
-    }
     /**
      * Mocks the `ArgumentsHost` interface for HTTP requests in NestJS unit tests.
      *
@@ -211,10 +237,9 @@ describe('HttpExceptionFilter', () => {
     filter.catch(exception, mockArgumentsHost);
     // Assert that the response was set with the correct status and message
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
-    expect(mockJson).toHaveBeenCalledWith({
+    expectJsonErrorResponse(mockJson, {
       statusCode: HttpStatus.BAD_REQUEST,
       message: 'Test Exception',
-      timestamp: expect.any(String),
       path: '/test',
     });
   });
@@ -268,10 +293,9 @@ describe('HttpExceptionFilter', () => {
     process.env.NODE_ENV = originalNodeEnv;
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
-    expect(mockJson).toHaveBeenCalledWith({
+    expectJsonErrorResponse(mockJson, {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
-      timestamp: expect.any(String),
       path: '/test',
     });
   });
@@ -335,10 +359,6 @@ describe('HttpExceptionFilter', () => {
     // This test checks that 404 errors are logged with warn level
     const exception = new HttpException('Not Found', HttpStatus.NOT_FOUND);
     const loggerSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    // The following function signatures are required to satisfy strict linter and type checks
-    function statusFn(): { json: () => void } {
-      return { json: (): void => {} };
-    }
     const mockArgumentsHost: ArgumentsHost = {
       switchToHttp: () => ({
         getRequest: function <T = unknown>(): T {
@@ -352,7 +372,7 @@ describe('HttpExceptionFilter', () => {
         },
         getResponse: function <T = unknown>(): T {
           // Return a fake response object with a status method
-          return { status: statusFn } as T;
+          return { status: createStatusOnlyResponse } as T;
         },
         getNext: function <T = unknown>(): T {
           // Return undefined as required by the interface
@@ -388,10 +408,6 @@ describe('HttpExceptionFilter', () => {
     const loggerSpy = jest
       .spyOn(Logger.prototype, 'error')
       .mockImplementation();
-    // The following function signatures are required to satisfy strict linter and type checks
-    function statusFn2(): { json: () => void } {
-      return { json: (): void => {} };
-    }
     const mockArgumentsHost: ArgumentsHost = {
       switchToHttp: () => ({
         getRequest: function <T = unknown>(): T {
@@ -405,7 +421,7 @@ describe('HttpExceptionFilter', () => {
         },
         getResponse: function <T = unknown>(): T {
           // Return a fake response object with a status method
-          return { status: statusFn2 } as T;
+          return { status: createStatusOnlyResponse } as T;
         },
         getNext: function <T = unknown>(): T {
           // Return undefined as required by the interface

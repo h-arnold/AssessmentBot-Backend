@@ -51,68 +51,95 @@ export class ImageValidationPipe implements PipeTransform {
     const allowedMimeTypes = this.configService.get('ALLOWED_IMAGE_MIME_TYPES');
 
     if (Buffer.isBuffer(value)) {
-      if (value.length === 0) {
-        throw new BadRequestException('Empty image buffer is not allowed.');
-      }
-
-      if (value.length > maxFileSize) {
-        throw new BadRequestException(
-          `Image size exceeds the limit of ${this.configService.get('MAX_IMAGE_UPLOAD_SIZE_MB')}MB.`,
-        );
-      }
-
-      const fileType = await detectBufferMime(value);
-      if (!fileType || !allowedMimeTypes.includes(fileType)) {
-        throw new BadRequestException('Invalid image type.');
-      }
+      await this.validateBuffer(value, maxFileSize, allowedMimeTypes);
     } else if (typeof value === 'string') {
-      // 1. Length check to mitigate ReDoS risk
-      if (value.length > 10 * 1024 * 1024) {
-        throw new BadRequestException('Base64 image string is too large.');
-      }
-      // 2. Non-Data URIs: return immediately for performance
-      if (!value.startsWith('data:')) {
-        return value;
-      }
-      // 3. Only accept image Data URIs
-      if (!value.startsWith('data:image/')) {
-        throw new BadRequestException('Invalid base64 image format.');
-      }
-      // 4. Parse Data URI header and data
-      const commaIndex = value.indexOf(',');
-      if (commaIndex === -1) {
-        throw new BadRequestException('Invalid base64 image format.');
-      }
-      const header = value.substring(5, commaIndex); // strip 'data:'
-      const [mimeType, encoding] = header.split(';');
-      // 5. Ensure base64 encoding
-      if (encoding !== 'base64') {
-        throw new BadRequestException('Invalid base64 image format.');
-      }
-      // 6. Validate allowed MIME types
-      if (!allowedMimeTypes.includes(mimeType)) {
-        throw new BadRequestException('Invalid image type.');
-      }
-      // 7. Extract and validate base64 payload
-      const base64Data = value.substring(commaIndex + 1);
-      if (base64Data.length === 0) {
-        throw new BadRequestException('Empty image data is not allowed.');
-      }
-      if (!validator.isBase64(base64Data)) {
-        throw new BadRequestException('Invalid base64 string format.');
-      }
-      // 8. Buffer and size validation
-      const buffer = Buffer.from(base64Data, 'base64');
-      if (buffer.length === 0) {
-        throw new BadRequestException('Empty image buffer is not allowed.');
-      }
-      if (buffer.length > maxFileSize) {
-        throw new BadRequestException(
-          `Image size exceeds the limit of ${this.configService.get('MAX_IMAGE_UPLOAD_SIZE_MB')}MB.`,
-        );
-      }
+      this.validateString(value, maxFileSize, allowedMimeTypes);
     }
 
     return value;
+  }
+
+  private async validateBuffer(
+    value: Buffer,
+    maxFileSize: number,
+    allowedMimeTypes: string[],
+  ): Promise<void> {
+    this.ensureBufferWithinSize(value, maxFileSize);
+
+    const fileType = await detectBufferMime(value);
+    if (!fileType || !allowedMimeTypes.includes(fileType)) {
+      throw new BadRequestException('Invalid image type.');
+    }
+  }
+
+  private validateString(
+    value: string,
+    maxFileSize: number,
+    allowedMimeTypes: string[],
+  ): void {
+    if (value.length > 10 * 1024 * 1024) {
+      throw new BadRequestException('Base64 image string is too large.');
+    }
+
+    if (!value.startsWith('data:')) {
+      return;
+    }
+
+    const { mimeType, base64Data } = this.parseImageDataUri(value);
+    if (!allowedMimeTypes.includes(mimeType)) {
+      throw new BadRequestException('Invalid image type.');
+    }
+
+    this.validateBase64Payload(base64Data, maxFileSize);
+  }
+
+  private parseImageDataUri(value: string): {
+    mimeType: string;
+    base64Data: string;
+  } {
+    if (!value.startsWith('data:image/')) {
+      throw new BadRequestException('Invalid base64 image format.');
+    }
+
+    const commaIndex = value.indexOf(',');
+    if (commaIndex === -1) {
+      throw new BadRequestException('Invalid base64 image format.');
+    }
+
+    const header = value.substring(5, commaIndex);
+    const [mimeType, encoding] = header.split(';');
+    if (encoding !== 'base64') {
+      throw new BadRequestException('Invalid base64 image format.');
+    }
+
+    return {
+      mimeType,
+      base64Data: value.substring(commaIndex + 1),
+    };
+  }
+
+  private validateBase64Payload(base64Data: string, maxFileSize: number): void {
+    if (base64Data.length === 0) {
+      throw new BadRequestException('Empty image data is not allowed.');
+    }
+
+    if (!validator.isBase64(base64Data)) {
+      throw new BadRequestException('Invalid base64 string format.');
+    }
+
+    const buffer = Buffer.from(base64Data, 'base64');
+    this.ensureBufferWithinSize(buffer, maxFileSize);
+  }
+
+  private ensureBufferWithinSize(value: Buffer, maxFileSize: number): void {
+    if (value.length === 0) {
+      throw new BadRequestException('Empty image buffer is not allowed.');
+    }
+
+    if (value.length > maxFileSize) {
+      throw new BadRequestException(
+        `Image size exceeds the limit of ${this.configService.get('MAX_IMAGE_UPLOAD_SIZE_MB')}MB.`,
+      );
+    }
   }
 }

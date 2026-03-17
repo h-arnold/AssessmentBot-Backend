@@ -19,7 +19,7 @@ export async function startTest(): Promise<void> {
 if (typeof require !== 'undefined' && require.main === module) {
   // Start and handle failures explicitly rather than using `void` which hides
   // rejections. We do not use top-level await here due to current TS config.
-  startTest().catch((err) => {
+  startTest().catch((err: unknown) => {
     console.error('Failed to bootstrap test application:', err);
     process.exit(1);
   });

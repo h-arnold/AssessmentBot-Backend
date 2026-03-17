@@ -1,6 +1,6 @@
-import * as fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import * as fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Utility function to get current directory path that works in both
@@ -12,12 +12,17 @@ export function getCurrentDirname(fallbackDir?: string): string {
   try {
     // Use dynamic evaluation to avoid TypeScript compilation issues in Jest
     // This will work in ESM runtime but fail gracefully in Jest
-    const metaUrl = new Function('return import.meta.url')();
+    const getImportMetaUrl = new Function(
+      'return import.meta.url',
+    ) as () => string;
+    const metaUrl = getImportMetaUrl();
     return path.dirname(fileURLToPath(metaUrl));
   } catch (error) {
-    // In Jest environment or other environments where import.meta.url is not available
-    // Fall back to process.cwd() or provided fallbackDir
-    return fallbackDir || process.cwd();
+    if (error instanceof SyntaxError || error instanceof ReferenceError) {
+      return fallbackDir ?? process.cwd();
+    }
+
+    throw error;
   }
 }
 
@@ -47,10 +52,7 @@ export async function readMarkdown(
   if (basePath) {
     candidates.push(basePath);
   } else {
-    // Development (ts-node / nest start) location
-    candidates.push('src/prompt/templates');
-    // Production (compiled assets copied by Nest build) location
-    candidates.push('dist/src/prompt/templates');
+    candidates.push('src/prompt/templates', 'dist/src/prompt/templates');
     // Relative to this file at runtime (dist/src/common/file-utils.js -> ../prompt/templates)
     try {
       const currentDir = getCurrentDirname();

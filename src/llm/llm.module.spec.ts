@@ -39,7 +39,7 @@ const mockConfigService = {
  */
 const mockJsonParserUtil = {
   parse: jest.fn((jsonString: string) => {
-    return JSON.parse(jsonString);
+    return JSON.parse(jsonString) as unknown;
   }),
 };
 

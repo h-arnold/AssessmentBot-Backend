@@ -17,7 +17,9 @@ import { ConfigService } from '../config/config.service';
 
 // Only mock the GoogleGenerativeAI class, not the error classes
 jest.mock('@google/generative-ai', () => {
-  const actual = jest.requireActual('@google/generative-ai');
+  const actual = jest.requireActual<typeof import('@google/generative-ai')>(
+    '@google/generative-ai',
+  );
   return {
     ...actual,
     GoogleGenerativeAI: jest.fn(),
@@ -84,7 +86,9 @@ describe('GeminiService', () => {
 
     // Mock JsonParserUtil
     jsonParserUtil = {
-      parse: jest.fn((json: string) => JSON.parse(json)),
+      parse: jest.fn((json: string): unknown => {
+        return JSON.parse(json) as unknown;
+      }),
     } as unknown as JsonParserUtil;
 
     service = new GeminiService(configService, jsonParserUtil);
@@ -341,7 +345,9 @@ describe('GeminiService', () => {
 
       mockGenerateContent.mockRejectedValueOnce(originalError);
 
-      const thrownError = await service.send(payload).catch((error) => error);
+      const thrownError = await service
+        .send(payload)
+        .catch((error: unknown) => error);
 
       expect(thrownError).toBeInstanceOf(ResourceExhaustedError);
       expect((thrownError as ResourceExhaustedError).originalError).toBe(

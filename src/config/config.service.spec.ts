@@ -1,17 +1,44 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
+import type { PathLike, PathOrFileDescriptor } from 'node:fs';
 
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { ConfigService } from './config.service';
 
-// Mock the fs module
-jest.mock('fs', () => ({
-  ...jest.requireActual('fs'), // Keep actual implementations for other fs functions if needed
-  existsSync: jest.fn(),
-  readFileSync: jest.fn(),
-  writeFileSync: jest.fn(), // Mock writeFileSync as well
-  unlinkSync: jest.fn(), // Mock unlinkSync as well
+jest.mock('node:fs', () => ({
+  existsSync: jest.fn<(path: PathLike) => boolean>(),
+  readFileSync:
+    jest.fn<
+      (
+        path: PathOrFileDescriptor,
+        options?:
+          | BufferEncoding
+          | { encoding?: BufferEncoding | null; flag?: string }
+          | null,
+      ) => string
+    >(),
+  unlinkSync: jest.fn<(path: PathLike) => void>(),
 }));
+
+const mockExistsSync = jest.mocked(fs.existsSync);
+const mockReadFileSync = jest.mocked(fs.readFileSync);
+const mockUnlinkSync = jest.mocked(fs.unlinkSync);
+
+const normalisePath = (filePath: PathOrFileDescriptor): string => {
+  if (typeof filePath === 'string') {
+    return filePath;
+  }
+
+  if (filePath instanceof URL) {
+    return filePath.pathname;
+  }
+
+  if (Buffer.isBuffer(filePath)) {
+    return filePath.toString('utf-8');
+  }
+
+  return '';
+};
 
 describe('ConfigService', () => {
   let service: ConfigService;
@@ -32,27 +59,26 @@ describe('ConfigService', () => {
   });
 
   beforeEach(() => {
-    // Clear specific environment variables for each test
-    delete process.env.MAX_IMAGE_UPLOAD_SIZE_MB;
-    delete process.env.ALLOWED_IMAGE_MIME_TYPES;
-  });
+    mockExistsSync.mockReset();
+    mockReadFileSync.mockReset();
+    mockUnlinkSync.mockReset();
 
-  beforeEach(() => {
+    mockExistsSync.mockReturnValue(false);
+    mockReadFileSync.mockImplementation(() => {
+      return '';
+    });
+    mockUnlinkSync.mockImplementation(() => {
+      return undefined;
+    });
+
     // Reset process.env before each test
     process.env = { ...originalEnv };
     process.env.NODE_ENV = 'test';
     process.env.PORT = '3000';
 
     delete process.env.APP_VERSION; // Ensure APP_VERSION is clean for tests that expect it to be undefined
-
-    // Clear all fs mocks before each test
-    (fs.existsSync as jest.Mock).mockClear();
-    (fs.readFileSync as jest.Mock).mockClear();
-    (fs.writeFileSync as jest.Mock).mockClear();
-    (fs.unlinkSync as jest.Mock).mockClear();
-
-    // Default mock for existsSync: .env file does not exist by default
-    (fs.existsSync as jest.Mock).mockReturnValue(false);
+    delete process.env.MAX_IMAGE_UPLOAD_SIZE_MB;
+    delete process.env.ALLOWED_IMAGE_MIME_TYPES;
   });
 
   afterAll(() => {
@@ -83,11 +109,11 @@ describe('ConfigService', () => {
 
     it('should load variables from .env file', async () => {
       // Mock .env file existence and content
-      (fs.existsSync as jest.Mock).mockImplementation((filePath) => {
-        return filePath.includes('.env');
+      mockExistsSync.mockImplementation((filePath: PathLike) => {
+        return normalisePath(filePath).includes('.env');
       });
-      (fs.readFileSync as jest.Mock).mockImplementation((filePath) => {
-        if (filePath.includes('.env')) {
+      mockReadFileSync.mockImplementation((filePath: PathOrFileDescriptor) => {
+        if (normalisePath(filePath).includes('.env')) {
           return 'APP_NAME=TestAppNameFromDotEnv';
         }
         return ''; // Default for other files
@@ -105,11 +131,11 @@ describe('ConfigService', () => {
 
     it('should prioritize process.env over .env file', async () => {
       // Mock .env file existence and content
-      (fs.existsSync as jest.Mock).mockImplementation((filePath) => {
-        return filePath.includes('.env');
+      mockExistsSync.mockImplementation((filePath: PathLike) => {
+        return normalisePath(filePath).includes('.env');
       });
-      (fs.readFileSync as jest.Mock).mockImplementation((filePath) => {
-        if (filePath.includes('.env')) {
+      mockReadFileSync.mockImplementation((filePath: PathOrFileDescriptor) => {
+        if (normalisePath(filePath).includes('.env')) {
           return 'APP_VERSION=dotenv_version';
         }
         return ''; // Default for other files
@@ -297,11 +323,11 @@ describe('ConfigService', () => {
 
     beforeEach(() => {
       // Ensure .env.example exists for these tests
-      (fs.existsSync as jest.Mock).mockImplementation((filePath) => {
-        return filePath.includes('.env.example');
+      mockExistsSync.mockImplementation((filePath: PathLike) => {
+        return normalisePath(filePath).includes('.env.example');
       });
-      (fs.readFileSync as jest.Mock).mockImplementation((filePath) => {
-        if (filePath.includes('.env.example')) {
+      mockReadFileSync.mockImplementation((filePath: PathOrFileDescriptor) => {
+        if (normalisePath(filePath).includes('.env.example')) {
           return `
 NODE_ENV=development
 PORT=3000
@@ -319,10 +345,9 @@ SOME_OTHER_VAR=value
 
     it('.env.example should contain all required variables', () => {
       // cSpell:ignore Vars
-      const fileContent = (fs.readFileSync as jest.Mock)(
-        '.env.example',
-        'utf-8',
-      );
+      const fileContent = fs.readFileSync('.env.example', {
+        encoding: 'utf-8',
+      });
       const lines = fileContent
         .split('\n')
         .filter((line: string) => line.trim() !== '' && !line.startsWith('#'));
@@ -335,10 +360,9 @@ SOME_OTHER_VAR=value
 
     it('.env.example should use placeholder values', () => {
       // cSpell:ignore Vars
-      const fileContent = (fs.readFileSync as jest.Mock)(
-        '.env.example',
-        'utf-8',
-      );
+      const fileContent = fs.readFileSync('.env.example', {
+        encoding: 'utf-8',
+      });
       expect(fileContent).toContain('your_database_url_here');
       expect(fileContent).toContain('your_api_key_here');
       expect(fileContent).not.toContain('production_secret_key');

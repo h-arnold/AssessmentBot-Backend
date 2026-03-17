@@ -267,13 +267,11 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
   private sanitiseHeaders(
     headers: Record<string, string | string[] | undefined>,
   ): Record<string, string | string[]> {
-    const sanitised: Record<string, string | string[]> = {};
-    for (const key in headers) {
-      const value = headers[key];
-      if (value !== undefined) {
-        sanitised[key] = value;
-      }
-    }
+    const sanitised = Object.fromEntries(
+      Object.entries(headers).filter(
+        (entry): entry is [string, string | string[]] => entry[1] !== undefined,
+      ),
+    ) as Record<string, string | string[]>;
 
     if ('authorization' in sanitised) sanitised['authorization'] = '[REDACTED]';
     if ('cookie' in sanitised) sanitised['cookie'] = '[REDACTED]';

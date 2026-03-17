@@ -1,8 +1,18 @@
-import { IncomingMessage, ServerResponse } from 'http';
+import { IncomingMessage, ServerResponse } from 'node:http';
+
+import { Params } from 'nestjs-pino';
 
 import { ConfigService } from './config/config.service';
 
-const forRootAsync = jest.fn();
+type LoggerModuleAsyncOptions = {
+  useFactory: (configService: ConfigService) => Params;
+};
+
+let loggerModuleOptions: LoggerModuleAsyncOptions | undefined;
+
+const forRootAsync = jest.fn((options: LoggerModuleAsyncOptions) => {
+  loggerModuleOptions = options;
+});
 
 jest.mock('nestjs-pino', () => ({
   LoggerModule: { forRootAsync },
@@ -10,6 +20,14 @@ jest.mock('nestjs-pino', () => ({
 
 describe('AppModule logging configuration', () => {
   const originalEnv = process.env;
+
+  const getLoggerModuleOptions = (): LoggerModuleAsyncOptions => {
+    if (loggerModuleOptions === undefined) {
+      throw new Error('LoggerModule.forRootAsync was not called');
+    }
+
+    return loggerModuleOptions;
+  };
 
   afterEach(() => {
     process.env = { ...originalEnv };
@@ -20,6 +38,7 @@ describe('AppModule logging configuration', () => {
   const loadModule = async (): Promise<{ AppModule: unknown }> => {
     jest.resetModules();
     forRootAsync.mockClear();
+    loggerModuleOptions = undefined;
     return import('./app.module');
   };
 
@@ -27,12 +46,15 @@ describe('AppModule logging configuration', () => {
     overrides: Partial<Record<string, string>>,
   ): { get: jest.Mock } => ({
     get: jest.fn((key: string) => {
-      const defaults: Record<string, string> = {
-        LOG_LEVEL: 'debug',
-        NODE_ENV: 'development',
-        ...overrides,
-      };
-      return defaults[key];
+      const defaults = new Map<string, string>([
+        ['LOG_LEVEL', 'debug'],
+        ['NODE_ENV', 'development'],
+        ...Object.entries(overrides).filter(
+          (entry): entry is [string, string] => entry[1] !== undefined,
+        ),
+      ]);
+
+      return defaults.get(key);
     }),
   });
 
@@ -43,9 +65,9 @@ describe('AppModule logging configuration', () => {
     expect(module.AppModule).toBeDefined();
     expect(forRootAsync).toHaveBeenCalledTimes(1);
 
-    const options = forRootAsync.mock.calls[0][0];
+    const options = getLoggerModuleOptions();
     const configService = buildConfigService({ NODE_ENV: 'production' });
-    const result = options.useFactory(
+    const result: Params = options.useFactory(
       configService as unknown as ConfigService,
     );
 
@@ -77,9 +99,9 @@ describe('AppModule logging configuration', () => {
     process.env = { ...originalEnv };
 
     await loadModule();
-    const options = forRootAsync.mock.calls[0][0];
+    const options = getLoggerModuleOptions();
     const configService = buildConfigService({ NODE_ENV: 'production' });
-    const result = options.useFactory(
+    const result: Params = options.useFactory(
       configService as unknown as ConfigService,
     );
 
@@ -91,9 +113,9 @@ describe('AppModule logging configuration', () => {
     process.env = { ...originalEnv };
 
     await loadModule();
-    const options = forRootAsync.mock.calls[0][0];
+    const options = getLoggerModuleOptions();
     const configService = buildConfigService({ NODE_ENV: 'development' });
-    const result = options.useFactory(
+    const result: Params = options.useFactory(
       configService as unknown as ConfigService,
     );
 

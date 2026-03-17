@@ -7,19 +7,29 @@ import { AssessorModule } from './assessor.module';
 import { AssessorService } from './assessor.service';
 import { ConfigModule, ConfigService } from '../../config';
 
+const getMockConfigValue = (key: string): string | number | undefined => {
+  switch (key) {
+    case 'GEMINI_API_KEY':
+      return 'test-key';
+    case 'NODE_ENV':
+      return 'test';
+    case 'PORT':
+      return 3000;
+    case 'API_KEYS':
+      return 'test-api-key';
+    case 'MAX_IMAGE_UPLOAD_SIZE_MB':
+      return 5;
+    case 'ALLOWED_IMAGE_MIME_TYPES':
+      return 'image/png,image/jpeg';
+    case 'LOG_LEVEL':
+      return 'debug';
+    default:
+      return undefined;
+  }
+};
+
 const mockConfigService = {
-  get: jest.fn((key: string) => {
-    const config: Record<string, string | number> = {
-      GEMINI_API_KEY: 'test-key',
-      NODE_ENV: 'test',
-      PORT: 3000,
-      API_KEYS: 'test-api-key',
-      MAX_IMAGE_UPLOAD_SIZE_MB: 5,
-      ALLOWED_IMAGE_MIME_TYPES: 'image/png,image/jpeg',
-      LOG_LEVEL: 'debug',
-    };
-    return config[key];
-  }),
+  get: jest.fn((key: string) => getMockConfigValue(key)),
 };
 
 describe('AssessorModule', () => {

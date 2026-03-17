@@ -2,7 +2,12 @@ import stylistic from '@stylistic/eslint-plugin';
 import prettier from 'eslint-config-prettier';
 import importPlugin from 'eslint-plugin-import';
 import jest from 'eslint-plugin-jest';
+import n from 'eslint-plugin-n';
+import noSecrets from 'eslint-plugin-no-secrets';
+import promise from 'eslint-plugin-promise';
+import regexp from 'eslint-plugin-regexp';
 import security from 'eslint-plugin-security';
+import sonarjs from 'eslint-plugin-sonarjs';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -15,7 +20,12 @@ export default tseslint.config(
       '@typescript-eslint': tseslint.plugin,
       '@stylistic': stylistic,
       jest,
+      'no-secrets': noSecrets,
+      n,
+      promise,
+      regexp,
       security,
+      sonarjs,
       import: importPlugin,
     },
   },
@@ -44,7 +54,23 @@ export default tseslint.config(
     rules: {
       ...tseslint.configs.recommendedTypeChecked.rules, // Use type-checked recommended rules
       ...security.configs.recommended.rules, // Apply security rules that might need type info
-      'security/detect-object-injection': 'off',
+      '@typescript-eslint/no-base-to-string': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'warn',
+      '@typescript-eslint/no-unsafe-call': 'warn',
+      '@typescript-eslint/no-unsafe-member-access': 'warn',
+      '@typescript-eslint/no-unsafe-return': 'warn',
+      '@typescript-eslint/only-throw-error': 'error',
+      '@typescript-eslint/use-unknown-in-catch-callback-variable': 'error',
+      'security/detect-object-injection': 'warn',
+      'sonarjs/cognitive-complexity': ['error', 15],
+      'sonarjs/no-all-duplicated-branches': 'warn',
+      'sonarjs/no-duplicated-branches': 'error',
+      'sonarjs/no-identical-expressions': 'error',
+      'sonarjs/no-ignored-return': 'warn',
+      'sonarjs/no-redundant-boolean': 'warn',
+      'sonarjs/prefer-object-literal': 'warn',
     },
   },
   {
@@ -84,7 +110,38 @@ export default tseslint.config(
       ],
 
       'no-console': ['warn', { allow: ['warn', 'error', 'info', 'debug'] }],
+      'no-irregular-whitespace': [
+        'error',
+        { skipComments: false, skipStrings: false, skipTemplates: false },
+      ],
+      'no-secrets/no-secrets': [
+        'error',
+        {
+          tolerance: 4.5,
+          additionalRegexes: {
+            'Potential API key': 'AIza[0-9A-Za-z-_]{35}',
+          },
+          ignoreContent: [
+            'test-key',
+            'test-api-key',
+            '^data:image\\/png;base64,',
+            'your_database_url_here',
+            'your_api_key_here',
+          ],
+        },
+      ],
       'security/detect-eval-with-expression': 'error',
+      'promise/always-return': 'error',
+      'promise/catch-or-return': 'error',
+      'promise/no-nesting': 'error',
+      'promise/no-return-wrap': 'error',
+      'regexp/no-dupe-disjunctions': 'error',
+      'regexp/no-invisible-character': 'error',
+      'regexp/no-super-linear-backtracking': 'error',
+      'regexp/no-useless-escape': 'error',
+      'regexp/optimal-quantifier-concatenation': 'error',
+      'n/no-deprecated-api': 'error',
+      'n/no-path-concat': 'error',
       '@typescript-eslint/no-var-requires': 'error',
       'import/no-commonjs': 'error',
     },
@@ -98,7 +155,7 @@ export default tseslint.config(
   {
     files: ['**/*.js'],
     rules: {
-      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'warn',
       '@typescript-eslint/no-var-requires': 'off',
       'import/no-commonjs': 'off',
     },
