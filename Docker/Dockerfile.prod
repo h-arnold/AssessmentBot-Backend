@@ -34,7 +34,7 @@ FROM node:24-alpine AS production
 # See https://github.com/opencontainers/image-spec/blob/main/annotations.md
 LABEL org.opencontainers.image.source="https://github.com/assessment-bot/backend"
 LABEL org.opencontainers.image.description="The backend API for the Assessment Bot service."
-LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.licenses="AGPL3"
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
