@@ -1,7 +1,7 @@
 ---
 description: Implements code changes in an idiomatic and type-safe manner with validated results
 mode: all
-model: openai/gpt-6-luna
+model: opencode-go/deepseek-v4.1-flash
 steps: 100
 ---
 

@@ -1,7 +1,7 @@
 ---
 description: Reviews code for quality, standards adherence, and defects using project-specific checklists
 mode: all
-model: openai/gpt-6-luna
+model: opencode-go/deepseek-v4.1-flash
 steps: 100
 permission:
   edit:

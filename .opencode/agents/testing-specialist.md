@@ -1,7 +1,7 @@
 ---
 description: Creates, maintains, and debugs Vitest unit/integration tests and E2E tests
 mode: all
-model: openai/gpt-6-luna
+model: opencode-go/deepseek-v4.1-flash
 steps: 100
 ---
 
