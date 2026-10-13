@@ -8,7 +8,7 @@ This module provides shared utility functions for file operations, JSON processi
 
 ### `getCurrentDirname(fallbackDir?)`
 
-Resolves the current directory path in both ESM runtime and Vitest test environments. Uses `import.meta.url` when available, falling back to `process.cwd()` or a custom fallback in test environments.
+Returns `fallbackDir` when supplied, otherwise `process.cwd()`. `process.cwd()` is the project root in both Vitest and production environments.
 
 ### `readMarkdown(name, basePath?)`
 
@@ -17,9 +17,9 @@ Reads a markdown file with built-in security measures:
 - Rejects filenames not ending in `.md`
 - Blocks filenames containing `..` (path traversal prevention)
 - Verifies the resolved path stays within the base directory
-- Default `basePath` is `src/prompt/templates`
+- When `basePath` is omitted, candidate directories are tried in order: `src/prompt/templates`, then `dist/src/prompt/templates`
 
-Throws `Error('Invalid markdown filename')` or `Error('Unauthorised file path')` on violation.
+Throws `Error('Invalid markdown filename')` for a filename containing `..` or not ending in `.md`, or `Error('Markdown file not found in candidate paths: ...')` when the file is missing from every candidate. Non-`ENOENT` filesystem errors are re-thrown.
 
 ## JSON Processing
 

@@ -26,12 +26,13 @@ export function getCurrentDirname(fallbackDirectory?: string): string {
  * path traversal attacks and unauthorized file access.
  * @param {string} name - The name of the markdown file to read. Must end with
  *   `.md` and must not contain path traversal sequences (`..`).
- * @param {string} [basePath] - The base directory to read from. Defaults to
- *   'src/prompt/templates'.
+ * @param {string} [basePath] - The base directory to read from. When omitted,
+ *   the default candidate directories are tried in order:
+ *   `src/prompt/templates` followed by `dist/src/prompt/templates`.
  * @returns {Promise<string>} A promise that resolves to the content of the
  *   markdown file as a string.
- * @throws {Error} If the filename is invalid or the resolved path is
- *   unauthorized.
+ * @throws {Error} If the filename is invalid (contains `..` or lacks a `.md`
+ *   suffix), the file is not found, or a non-`ENOENT` filesystem error occurs.
  */
 export async function readMarkdown(
   name: string,
@@ -59,9 +60,8 @@ export async function readMarkdown(
  * directories.
  *
  * When no explicit basePath is given the method searches
- * `src/prompt/templates`, `dist/src/prompt/templates`, and a path relative to
- * the runtime location of this module.  Security checks ensure the resolved
- * path stays within its base directory.
+ * `src/prompt/templates` followed by `dist/src/prompt/templates`. Security
+ * checks ensure the resolved path stays within its base directory.
  * @param {string} name - The markdown file name (must pass validation before
  *   calling).
  * @param {string} [basePath] - Explicit base directory, or undefined to try
@@ -78,13 +78,6 @@ async function readMarkdownFromCandidates(
     candidates.push(basePath);
   } else {
     candidates.push('src/prompt/templates', 'dist/src/prompt/templates');
-    // Relative to this file at runtime (dist/src/common/file-utilities.js -> ../prompt/templates)
-    try {
-      const currentDirectory = getCurrentDirname();
-      candidates.push(path.resolve(currentDirectory, '../prompt/templates'));
-    } catch {
-      // ignore
-    }
   }
 
   const tried: string[] = [];

@@ -34,7 +34,7 @@ The prompt generation process integrates into the assessment workflow as follows
 1.  The `AssessorService` receives a `CreateAssessorDto`.
 2.  It calls `PromptFactory.create(dto)`.
 3.  The factory identifies the `taskType` and determines the correct prompt class and template files.
-4.  It loads the system prompt markdown file from `src/prompt/templates/`.
+4.  It loads the system prompt markdown file via `readMarkdown()`, which resolves it from `src/prompt/templates/` in development or `dist/src/prompt/templates/` in production.
 5.  It instantiates the corresponding prompt class (e.g., `new TextPrompt(...)`).
 6.  The `AssessorService` then calls `prompt.buildMessage()` on the instance.
 7.  This method builds the final payload: text/table prompts return a legacy `LlmPayload` with a rendered user template, while `ImagePrompt` returns a validated two-message `MultiPartPromptPayload` (one system message, one user message with three label-image pairs).

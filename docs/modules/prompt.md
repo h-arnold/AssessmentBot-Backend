@@ -68,7 +68,7 @@ Instantiates the correct `Prompt` subclass based on `taskType` from the DTO.
 
 1. Extracts `referenceTask`, `studentTask`, `emptyTask` from the DTO
 2. Selects system prompt and user template files based on `taskType`
-3. Loads the system prompt markdown file from `src/prompt/templates/`
+3. Loads the system prompt markdown file via `readMarkdown()`, which resolves it from `src/prompt/templates/` in development or `dist/src/prompt/templates/` in production (the Nest build copies templates to `dist/src/prompt/templates/` via the `nest-cli.json` asset configuration)
 4. For IMAGE tasks, passes the validated data-URI strings straight to the `ImagePrompt` constructor
 5. Instantiates the appropriate prompt subclass
 
