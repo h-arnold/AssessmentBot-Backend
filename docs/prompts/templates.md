@@ -51,8 +51,8 @@ Templates are loaded through the `readMarkdown()` utility:
 
 - **Path Traversal Protection**: Blocks `..` sequences in filenames
 - **File Extension Validation**: Only `.md` files are permitted
-- **Directory Restriction**: Files must be within the templates directory
-- **Path Canonicalisation**: Prevents symbolic link attacks
+- **Directory Restriction**: The resolved path must sit inside its base directory, compared as a normalised string prefix
+- **Lexical Path Resolution**: `path.resolve` normalises `.` and `..` before that comparison. Symlinks are **not** resolved, so the check is not symlink-aware: a symlink inside the templates directory pointing elsewhere would still be followed.
 
 ## Creating New Templates
 
